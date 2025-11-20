@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id                  Int           @id @default(autoincrement())
+  nombre              String
+  rol                 Rol
+  correo              String        @unique
+  contraseña         String
+  intercambiosCliente Intercambio[] @relation("IntercambiosCliente")
+  intercambios        Intercambio[] @relation("IntercambiosVendedor")
+  compras             Venta[]       @relation("VentasCliente")
+  ventasVendedor      Venta[]       @relation("VentasVendedor")
+}
+
+model Producto {
+  id                   Int          @id @default(autoincrement())
+  nombre               String
+  stock                Int
+  precio_base          Int
+  tipo                 tipoProducto
+  descuento_porcentaje Int?
+  descuento_fijo       Int?
+  juegos               Juego[]
+}
+
+model Juego {
+  id                Int                @id @default(autoincrement())
+  productoId        Int
+  consola           Consola
+  estado            estadoJuego
+  tier              String
+  fotos             String[]
+  producto          Producto           @relation(fields: [productoId], references: [id])
+  ventaJuegos       VentaJuego[]
+  intercambioJuegos intercambioJuego[]
+}
+
+model Venta {
+  id                   Int          @id @default(autoincrement())
+  fecha                DateTime
+  metodo_pago          metodoPago
+  vendedor_id          Int
+  cliente_id           Int?
+  total                Int
+  descuento_porcentaje Int?
+  descuento_fijo       Int?
+  cliente              Usuario?     @relation("VentasCliente", fields: [cliente_id], references: [id])
+  vendedor             Usuario      @relation("VentasVendedor", fields: [vendedor_id], references: [id])
+  ventaJuegos          VentaJuego[]
+}
+
+model VentaJuego {
+  id              Int   @id @default(autoincrement())
+  venta_id        Int
+  juego_id        Int
+  cantidad        Int
+  precio_unitario Int
+  juego           Juego @relation(fields: [juego_id], references: [id])
+  venta           Venta @relation(fields: [venta_id], references: [id])
+}
+
+model Intercambio {
+  id                Int                @id @default(autoincrement())
+  fecha             DateTime
+  metodo_pago       metodoPago?
+  dinero_extra      Int?
+  vendedor_id       Int
+  cliente_id        Int?
+  cliente           Usuario?           @relation("IntercambiosCliente", fields: [cliente_id], references: [id])
+  vendedor          Usuario            @relation("IntercambiosVendedor", fields: [vendedor_id], references: [id])
+  intercambioJuegos intercambioJuego[]
+}
+
+model intercambioJuego {
+  id             Int            @id @default(autoincrement())
+  intercambio_id Int
+  juego_id       Int
+  rol            rolIntercambio
+  cantidad       Int
+  intercambio    Intercambio    @relation(fields: [intercambio_id], references: [id])
+  juego          Juego          @relation(fields: [juego_id], references: [id])
+}
+
+enum Rol {
+  cliente
+  empleado
+  admin
+}
+
+enum rolIntercambio {
+  solicitado
+  entregado
+}
+
+enum tipoProducto {
+  juego
+  consola
+}
+
+enum estadoJuego {
+  nuevo
+  usado
+}
+
+enum Consola {
+  Xbox360
+  XboxOne
+  XboxSeries
+  Ps3
+  Ps4
+  Ps5
+  Switch
+  Switch2
+}
+
+enum metodoPago {
+  efectivo
+  debito
+}
