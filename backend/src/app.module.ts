@@ -18,6 +18,8 @@ import { Venta } from './entities/venta.entity';
 import { VentaJuego } from './entities/ventaJuego.entity';
 import { Intercambio } from './entities/intercambio.entity';
 import { IntercambioJuego } from './entities/intercambioJuego.entity';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -45,5 +47,7 @@ import { IntercambioJuego } from './entities/intercambioJuego.entity';
     IntercambioJuegoModule,
     AuthModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
