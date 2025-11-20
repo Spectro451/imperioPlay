@@ -6,9 +6,13 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 import { Prisma, Usuario } from '@prisma/client';
+import { Roles } from 'src/auth/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 @Controller('usuario')
 export class UsuarioController {
@@ -20,6 +24,8 @@ export class UsuarioController {
   }
 
   @Get()
+  @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async findAll(): Promise<Usuario[]> {
     return this.usuarioService.findAll();
   }
