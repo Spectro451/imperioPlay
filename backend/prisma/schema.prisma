@@ -12,7 +12,7 @@ model Usuario {
   nombre              String
   rol                 Rol
   correo              String        @unique
-  contraseña         String
+  password            String
   intercambiosCliente Intercambio[] @relation("IntercambiosCliente")
   intercambios        Intercambio[] @relation("IntercambiosVendedor")
   compras             Venta[]       @relation("VentasCliente")
