@@ -15,9 +15,10 @@ import { VentaModule } from './venta/venta.module';
 import { VentaJuegoModule } from './venta-juego/venta-juego.module';
 import { IntercambioModule } from './intercambio/intercambio.module';
 import { IntercambioJuegoModule } from './intercambio-juego/intercambio-juego.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [UsuarioModule, JuegoModule, ProductoModule, VentaModule, VentaJuegoModule, IntercambioModule, IntercambioJuegoModule],
+  imports: [UsuarioModule, JuegoModule, ProductoModule, VentaModule, VentaJuegoModule, IntercambioModule, IntercambioJuegoModule, PrismaModule],
   controllers: [AppController],
   providers: [AppService, UsuarioService, JuegoService, ProductoService, VentaService, VentaJuegoService, IntercambioService, IntercambioJuegoService],
 })
