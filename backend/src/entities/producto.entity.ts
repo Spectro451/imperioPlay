@@ -25,6 +25,9 @@ export class Producto {
   @Column({ nullable: true })
   descuento_fijo?: number;
 
-  @OneToMany(() => Juego, (juego) => juego.producto)
+  @OneToMany(() => Juego, (juego) => juego.producto, { cascade: true })
   juegos: Juego[];
+
+  @Column({ type: 'int' })
+  precio_final: number;
 }

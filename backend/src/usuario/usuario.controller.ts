@@ -2,10 +2,13 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
+  Patch,
   Post,
   Put,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
@@ -40,20 +43,83 @@ export class UsuarioController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Usuario | null> {
-    return this.usuarioService.findOne(Number(id));
+  @UseGuards(JwtAuthGuard)
+  async findOne(
+    @Param('id') id: string,
+    @Request() req,
+  ): Promise<Usuario | null> {
+    const userId = Number(id);
+    const requester = req.user;
+    if (requester.rol === 'admin') {
+      return this.usuarioService.findOne(Number(id));
+    }
+
+    if (requester.id !== userId) {
+      throw new ForbiddenException('No tienes permisos para ver este usuario');
+    }
+
+    return this.usuarioService.findOne(userId);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: string,
+    @Request() req,
     @Body() data: Partial<Usuario>,
   ): Promise<Usuario> {
-    return this.usuarioService.update(Number(id), data);
+    const userId = Number(id);
+    const requester = req.user;
+
+    if (requester.rol !== 'admin' && requester.id !== userId) {
+      throw new ForbiddenException(
+        'No tienes permisos para editar este usuario',
+      );
+    }
+    if (requester.rol !== 'admin' && data.rol === 'admin') {
+      delete data.rol;
+    }
+    return this.usuarioService.update(userId, data);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.usuarioService.remove(Number(id));
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @Request() req): Promise<void> {
+    const userId = Number(id);
+    const requester = req.user;
+
+    if (requester.rol === 'admin') {
+      return this.usuarioService.remove(userId);
+    }
+
+    if (requester.rol !== 'admin' && requester.id !== userId) {
+      throw new ForbiddenException(
+        'No tienes permisos para borrar este usuario',
+      );
+    }
+    return this.usuarioService.remove(userId);
+  }
+
+  @Patch(':id/password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ) {
+    const userId = Number(id);
+    const currentUser = req.user;
+
+    if (currentUser.rol !== 'admin' && currentUser.id !== userId) {
+      throw new ForbiddenException(
+        'No tienes permisos para cambiar esta contraseña',
+      );
+    }
+
+    return this.usuarioService.changePassword(
+      userId,
+      body.currentPassword,
+      body.newPassword,
+    );
   }
 }
