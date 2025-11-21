@@ -1,38 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, VentaJuego } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { VentaJuego } from '../entities/ventaJuego.entity';
 
 @Injectable()
 export class VentaJuegoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(VentaJuego)
+    private readonly ventaJuegoRepo: Repository<VentaJuego>,
+  ) {}
 
-  async create(data: Prisma.VentaJuegoCreateInput): Promise<VentaJuego> {
-    return this.prisma.ventaJuego.create({ data });
+  create(data: Partial<VentaJuego>): Promise<VentaJuego> {
+    const ventaJuego = this.ventaJuegoRepo.create(data);
+    return this.ventaJuegoRepo.save(ventaJuego);
   }
 
-  async findAll(): Promise<VentaJuego[]> {
-    return this.prisma.ventaJuego.findMany();
-  }
-
-  async findOne(id: number): Promise<VentaJuego | null> {
-    return this.prisma.ventaJuego.findUnique({
-      where: { id },
+  findAll(): Promise<VentaJuego[]> {
+    return this.ventaJuegoRepo.find({
+      relations: ['juego', 'venta'],
     });
   }
 
-  async update(
-    id: number,
-    data: Prisma.VentaJuegoUpdateInput,
-  ): Promise<VentaJuego> {
-    return this.prisma.ventaJuego.update({
+  findOne(id: number): Promise<VentaJuego | null> {
+    return this.ventaJuegoRepo.findOne({
       where: { id },
-      data,
+      relations: ['juego', 'venta'],
     });
   }
 
-  async remove(id: number): Promise<VentaJuego> {
-    return this.prisma.ventaJuego.delete({
-      where: { id },
-    });
+  async update(id: number, data: Partial<VentaJuego>): Promise<VentaJuego> {
+    const result = await this.ventaJuegoRepo.update(id, data);
+    if (result.affected === 0) {
+      throw new NotFoundException(`VentaJuego con id ${id} no encontrado`);
+    }
+    return this.findOne(id) as Promise<VentaJuego>;
+  }
+
+  async remove(id: number): Promise<void> {
+    const result = await this.ventaJuegoRepo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`VentaJuego con id ${id} no encontrado`);
+    }
   }
 }

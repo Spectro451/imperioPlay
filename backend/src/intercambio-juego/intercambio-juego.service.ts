@@ -1,40 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, intercambioJuego } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { IntercambioJuego } from '../entities/intercambioJuego.entity';
 
 @Injectable()
 export class IntercambioJuegoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(IntercambioJuego)
+    private readonly intercambioJuegoRepo: Repository<IntercambioJuego>,
+  ) {}
 
-  async create(
-    data: Prisma.intercambioJuegoCreateInput,
-  ): Promise<intercambioJuego> {
-    return this.prisma.intercambioJuego.create({ data });
+  create(data: Partial<IntercambioJuego>): Promise<IntercambioJuego> {
+    const intercambioJuego = this.intercambioJuegoRepo.create(data);
+    return this.intercambioJuegoRepo.save(intercambioJuego);
   }
 
-  async findAll(): Promise<intercambioJuego[]> {
-    return this.prisma.intercambioJuego.findMany();
+  findAll(): Promise<IntercambioJuego[]> {
+    return this.intercambioJuegoRepo.find({
+      relations: ['intercambio', 'juego'],
+    });
   }
 
-  async findOne(id: number): Promise<intercambioJuego | null> {
-    return this.prisma.intercambioJuego.findUnique({
+  findOne(id: number): Promise<IntercambioJuego | null> {
+    return this.intercambioJuegoRepo.findOne({
       where: { id },
+      relations: ['intercambio', 'juego'],
     });
   }
 
   async update(
     id: number,
-    data: Prisma.intercambioJuegoUpdateInput,
-  ): Promise<intercambioJuego> {
-    return this.prisma.intercambioJuego.update({
-      where: { id },
-      data,
-    });
+    data: Partial<IntercambioJuego>,
+  ): Promise<IntercambioJuego> {
+    const result = await this.intercambioJuegoRepo.update(id, data);
+    if (result.affected === 0) {
+      throw new Error(`IntercambioJuego con id ${id} no encontrado`);
+    }
+    return this.findOne(id) as Promise<IntercambioJuego>;
   }
 
-  async remove(id: number): Promise<intercambioJuego> {
-    return this.prisma.intercambioJuego.delete({
-      where: { id },
-    });
+  async remove(id: number): Promise<void> {
+    const result = await this.intercambioJuegoRepo.delete(id);
+    if (result.affected === 0) {
+      throw new Error(`IntercambioJuego con id ${id} no encontrado`);
+    }
   }
 }

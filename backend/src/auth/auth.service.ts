@@ -1,25 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Repository } from 'typeorm';
+import { Usuario } from '../entities/usuario.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepo: Repository<Usuario>,
     private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(correo: string, password: string) {
-    const user = await this.prisma.usuario.findUnique({
-      where: { correo },
-    });
-
+    const user = await this.usuarioRepo.findOne({ where: { correo } });
     if (!user) return null;
 
     const isMatch = await bcrypt.compare(password, user.password);
     return isMatch ? user : null;
   }
+
   async login(user: any) {
     const payload = { sub: user.id, correo: user.correo, rol: user.rol };
     return {

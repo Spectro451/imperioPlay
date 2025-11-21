@@ -8,9 +8,9 @@ import {
   Put,
 } from '@nestjs/common';
 import { IntercambioJuegoService } from './intercambio-juego.service';
-import { Prisma, intercambioJuego } from '@prisma/client';
+import { IntercambioJuego } from '../entities/intercambioJuego.entity';
 
-@Controller('intercambioJuego')
+@Controller('intercambio-juego')
 export class IntercambioJuegoController {
   constructor(
     private readonly intercambioJuegoService: IntercambioJuegoService,
@@ -18,31 +18,31 @@ export class IntercambioJuegoController {
 
   @Post()
   async create(
-    @Body() data: Prisma.intercambioJuegoCreateInput,
-  ): Promise<intercambioJuego> {
+    @Body() data: Partial<IntercambioJuego>,
+  ): Promise<IntercambioJuego> {
     return this.intercambioJuegoService.create(data);
   }
 
   @Get()
-  async findAll(): Promise<intercambioJuego[]> {
+  async findAll(): Promise<IntercambioJuego[]> {
     return this.intercambioJuegoService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<intercambioJuego | null> {
+  async findOne(@Param('id') id: string): Promise<IntercambioJuego | null> {
     return this.intercambioJuegoService.findOne(Number(id));
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() data: Prisma.intercambioJuegoUpdateInput,
-  ): Promise<intercambioJuego> {
+    @Body() data: Partial<IntercambioJuego>,
+  ): Promise<IntercambioJuego> {
     return this.intercambioJuegoService.update(Number(id), data);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<intercambioJuego> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.intercambioJuegoService.remove(Number(id));
   }
 }

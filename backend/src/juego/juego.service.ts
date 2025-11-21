@@ -1,35 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Juego } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Juego } from '../entities/juego.entity';
 
 @Injectable()
 export class JuegoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Juego)
+    private readonly juegoRepo: Repository<Juego>,
+  ) {}
 
-  async create(data: Prisma.JuegoCreateInput): Promise<Juego> {
-    return this.prisma.juego.create({ data });
+  create(data: Partial<Juego>): Promise<Juego> {
+    const juego = this.juegoRepo.create(data);
+    return this.juegoRepo.save(juego);
   }
 
-  async findAll(): Promise<Juego[]> {
-    return this.prisma.juego.findMany();
-  }
-
-  async findOne(id: number): Promise<Juego | null> {
-    return this.prisma.juego.findUnique({
-      where: { id },
+  findAll(): Promise<Juego[]> {
+    return this.juegoRepo.find({
+      relations: ['producto', 'ventaJuegos', 'intercambioJuegos'],
     });
   }
 
-  async update(id: number, data: Prisma.JuegoUpdateInput): Promise<Juego> {
-    return this.prisma.juego.update({
+  findOne(id: number): Promise<Juego | null> {
+    return this.juegoRepo.findOne({
       where: { id },
-      data,
+      relations: ['producto', 'ventaJuegos', 'intercambioJuegos'],
     });
   }
 
-  async remove(id: number): Promise<Juego> {
-    return this.prisma.juego.delete({
-      where: { id },
-    });
+  async update(id: number, data: Partial<Juego>): Promise<Juego> {
+    const result = await this.juegoRepo.update(id, data);
+    if (result.affected === 0) {
+      throw new Error(`Juego con id ${id} no encontrado`);
+    }
+    return this.findOne(id) as Promise<Juego>;
+  }
+
+  async remove(id: number): Promise<void> {
+    const result = await this.juegoRepo.delete(id);
+    if (result.affected === 0) {
+      throw new Error(`Juego con id ${id} no encontrado`);
+    }
   }
 }

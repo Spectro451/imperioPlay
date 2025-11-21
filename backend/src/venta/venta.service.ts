@@ -1,35 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, Venta } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Venta } from '../entities/venta.entity';
 
 @Injectable()
 export class VentaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Venta)
+    private readonly ventaRepo: Repository<Venta>,
+  ) {}
 
-  async create(data: Prisma.VentaCreateInput): Promise<Venta> {
-    return this.prisma.venta.create({ data });
+  create(data: Partial<Venta>): Promise<Venta> {
+    const venta = this.ventaRepo.create(data);
+    return this.ventaRepo.save(venta);
   }
 
-  async findAll(): Promise<Venta[]> {
-    return this.prisma.venta.findMany();
-  }
-
-  async findOne(id: number): Promise<Venta | null> {
-    return this.prisma.venta.findUnique({
-      where: { id },
+  findAll(): Promise<Venta[]> {
+    return this.ventaRepo.find({
+      relations: ['cliente', 'vendedor', 'ventaJuegos'],
     });
   }
 
-  async update(id: number, data: Prisma.VentaUpdateInput): Promise<Venta> {
-    return this.prisma.venta.update({
+  findOne(id: number): Promise<Venta | null> {
+    return this.ventaRepo.findOne({
       where: { id },
-      data,
+      relations: ['cliente', 'vendedor', 'ventaJuegos'],
     });
   }
 
-  async remove(id: number): Promise<Venta> {
-    return this.prisma.venta.delete({
-      where: { id },
-    });
+  async update(id: number, data: Partial<Venta>): Promise<Venta> {
+    const result = await this.ventaRepo.update(id, data);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Venta con id ${id} no encontrada`);
+    }
+    return this.findOne(id) as Promise<Venta>;
+  }
+
+  async remove(id: number): Promise<void> {
+    const result = await this.ventaRepo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Venta con id ${id} no encontrada`);
+    }
   }
 }

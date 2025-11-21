@@ -8,14 +8,14 @@ import {
   Put,
 } from '@nestjs/common';
 import { VentaService } from './venta.service';
-import { Prisma, Venta } from '@prisma/client';
+import { Venta } from '../entities/venta.entity';
 
 @Controller('venta')
 export class VentaController {
   constructor(private readonly ventaService: VentaService) {}
 
   @Post()
-  async create(@Body() data: Prisma.VentaCreateInput): Promise<Venta> {
+  async create(@Body() data: Partial<Venta>): Promise<Venta> {
     return this.ventaService.create(data);
   }
 
@@ -32,13 +32,13 @@ export class VentaController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() data: Prisma.VentaUpdateInput,
+    @Body() data: Partial<Venta>,
   ): Promise<Venta> {
     return this.ventaService.update(Number(id), data);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<Venta> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.ventaService.remove(Number(id));
   }
 }

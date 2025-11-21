@@ -1,38 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Intercambio } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Intercambio } from '../entities/intercambio.entity';
 
 @Injectable()
 export class IntercambioService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Intercambio)
+    private readonly intercambioRepo: Repository<Intercambio>,
+  ) {}
 
-  async create(data: Prisma.IntercambioCreateInput): Promise<Intercambio> {
-    return this.prisma.intercambio.create({ data });
+  create(data: Partial<Intercambio>): Promise<Intercambio> {
+    const intercambio = this.intercambioRepo.create(data);
+    return this.intercambioRepo.save(intercambio);
   }
 
-  async findAll(): Promise<Intercambio[]> {
-    return this.prisma.intercambio.findMany();
-  }
-
-  async findOne(id: number): Promise<Intercambio | null> {
-    return this.prisma.intercambio.findUnique({
-      where: { id },
+  findAll(): Promise<Intercambio[]> {
+    return this.intercambioRepo.find({
+      relations: ['cliente', 'vendedor', 'intercambioJuegos'],
     });
   }
 
-  async update(
-    id: number,
-    data: Prisma.IntercambioUpdateInput,
-  ): Promise<Intercambio> {
-    return this.prisma.intercambio.update({
+  findOne(id: number): Promise<Intercambio | null> {
+    return this.intercambioRepo.findOne({
       where: { id },
-      data,
+      relations: ['cliente', 'vendedor', 'intercambioJuegos'],
     });
   }
 
-  async remove(id: number): Promise<Intercambio> {
-    return this.prisma.intercambio.delete({
-      where: { id },
-    });
+  async update(id: number, data: Partial<Intercambio>): Promise<Intercambio> {
+    await this.intercambioRepo.update(id, data);
+    const updated = await this.findOne(id);
+    if (!updated) {
+      throw new Error(`Intercambio con id ${id} no encontrado`);
+    }
+    return updated;
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.intercambioRepo.delete(id);
   }
 }

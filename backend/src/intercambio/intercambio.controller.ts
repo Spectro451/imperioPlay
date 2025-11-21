@@ -8,16 +8,14 @@ import {
   Put,
 } from '@nestjs/common';
 import { IntercambioService } from './intercambio.service';
-import { Prisma, Intercambio } from '@prisma/client';
+import { Intercambio } from '../entities/intercambio.entity';
 
 @Controller('intercambio')
 export class IntercambioController {
   constructor(private readonly intercambioService: IntercambioService) {}
 
   @Post()
-  async create(
-    @Body() data: Prisma.IntercambioCreateInput,
-  ): Promise<Intercambio> {
+  async create(@Body() data: Partial<Intercambio>): Promise<Intercambio> {
     return this.intercambioService.create(data);
   }
 
@@ -34,13 +32,13 @@ export class IntercambioController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() data: Prisma.IntercambioUpdateInput,
+    @Body() data: Partial<Intercambio>,
   ): Promise<Intercambio> {
     return this.intercambioService.update(Number(id), data);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<Intercambio> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.intercambioService.remove(Number(id));
   }
 }

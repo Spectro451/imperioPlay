@@ -1,13 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsuarioService } from './usuario/usuario.service';
-import { JuegoService } from './juego/juego.service';
-import { ProductoService } from './producto/producto.service';
-import { VentaService } from './venta/venta.service';
-import { VentaJuegoService } from './venta-juego/venta-juego.service';
-import { IntercambioService } from './intercambio/intercambio.service';
-import { IntercambioJuegoService } from './intercambio-juego/intercambio-juego.service';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { UsuarioModule } from './usuario/usuario.module';
 import { JuegoModule } from './juego/juego.module';
 import { ProductoModule } from './producto/producto.module';
@@ -15,12 +9,41 @@ import { VentaModule } from './venta/venta.module';
 import { VentaJuegoModule } from './venta-juego/venta-juego.module';
 import { IntercambioModule } from './intercambio/intercambio.module';
 import { IntercambioJuegoModule } from './intercambio-juego/intercambio-juego.module';
-import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 
+import { Usuario } from './entities/usuario.entity';
+import { Juego } from './entities/juego.entity';
+import { Producto } from './entities/producto.entity';
+import { Venta } from './entities/venta.entity';
+import { VentaJuego } from './entities/ventaJuego.entity';
+import { Intercambio } from './entities/intercambio.entity';
+import { IntercambioJuego } from './entities/intercambioJuego.entity';
+
 @Module({
-  imports: [UsuarioModule, JuegoModule, ProductoModule, VentaModule, VentaJuegoModule, IntercambioModule, IntercambioJuegoModule, PrismaModule, AuthModule],
-  controllers: [AppController],
-  providers: [AppService, UsuarioService, JuegoService, ProductoService, VentaService, VentaJuegoService, IntercambioService, IntercambioJuegoService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
+      entities: [
+        Usuario,
+        Producto,
+        Juego,
+        Venta,
+        VentaJuego,
+        Intercambio,
+        IntercambioJuego,
+      ],
+      synchronize: true,
+    }),
+    UsuarioModule,
+    JuegoModule,
+    ProductoModule,
+    VentaModule,
+    VentaJuegoModule,
+    IntercambioModule,
+    IntercambioJuegoModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}

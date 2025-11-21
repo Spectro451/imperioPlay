@@ -3,13 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, Rol, Usuario } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Usuario } from '../entities/usuario.entity';
+import { Rol } from '../entities/enums';
 
 @Injectable()
 export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Usuario)
+    private readonly usuarioRepo: Repository<Usuario>,
+  ) {}
 
   async create(data: {
     nombre: string;
@@ -18,37 +23,51 @@ export class UsuarioService {
     rol?: Rol;
   }): Promise<Usuario> {
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    return this.prisma.usuario.create({
-      data: {
-        nombre: data.nombre,
-        correo: data.correo,
-        password: hashedPassword,
-        rol: data.rol ?? Rol.cliente,
-      },
+    const usuario = this.usuarioRepo.create({
+      nombre: data.nombre,
+      correo: data.correo,
+      password: hashedPassword,
+      rol: data.rol ?? Rol.cliente,
+    });
+    return this.usuarioRepo.save(usuario);
+  }
+
+  findAll(): Promise<Usuario[]> {
+    return this.usuarioRepo.find({
+      relations: [
+        'intercambios',
+        'intercambiosCliente',
+        'compras',
+        'ventasVendedor',
+      ],
     });
   }
 
-  async findAll(): Promise<Usuario[]> {
-    return this.prisma.usuario.findMany();
-  }
-
-  async findOne(id: number): Promise<Usuario | null> {
-    return this.prisma.usuario.findUnique({
+  findOne(id: number): Promise<Usuario | null> {
+    return this.usuarioRepo.findOne({
       where: { id },
+      relations: [
+        'intercambios',
+        'intercambiosCliente',
+        'compras',
+        'ventasVendedor',
+      ],
     });
   }
 
-  async update(id: number, data: Prisma.UsuarioUpdateInput): Promise<Usuario> {
-    return this.prisma.usuario.update({
-      where: { id },
-      data,
-    });
+  async update(id: number, data: Partial<Usuario>): Promise<Usuario> {
+    const result = await this.usuarioRepo.update(id, data);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+    }
+    return this.findOne(id) as Promise<Usuario>;
   }
 
-  async remove(id: number): Promise<Usuario> {
-    return this.prisma.usuario.delete({
-      where: { id },
-    });
+  async remove(id: number): Promise<void> {
+    const result = await this.usuarioRepo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+    }
   }
 
   async changePassword(
@@ -56,9 +75,7 @@ export class UsuarioService {
     currentPassword: string,
     newPassword: string,
   ): Promise<Usuario> {
-    const user = await this.prisma.usuario.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.findOne(userId);
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     const passwordIguales = await bcrypt.compare(
@@ -70,9 +87,6 @@ export class UsuarioService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    return this.prisma.usuario.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
+    return this.update(userId, { password: hashedPassword });
   }
 }
