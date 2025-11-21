@@ -63,11 +63,14 @@ export class UsuarioService {
     return this.findOne(id) as Promise<Usuario>;
   }
 
-  async remove(id: number): Promise<void> {
-    const result = await this.usuarioRepo.delete(id);
-    if (result.affected === 0) {
+  async remove(id: number): Promise<Usuario> {
+    const user = await this.findOne(id);
+    if (!user)
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
-    }
+    if (!user.isActive) throw new BadRequestException('Usuario ya inactivo');
+
+    user.isActive = false;
+    return this.usuarioRepo.save(user);
   }
 
   async changePassword(
@@ -88,5 +91,23 @@ export class UsuarioService {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     return this.update(userId, { password: hashedPassword });
+  }
+
+  async restore(correo: string, password: string): Promise<Usuario> {
+    const user = await this.usuarioRepo.findOne({
+      where: { correo },
+    });
+
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (user.isActive)
+      throw new BadRequestException('La cuenta ya está activa');
+
+    const passwordValida = await bcrypt.compare(password, user.password);
+    if (!passwordValida)
+      throw new BadRequestException('Credenciales incorrectas');
+
+    user.isActive = true;
+
+    return this.usuarioRepo.save(user);
   }
 }

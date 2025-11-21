@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, IsNull, Not, Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
 
 @Injectable()
@@ -109,5 +109,14 @@ export class ProductoService {
     if (result.affected === 0) {
       throw new Error(`Producto con id ${id} no encontrado`);
     }
+  }
+  async findOfertas(): Promise<Producto[]> {
+    return this.productoRepo.find({
+      where: [
+        { descuento_porcentaje: Not(IsNull()) },
+        { descuento_fijo: Not(IsNull()) },
+      ],
+      relations: ['juegos'],
+    });
   }
 }

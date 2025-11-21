@@ -84,17 +84,13 @@ export class UsuarioController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async remove(@Param('id') id: string, @Request() req): Promise<void> {
+  async remove(@Param('id') id: string, @Request() req): Promise<Usuario> {
     const userId = Number(id);
     const requester = req.user;
 
-    if (requester.rol === 'admin') {
-      return this.usuarioService.remove(userId);
-    }
-
     if (requester.rol !== 'admin' && requester.id !== userId) {
       throw new ForbiddenException(
-        'No tienes permisos para borrar este usuario',
+        'No tienes permisos para inactivar este usuario',
       );
     }
     return this.usuarioService.remove(userId);
@@ -121,5 +117,12 @@ export class UsuarioController {
       body.currentPassword,
       body.newPassword,
     );
+  }
+  @Patch('restore')
+  async restore(
+    @Body() body: { correo: string; password: string },
+  ): Promise<Usuario> {
+    const { correo, password } = body;
+    return this.usuarioService.restore(correo, password);
   }
 }

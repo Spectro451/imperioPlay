@@ -31,4 +31,7 @@ export class Usuario {
 
   @OneToMany(() => Venta, (venta) => venta.vendedor)
   ventasVendedor: Venta[];
+
+  @Column({ default: true })
+  isActive: boolean;
 }
