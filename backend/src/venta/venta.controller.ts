@@ -48,7 +48,7 @@ export class VentaController {
 
   @Delete(':id')
   @Roles('admin')
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<{ mensaje: string }> {
     return this.ventaService.remove(Number(id));
   }
 }

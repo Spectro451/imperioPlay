@@ -38,7 +38,7 @@ export class VentaService {
     return total_base;
   }
 
-  create(data: Partial<Venta>): Promise<Venta> {
+  async create(data: Partial<Venta>): Promise<Venta> {
     // 1️⃣ Validar que el total venga definido
     if (data.total === undefined) {
       throw new Error('El total es obligatorio');
@@ -56,7 +56,11 @@ export class VentaService {
     if (data.descuento_fijo) data.descuento_porcentaje = undefined;
 
     // 4️⃣ Crear la instancia de venta (aún no guardada en DB)
-    const venta = this.ventaRepo.create(data);
+    const venta = this.ventaRepo.create({
+      ...data,
+      vendedor: { id: data.vendedor_id }, // siempre debe existir
+      ...(data.cliente_id ? { cliente: { id: data.cliente_id } } : {}), // solo si hay cliente
+    });
 
     // 5️⃣ Aquí deberías:
     //    🔹 Guardar la venta en DB: await this.ventaRepo.save(venta)
@@ -70,7 +74,8 @@ export class VentaService {
     //    🔹 Esto asegura que cada venta tiene sus productos y stock actualizados correctamente
 
     // 6️⃣ Finalmente devolver la venta ya guardada en DB
-    return this.ventaRepo.save(venta);
+    await this.ventaRepo.save(venta);
+    return venta;
   }
 
   findAll(): Promise<Venta[]> {
@@ -103,10 +108,11 @@ export class VentaService {
     return this.findOne(id) as Promise<Venta>;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number): Promise<{ mensaje: string }> {
     const result = await this.ventaRepo.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Venta con id ${id} no encontrada`);
     }
+    return { mensaje: `Venta con id ${id} eliminada correctamente` };
   }
 }
