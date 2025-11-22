@@ -16,6 +16,7 @@ export class UsuarioService {
     private readonly usuarioRepo: Repository<Usuario>,
   ) {}
 
+  //crear usuario, por default cliente
   async create(data: {
     nombre: string;
     correo: string;
@@ -32,6 +33,7 @@ export class UsuarioService {
     return this.usuarioRepo.save(usuario);
   }
 
+  //traer todos los usuarios
   findAll(): Promise<Usuario[]> {
     return this.usuarioRepo.find({
       relations: [
@@ -43,6 +45,7 @@ export class UsuarioService {
     });
   }
 
+  //llamar a solo un usuario
   findOne(id: number): Promise<Usuario | null> {
     return this.usuarioRepo.findOne({
       where: { id },
@@ -55,6 +58,7 @@ export class UsuarioService {
     });
   }
 
+  //actualizar usuario
   async update(id: number, data: Partial<Usuario>): Promise<Usuario> {
     const result = await this.usuarioRepo.update(id, data);
     if (result.affected === 0) {
@@ -63,6 +67,7 @@ export class UsuarioService {
     return this.findOne(id) as Promise<Usuario>;
   }
 
+  //desactivar cuenta usuario
   async remove(id: number): Promise<Usuario> {
     const user = await this.findOne(id);
     if (!user)
@@ -73,6 +78,7 @@ export class UsuarioService {
     return this.usuarioRepo.save(user);
   }
 
+  //cambiar contraseña (por si la pierde o coso)
   async changePassword(
     userId: number,
     currentPassword: string,
@@ -93,6 +99,7 @@ export class UsuarioService {
     return this.update(userId, { password: hashedPassword });
   }
 
+  //rehabilitar cuenta en base a contraseña y correo
   async restore(correo: string, password: string): Promise<Usuario> {
     const user = await this.usuarioRepo.findOne({
       where: { correo },
