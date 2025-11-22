@@ -6,7 +6,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { JuegoModule } from './juego/juego.module';
 import { ProductoModule } from './producto/producto.module';
 import { VentaModule } from './venta/venta.module';
-import { VentaJuegoModule } from './venta-juego/venta-juego.module';
+import { VentaProductoModule } from './ventaProducto/ventaProducto.module';
 import { IntercambioModule } from './intercambio/intercambio.module';
 import { IntercambioJuegoModule } from './intercambio-juego/intercambio-juego.module';
 import { AuthModule } from './auth/auth.module';
@@ -15,7 +15,7 @@ import { Usuario } from './entities/usuario.entity';
 import { Juego } from './entities/juego.entity';
 import { Producto } from './entities/producto.entity';
 import { Venta } from './entities/venta.entity';
-import { VentaJuego } from './entities/ventaJuego.entity';
+import { VentaProducto } from './entities/ventaProducto';
 import { Intercambio } from './entities/intercambio.entity';
 import { IntercambioJuego } from './entities/intercambioJuego.entity';
 import { AppController } from './app.controller';
@@ -32,7 +32,7 @@ import { AppService } from './app.service';
         Producto,
         Juego,
         Venta,
-        VentaJuego,
+        VentaProducto,
         Intercambio,
         IntercambioJuego,
       ],
@@ -42,7 +42,7 @@ import { AppService } from './app.service';
     JuegoModule,
     ProductoModule,
     VentaModule,
-    VentaJuegoModule,
+    VentaProductoModule,
     IntercambioModule,
     IntercambioJuegoModule,
     AuthModule,

@@ -6,7 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Usuario } from './usuario.entity';
-import { VentaJuego } from './ventaJuego.entity';
+import { VentaProducto } from './ventaProducto';
 import { metodoPago } from './enums';
 
 @Entity()
@@ -41,6 +41,8 @@ export class Venta {
   @ManyToOne(() => Usuario, (usuario) => usuario.ventasVendedor)
   vendedor: Usuario;
 
-  @OneToMany(() => VentaJuego, (ventaJuego) => ventaJuego.venta)
-  ventaJuegos: VentaJuego[];
+  @OneToMany(() => VentaProducto, (ventaProducto) => ventaProducto.venta, {
+    cascade: true,
+  })
+  ventaProducto: VentaProducto[];
 }

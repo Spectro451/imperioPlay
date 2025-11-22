@@ -6,7 +6,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Producto } from './producto.entity';
-import { VentaJuego } from './ventaJuego.entity';
 import { IntercambioJuego } from './intercambioJuego.entity';
 import { Consola, estadoJuego } from './enums';
 
@@ -17,6 +16,9 @@ export class Juego {
 
   @Column()
   productoId: number;
+
+  @Column()
+  stock: number;
 
   @Column({ type: 'enum', enum: Consola })
   consola: Consola;
@@ -32,9 +34,6 @@ export class Juego {
 
   @ManyToOne(() => Producto, (producto) => producto.juegos)
   producto: Producto;
-
-  @OneToMany(() => VentaJuego, (ventaJuego) => ventaJuego.juego)
-  ventaJuegos: VentaJuego[];
 
   @OneToMany(
     () => IntercambioJuego,

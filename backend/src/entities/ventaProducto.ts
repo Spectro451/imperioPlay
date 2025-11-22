@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Venta } from './venta.entity';
-import { Juego } from './juego.entity';
+import { Producto } from './producto.entity';
 
 @Entity()
-export class VentaJuego {
+export class VentaProducto {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -11,7 +11,7 @@ export class VentaJuego {
   venta_id: number;
 
   @Column()
-  juego_id: number;
+  producto_id: number;
 
   @Column()
   cantidad: number;
@@ -19,9 +19,9 @@ export class VentaJuego {
   @Column()
   precio_unitario: number;
 
-  @ManyToOne(() => Juego, (juego) => juego.ventaJuegos)
-  juego: Juego;
+  @ManyToOne(() => Producto, (producto) => producto.ventaProducto)
+  producto: Producto;
 
-  @ManyToOne(() => Venta, (venta) => venta.ventaJuegos)
+  @ManyToOne(() => Venta, (venta) => venta.ventaProducto)
   venta: Venta;
 }
