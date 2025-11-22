@@ -93,19 +93,18 @@ export class ProductoService {
 
   //actualizar y recalcular precio
   async update(id: number, data: Partial<Producto>): Promise<Producto> {
-    if (data.precio_base !== undefined) {
-      data.precio_final = this.calcularPrecioFinal(
-        data.precio_base,
-        data.descuento_porcentaje,
-        data.descuento_fijo,
-      );
+    const producto = await this.findOne(id);
+    if (!producto) throw new Error(`Producto con id ${id} no encontrado`);
+
+    const { descuento_porcentaje, descuento_fijo, ...restoDatos } = data;
+
+    if (restoDatos.precio_base !== undefined) {
+      producto.precio_base = restoDatos.precio_base;
+      producto.precio_final = producto.precio_base;
     }
 
-    const result = await this.productoRepo.update(id, data);
-    if (result.affected === 0) {
-      throw new Error(`Producto con id ${id} no encontrado`);
-    }
-    return this.findOne(id) as Promise<Producto>;
+    Object.assign(producto, restoDatos);
+    return this.productoRepo.save(producto);
   }
 
   //cambiar solo oferta y recalcular precio

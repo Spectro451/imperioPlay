@@ -64,7 +64,11 @@ export class ProductoController {
     @Param('id') id: string,
     @Body() data: Partial<Producto>,
   ): Promise<Producto> {
-    return this.productoService.update(Number(id), data);
+    try {
+      return await this.productoService.update(Number(id), data);
+    } catch (err) {
+      throw new NotFoundException(err.message);
+    }
   }
 
   @Patch(':id/oferta')
