@@ -9,14 +9,39 @@ import {
 } from '@nestjs/common';
 import { JuegoService } from './juego.service';
 import { Juego } from '../entities/juego.entity';
+import { ProductoService } from 'src/producto/producto.service';
+import { Producto } from 'src/entities/producto.entity';
+import { Consola, estadoJuego } from 'src/entities/enums';
 
 @Controller('juego')
 export class JuegoController {
-  constructor(private readonly juegoService: JuegoService) {}
+  constructor(
+    private readonly juegoService: JuegoService,
+    private readonly productoService: ProductoService,
+  ) {}
 
   @Post()
-  async create(@Body() data: Partial<Juego>): Promise<Juego> {
-    return this.juegoService.create(data);
+  async create(
+    @Body()
+    data: {
+      producto: Partial<Producto>;
+      juego: {
+        consola: Consola;
+        estado: estadoJuego;
+        cantidad: number;
+        fotos?: string[];
+      };
+    },
+  ) {
+    const producto = await this.productoService.crearProductoSiNoExiste(
+      data.producto,
+    );
+    const juego = await this.juegoService.crearJuegoSiNoExiste(
+      producto,
+      data.juego,
+    );
+
+    return { producto, juego };
   }
 
   @Get()

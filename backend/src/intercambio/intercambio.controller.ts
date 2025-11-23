@@ -6,17 +6,47 @@ import {
   Param,
   Post,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { IntercambioService } from './intercambio.service';
 import { Intercambio } from '../entities/intercambio.entity';
+import { Producto } from 'src/entities/producto.entity';
+import { Consola, estadoJuego, metodoPago } from 'src/entities/enums';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('intercambio')
 export class IntercambioController {
   constructor(private readonly intercambioService: IntercambioService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() data: Partial<Intercambio>): Promise<Intercambio> {
-    return this.intercambioService.create(data);
+  async crearIntercambio(
+    @Req() req,
+    @Body()
+    body: {
+      juegosSolicitadosData: Array<{ juegoId: number; cantidad?: number }>;
+      juegosClienteData: {
+        producto: Partial<Producto>;
+        consola: Consola;
+        estado?: estadoJuego;
+        cantidad: number;
+        fotos?: string[];
+      }[];
+      clienteId?: number;
+      dinero_extra?: number;
+      metodo_pago?: metodoPago;
+    },
+  ) {
+    const vendedorId = req.user.id;
+    return this.intercambioService.intercambio(
+      vendedorId,
+      body.juegosSolicitadosData,
+      body.juegosClienteData,
+      body.clienteId,
+      body.dinero_extra ?? 0,
+      body.metodo_pago,
+    );
   }
 
   @Get()

@@ -36,24 +36,33 @@ export class JuegoService {
     return this.juegoRepo.save(juego);
   }
 
-  async crearJuegoUsadoSiNoExiste(
+  async crearJuegoSiNoExiste(
     producto: Producto,
-    dataJuegoCliente: { consola: Consola; cantidad: number; fotos?: string[] },
+    dataJuegoCliente: {
+      consola: Consola;
+      estado?: estadoJuego; // opcional
+      stock?: number; // opcional
+      cantidad?: number; // para sumarlo si existe
+      fotos?: string[];
+    },
   ): Promise<Juego> {
+    const estado = dataJuegoCliente.estado ?? estadoJuego.usado;
+    const cantidad = dataJuegoCliente.cantidad ?? dataJuegoCliente.stock ?? 1;
+
     const juegoExistente = producto.juegos.find(
-      (j) => j.consola === dataJuegoCliente.consola && j.estado === 'usado',
+      (j) => j.consola === dataJuegoCliente.consola && j.estado === estado,
     );
 
     if (juegoExistente) {
-      juegoExistente.stock += dataJuegoCliente.cantidad;
+      juegoExistente.stock += cantidad;
       return this.juegoRepo.save(juegoExistente);
     }
 
     const nuevoJuego = this.juegoRepo.create({
       producto,
       consola: dataJuegoCliente.consola,
-      estado: estadoJuego.usado,
-      stock: dataJuegoCliente.cantidad,
+      estado,
+      stock: cantidad,
       tier: this.calcularTier(producto.precio_final),
       fotos: dataJuegoCliente.fotos || [],
     });
@@ -68,14 +77,14 @@ export class JuegoService {
 
   findAll(): Promise<Juego[]> {
     return this.juegoRepo.find({
-      relations: ['producto', 'ventaJuegos', 'intercambioJuegos'],
+      relations: ['producto', 'intercambioJuegos'],
     });
   }
 
   findOne(id: number): Promise<Juego | null> {
     return this.juegoRepo.findOne({
       where: { id },
-      relations: ['producto', 'ventaJuegos', 'intercambioJuegos'],
+      relations: ['producto', 'intercambioJuegos'],
     });
   }
 

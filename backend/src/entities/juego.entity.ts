@@ -30,7 +30,7 @@ export class Juego {
   tier: number;
 
   @Column('text', { array: true })
-  fotos: string[];
+  fotos?: string[];
 
   @ManyToOne(() => Producto, (producto) => producto.juegos)
   producto: Producto;

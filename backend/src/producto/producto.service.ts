@@ -95,15 +95,18 @@ export class ProductoService {
   async update(id: number, data: Partial<Producto>): Promise<Producto> {
     const producto = await this.findOne(id);
     if (!producto) throw new Error(`Producto con id ${id} no encontrado`);
+    Object.assign(producto, data);
 
-    const { descuento_porcentaje, descuento_fijo, ...restoDatos } = data;
-
-    if (restoDatos.precio_base !== undefined) {
-      producto.precio_base = restoDatos.precio_base;
-      producto.precio_final = producto.precio_base;
+    if (producto.descuento_porcentaje && producto.descuento_fijo) {
+      throw new Error('Solo puede haber un descuento a la vez');
     }
 
-    Object.assign(producto, restoDatos);
+    producto.precio_final = this.calcularPrecioFinal(
+      producto.precio_base,
+      producto.descuento_porcentaje,
+      producto.descuento_fijo,
+    );
+
     return this.productoRepo.save(producto);
   }
 

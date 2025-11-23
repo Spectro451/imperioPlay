@@ -27,7 +27,7 @@ export class ProductoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
   async create(@Body() data: Partial<Producto>): Promise<Producto> {
-    return this.productoService.create(data);
+    return this.productoService.crearProductoSiNoExiste(data);
   }
 
   @Get()
@@ -75,7 +75,7 @@ export class ProductoController {
   async changeOferta(
     @Param('id') id: string,
     @Body()
-    descuentos: { descuento_porcetaje?: number; descuento_fijo?: number },
+    descuentos: { descuento_porcentaje?: number; descuento_fijo?: number },
   ): Promise<Producto> {
     try {
       return await this.productoService.modificarOferta(Number(id), descuentos);
