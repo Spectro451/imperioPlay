@@ -27,7 +27,7 @@ export class Juego {
   estado: estadoJuego;
 
   @Column()
-  tier: string;
+  tier: number;
 
   @Column('text', { array: true })
   fotos: string[];

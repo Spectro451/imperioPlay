@@ -172,4 +172,14 @@ export class ProductoService {
 
     return { productos, total, totalPaginas };
   }
+  async crearProductoSiNoExiste(data: Partial<Producto>): Promise<Producto> {
+    const existing = await this.productoRepo.findOne({
+      where: { nombre: data.nombre },
+      relations: ['juegos'],
+    });
+    if (existing) {
+      return existing;
+    }
+    return this.create(data);
+  }
 }
