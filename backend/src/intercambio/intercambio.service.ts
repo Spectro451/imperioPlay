@@ -92,11 +92,11 @@ export class IntercambioService {
         {
           consola: data.consola,
           estado: data.estado ?? estadoJuego.usado,
-          cantidad: data.cantidad,
+          stock: data.cantidad,
           fotos: data.fotos,
-          precio_base: data.precio_base, // obligatorio
-          descuento_porcentaje: data.descuento_porcentaje, // opcional
-          descuento_fijo: data.descuento_fijo, // opcional
+          precio_base: data.precio_base,
+          descuento_porcentaje: data.descuento_porcentaje,
+          descuento_fijo: data.descuento_fijo,
         },
       );
       juegosCliente.push({

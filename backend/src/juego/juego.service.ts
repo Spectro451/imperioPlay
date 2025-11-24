@@ -96,7 +96,6 @@ export class JuegoService {
       consola: Consola;
       estado?: estadoJuego;
       stock?: number;
-      cantidad?: number;
       fotos?: string[];
       precio_base: number;
       descuento_porcentaje?: number;
@@ -104,14 +103,15 @@ export class JuegoService {
     },
   ): Promise<Juego> {
     const estado = dataJuegoCliente.estado ?? estadoJuego.usado;
-    const cantidad = dataJuegoCliente.cantidad ?? dataJuegoCliente.stock ?? 1;
+    const stock = dataJuegoCliente.stock ?? 1;
+    const juegos = producto.juegos ?? [];
 
-    const juegoExistente = producto.juegos.find(
+    const juegoExistente = juegos.find(
       (j) => j.consola === dataJuegoCliente.consola && j.estado === estado,
     );
 
     if (juegoExistente) {
-      juegoExistente.stock += cantidad;
+      juegoExistente.stock += stock;
       return this.juegoRepo.save(juegoExistente);
     }
 
@@ -130,7 +130,7 @@ export class JuegoService {
       consola: dataJuegoCliente.consola,
       precio_base: dataJuegoCliente.precio_base,
       estado,
-      stock: cantidad,
+      stock,
       precio_final,
       tier: this.calcularTier(precio_final),
       fotos: dataJuegoCliente.fotos || [],

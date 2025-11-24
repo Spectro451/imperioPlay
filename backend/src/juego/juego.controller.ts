@@ -36,7 +36,7 @@ export class JuegoController {
       juego: {
         consola: Consola;
         estado: estadoJuego;
-        cantidad: number;
+        stock?: number;
         fotos?: string[];
         precio_base: number;
         descuento_porcentaje?: number;

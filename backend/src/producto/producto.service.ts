@@ -130,9 +130,9 @@ export class ProductoService {
       where: { nombre: data.nombre },
       relations: ['juegos'],
     });
-    if (existing) {
-      return existing;
-    }
-    return this.create(data);
+    if (existing) return existing;
+
+    const producto = this.productoRepo.create(data);
+    return this.productoRepo.save(producto);
   }
 }
