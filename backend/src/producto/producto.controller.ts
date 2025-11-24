@@ -17,7 +17,7 @@ import { Producto } from '../entities/producto.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { tipoProducto } from 'src/entities/enums';
+import { Consola, tipoProducto } from 'src/entities/enums';
 
 @Controller('producto')
 export class ProductoController {
@@ -32,23 +32,41 @@ export class ProductoController {
 
   @Get()
   findAll(
-    @Query() query: { nombre?: string; tipo?: tipoProducto; page?: string },
+    @Query()
+    query: {
+      nombre?: string;
+      tipo?: tipoProducto;
+      page?: string;
+      consola?: Consola;
+      orden?: string;
+    },
   ) {
     return this.productoService.findAll({
       nombre: query.nombre,
       tipo: query.tipo as tipoProducto,
       page: query.page ? parseInt(query.page) : undefined,
+      consola: query.consola as Consola | undefined,
+      orden: query.orden as 'id' | 'abc' | undefined,
     });
   }
 
   @Get('/ofertas')
   findOfertas(
-    @Query() query: { nombre?: string; tipo?: tipoProducto; page?: string },
+    @Query()
+    query: {
+      nombre?: string;
+      tipo?: tipoProducto;
+      page?: string;
+      consola?: Consola;
+      orden?: string;
+    },
   ) {
     return this.productoService.findOfertas({
       nombre: query.nombre,
       tipo: query.tipo as tipoProducto,
       page: query.page ? parseInt(query.page) : undefined,
+      consola: query.consola as Consola | undefined,
+      orden: query.orden as 'id' | 'abc' | undefined,
     });
   }
 
@@ -68,19 +86,6 @@ export class ProductoController {
       return await this.productoService.update(Number(id), data);
     } catch (err) {
       throw new NotFoundException(err.message);
-    }
-  }
-
-  @Patch(':id/oferta')
-  async changeOferta(
-    @Param('id') id: string,
-    @Body()
-    descuentos: { descuento_porcentaje?: number; descuento_fijo?: number },
-  ): Promise<Producto> {
-    try {
-      return await this.productoService.modificarOferta(Number(id), descuentos);
-    } catch (err) {
-      throw new BadRequestException(err.message);
     }
   }
 

@@ -32,6 +32,9 @@ export class IntercambioController {
         estado?: estadoJuego;
         cantidad: number;
         fotos?: string[];
+        precio_base: number;
+        descuento_porcentaje?: number;
+        descuento_fijo?: number;
       }[];
       clienteId?: number;
       dinero_extra?: number;

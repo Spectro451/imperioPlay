@@ -11,24 +11,12 @@ export class Producto {
   @Column()
   nombre: string;
 
-  @Column()
-  precio_base: number;
-
   @Column({ type: 'enum', enum: tipoProducto })
   tipo: tipoProducto;
-
-  @Column({ nullable: true })
-  descuento_porcentaje?: number;
-
-  @Column({ nullable: true })
-  descuento_fijo?: number;
 
   @OneToMany(() => Juego, (juego) => juego.producto, { cascade: true })
   juegos: Juego[];
 
   @OneToMany(() => VentaProducto, (ventaProducto) => ventaProducto.producto)
   ventaProducto: VentaProducto[];
-
-  @Column({ type: 'int' })
-  precio_final: number;
 }

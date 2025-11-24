@@ -60,6 +60,9 @@ export class IntercambioService {
       estado?: estadoJuego;
       cantidad: number;
       fotos?: string[];
+      precio_base: number;
+      descuento_porcentaje?: number;
+      descuento_fijo?: number;
     }[],
     clienteId?: number,
     dinero_extra: number = 0,
@@ -91,6 +94,9 @@ export class IntercambioService {
           estado: data.estado ?? estadoJuego.usado,
           cantidad: data.cantidad,
           fotos: data.fotos,
+          precio_base: data.precio_base, // obligatorio
+          descuento_porcentaje: data.descuento_porcentaje, // opcional
+          descuento_fijo: data.descuento_fijo, // opcional
         },
       );
       juegosCliente.push({

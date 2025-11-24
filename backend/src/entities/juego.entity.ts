@@ -27,6 +27,18 @@ export class Juego {
   estado: estadoJuego;
 
   @Column()
+  precio_base: number;
+
+  @Column({ type: 'int' })
+  precio_final: number;
+
+  @Column({ nullable: true })
+  descuento_porcentaje?: number;
+
+  @Column({ nullable: true })
+  descuento_fijo?: number;
+
+  @Column()
   tier: number;
 
   @Column('text', { array: true })

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Juego } from '../entities/juego.entity';
@@ -25,6 +25,37 @@ export class JuegoService {
     return tiers[tiers.length - 1].tier;
   }
 
+  //funcion para recalcular el precio final del producto en base a que descuento tiene
+  private calcularPrecioFinal(
+    precio_base: number,
+    descuento_porcentaje?: number,
+    descuento_fijo?: number,
+  ): number {
+    descuento_porcentaje =
+      descuento_porcentaje === 0 ? undefined : descuento_porcentaje;
+    descuento_fijo = descuento_fijo === 0 ? undefined : descuento_fijo;
+
+    if (descuento_porcentaje && descuento_fijo) {
+      throw new Error('Solo puede haber un descuento a la vez');
+    }
+
+    if (descuento_porcentaje) {
+      if (descuento_porcentaje > 100) {
+        throw new Error('El descuento porcentual no puede ser mayor al 100%');
+      }
+      return Math.round(precio_base * (1 - descuento_porcentaje / 100));
+    }
+
+    if (descuento_fijo) {
+      if (descuento_fijo > precio_base) {
+        throw new Error('El descuento fijo no puede ser mayor al precio base');
+      }
+      return precio_base - descuento_fijo;
+    }
+
+    return precio_base;
+  }
+
   async restarStockJuego(juego: Juego, cantidad: number): Promise<Juego> {
     if (juego.stock < cantidad) {
       throw new Error(
@@ -36,14 +67,40 @@ export class JuegoService {
     return this.juegoRepo.save(juego);
   }
 
+  async modificarOferta(
+    id: number,
+    descuentos: { descuento_porcentaje?: number; descuento_fijo?: number },
+  ): Promise<Juego> {
+    const juego = await this.findOne(id);
+    if (!juego) throw new Error(`Juego con id ${id} no encontrado`);
+
+    Object.assign(juego, descuentos);
+
+    if (juego.descuento_porcentaje) juego.descuento_fijo = 0;
+    if (juego.descuento_fijo) juego.descuento_porcentaje = 0;
+
+    juego.precio_final = this.calcularPrecioFinal(
+      juego.precio_base,
+      juego.descuento_porcentaje,
+      juego.descuento_fijo,
+    );
+
+    juego.tier = this.calcularTier(juego.precio_final);
+
+    return this.juegoRepo.save(juego);
+  }
+
   async crearJuegoSiNoExiste(
     producto: Producto,
     dataJuegoCliente: {
       consola: Consola;
-      estado?: estadoJuego; // opcional
-      stock?: number; // opcional
-      cantidad?: number; // para sumarlo si existe
+      estado?: estadoJuego;
+      stock?: number;
+      cantidad?: number;
       fotos?: string[];
+      precio_base: number;
+      descuento_porcentaje?: number;
+      descuento_fijo?: number;
     },
   ): Promise<Juego> {
     const estado = dataJuegoCliente.estado ?? estadoJuego.usado;
@@ -58,13 +115,27 @@ export class JuegoService {
       return this.juegoRepo.save(juegoExistente);
     }
 
+    if (dataJuegoCliente.descuento_porcentaje)
+      dataJuegoCliente.descuento_fijo = 0;
+    if (dataJuegoCliente.descuento_fijo)
+      dataJuegoCliente.descuento_porcentaje = 0;
+
+    const precio_final = this.calcularPrecioFinal(
+      dataJuegoCliente.precio_base,
+      dataJuegoCliente.descuento_porcentaje,
+      dataJuegoCliente.descuento_fijo,
+    );
     const nuevoJuego = this.juegoRepo.create({
       producto,
       consola: dataJuegoCliente.consola,
+      precio_base: dataJuegoCliente.precio_base,
       estado,
       stock: cantidad,
-      tier: this.calcularTier(producto.precio_final),
+      precio_final,
+      tier: this.calcularTier(precio_final),
       fotos: dataJuegoCliente.fotos || [],
+      descuento_porcentaje: dataJuegoCliente.descuento_porcentaje,
+      descuento_fijo: dataJuegoCliente.descuento_fijo,
     });
 
     return this.juegoRepo.save(nuevoJuego);
@@ -89,11 +160,49 @@ export class JuegoService {
   }
 
   async update(id: number, data: Partial<Juego>): Promise<Juego> {
-    const result = await this.juegoRepo.update(id, data);
-    if (result.affected === 0) {
-      throw new Error(`Juego con id ${id} no encontrado`);
+    const juego = await this.findOne(id);
+    if (!juego) throw new NotFoundException(`Juego con id ${id} no encontrado`);
+
+    const originalConsola = juego.consola;
+    const originalEstado = juego.estado;
+
+    Object.assign(juego, data);
+
+    if (
+      data.descuento_porcentaje !== undefined ||
+      data.descuento_fijo !== undefined
+    ) {
+      if (juego.descuento_porcentaje) juego.descuento_fijo = 0;
+      if (juego.descuento_fijo) juego.descuento_porcentaje = 0;
+
+      juego.precio_final = this.calcularPrecioFinal(
+        juego.precio_base,
+        juego.descuento_porcentaje,
+        juego.descuento_fijo,
+      );
+      juego.tier = this.calcularTier(juego.precio_final);
     }
-    return this.findOne(id) as Promise<Juego>;
+
+    if (
+      (data.estado && data.estado !== originalEstado) ||
+      (data.consola && data.consola !== originalConsola)
+    ) {
+      const juegoExistente = await this.juegoRepo.findOne({
+        where: {
+          productoId: juego.productoId,
+          consola: juego.consola,
+          estado: juego.estado,
+        },
+      });
+
+      if (juegoExistente && juegoExistente.id !== juego.id) {
+        juegoExistente.stock += juego.stock;
+        await this.juegoRepo.remove(juego);
+        return this.juegoRepo.save(juegoExistente);
+      }
+    }
+
+    return this.juegoRepo.save(juego);
   }
 
   async remove(id: number): Promise<void> {
