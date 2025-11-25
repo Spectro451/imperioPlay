@@ -140,7 +140,9 @@ export class IntercambioService {
     const intercambio = this.intercambioRepo.create({
       fecha: new Date(),
       vendedor_id: vendedorId,
+      vendedor: { id: vendedorId },
       cliente_id: clienteId ?? undefined,
+      cliente: clienteId ? { id: clienteId } : undefined,
       dinero_extra: dinero_extra >= faltanteValorTotal ? faltanteValorTotal : 0,
       metodo_pago: faltanteValorTotal > 0 ? metodo_pago : undefined,
     });
