@@ -4,9 +4,10 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Usuario } from './usuario.entity';
-import { VentaProducto } from './ventaProducto';
+import { VentaDetalle } from './ventaDetalle';
 import { metodoPago } from './enums';
 
 @Entity()
@@ -19,6 +20,9 @@ export class Venta {
 
   @Column({ type: 'enum', enum: metodoPago })
   metodo_pago: metodoPago;
+
+  @Column({ type: 'numeric' })
+  monto_pagado: number;
 
   @Column()
   vendedor_id: number;
@@ -36,13 +40,15 @@ export class Venta {
   descuento_fijo?: number;
 
   @ManyToOne(() => Usuario, (usuario) => usuario.compras)
+  @JoinColumn({ name: 'cliente_id' })
   cliente: Usuario;
 
   @ManyToOne(() => Usuario, (usuario) => usuario.ventasVendedor)
+  @JoinColumn({ name: 'vendedor_id' })
   vendedor: Usuario;
 
-  @OneToMany(() => VentaProducto, (ventaProducto) => ventaProducto.venta, {
+  @OneToMany(() => VentaDetalle, (detalle) => detalle.venta, {
     cascade: true,
   })
-  ventaProducto: VentaProducto[];
+  VentaDetalle: VentaDetalle[];
 }

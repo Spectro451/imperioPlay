@@ -8,6 +8,7 @@ import {
 import { Producto } from './producto.entity';
 import { IntercambioJuego } from './intercambioJuego.entity';
 import { Consola, estadoJuego } from './enums';
+import { VentaDetalle } from './ventaDetalle';
 
 @Entity()
 export class Juego {

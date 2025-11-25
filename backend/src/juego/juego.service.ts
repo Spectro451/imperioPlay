@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Juego } from '../entities/juego.entity';
@@ -58,7 +62,7 @@ export class JuegoService {
 
   async restarStockJuego(juego: Juego, cantidad: number): Promise<Juego> {
     if (juego.stock < cantidad) {
-      throw new Error(
+      throw new BadRequestException(
         `No hay suficiente stock para el juego ${juego.id}. Stock disponible: ${juego.stock}`,
       );
     }
@@ -148,14 +152,14 @@ export class JuegoService {
 
   findAll(): Promise<Juego[]> {
     return this.juegoRepo.find({
-      relations: ['producto', 'intercambioJuegos'],
+      relations: ['producto'],
     });
   }
 
   findOne(id: number): Promise<Juego | null> {
     return this.juegoRepo.findOne({
       where: { id },
-      relations: ['producto', 'intercambioJuegos'],
+      relations: ['producto'],
     });
   }
 

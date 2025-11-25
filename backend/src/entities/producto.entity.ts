@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Juego } from './juego.entity';
-import { VentaProducto } from './ventaProducto';
+
 import { tipoProducto } from './enums';
 
 @Entity()
@@ -16,7 +16,4 @@ export class Producto {
 
   @OneToMany(() => Juego, (juego) => juego.producto, { cascade: true })
   juegos: Juego[];
-
-  @OneToMany(() => VentaProducto, (ventaProducto) => ventaProducto.producto)
-  ventaProducto: VentaProducto[];
 }

@@ -9,6 +9,7 @@ import { Consola, estadoJuego, metodoPago } from 'src/entities/enums';
 import { JuegoService } from 'src/juego/juego.service';
 import { ProductoService } from 'src/producto/producto.service';
 import { IntercambioJuegoService } from 'src/intercambio-juego/intercambio-juego.service';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class IntercambioService {
@@ -169,17 +170,19 @@ export class IntercambioService {
     return this.intercambioRepo.save(intercambio);
   }
 
-  findAll(): Promise<Intercambio[]> {
-    return this.intercambioRepo.find({
+  async findAll(): Promise<Intercambio[]> {
+    const intercambio = await this.intercambioRepo.find({
       relations: ['cliente', 'vendedor', 'intercambioJuegos'],
     });
+    return instanceToPlain(intercambio) as Intercambio[];
   }
 
-  findOne(id: number): Promise<Intercambio | null> {
-    return this.intercambioRepo.findOne({
+  async findOne(id: number): Promise<Intercambio | null> {
+    const intercambio = await this.intercambioRepo.findOne({
       where: { id },
       relations: ['cliente', 'vendedor', 'intercambioJuegos'],
     });
+    return intercambio ? (instanceToPlain(intercambio) as Intercambio) : null;
   }
 
   async update(id: number, data: Partial<Intercambio>): Promise<Intercambio> {

@@ -1,13 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Venta } from '../entities/venta.entity';
+import { JuegoService } from 'src/juego/juego.service';
+import { metodoPago, tipoProducto } from 'src/entities/enums';
+import { VentaDetalle } from 'src/entities/ventaDetalle';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class VentaService {
   constructor(
     @InjectRepository(Venta)
     private readonly ventaRepo: Repository<Venta>,
+    private readonly juegoService: JuegoService,
   ) {}
 
   private calcularTotalFinal(
@@ -38,68 +47,95 @@ export class VentaService {
     return total_base;
   }
 
-  async create(data: Partial<Venta>): Promise<Venta> {
-    // 1️⃣ Validar que el total venga definido
-    if (data.total === undefined) {
-      throw new Error('El total es obligatorio');
+  async create(
+    vendedor_id: number,
+    data: {
+      cliente_id?: number;
+      descuento_porcentaje?: number;
+      descuento_fijo?: number;
+      metodo_pago: metodoPago;
+      monto_pagado: number;
+      items: { id: number; tipo: tipoProducto; cantidad: number }[];
+    },
+  ): Promise<Venta> {
+    let total_base = 0;
+    const ventaDetalles: VentaDetalle[] = [];
+    const juegosMap = new Map<number, any>();
+
+    for (const item of data.items) {
+      if (item.tipo !== tipoProducto.juego) {
+        throw new Error(`Tipo de producto ${item.tipo} no implementado`);
+      }
+
+      const juego = await this.juegoService.findOne(item.id);
+      if (!juego)
+        throw new BadRequestException(
+          `No se encontró el juego con id ${item.id}`,
+        );
+
+      juegosMap.set(item.id, juego);
+
+      const subtotal = juego.precio_final * item.cantidad;
+      total_base += subtotal;
+
+      ventaDetalles.push(
+        Object.assign(new VentaDetalle(), {
+          item_id: juego.id,
+          tipo: item.tipo,
+          cantidad: item.cantidad,
+          precio_unitario: juego.precio_final,
+          subtotal,
+        }),
+      );
     }
 
-    // 2️⃣ Calcular el total final de la venta con descuentos si aplica
-    data.total = this.calcularTotalFinal(
-      data.total,
+    const total_final = this.calcularTotalFinal(
+      total_base,
       data.descuento_porcentaje,
       data.descuento_fijo,
     );
 
-    // 3️⃣ Normalizar descuentos: solo uno puede aplicarse
-    if (data.descuento_porcentaje) data.descuento_fijo = undefined;
-    if (data.descuento_fijo) data.descuento_porcentaje = undefined;
+    if (data.monto_pagado < total_final) {
+      throw new BadRequestException(
+        `Monto pagado insuficiente: se esperaba ${total_final}, pero se recibieron ${data.monto_pagado}`,
+      );
+    }
 
-    // 4️⃣ Crear la instancia de venta (aún no guardada en DB)
+    for (const item of data.items) {
+      const juego = juegosMap.get(item.id);
+      await this.juegoService.restarStockJuego(juego, item.cantidad);
+    }
+
     const venta = this.ventaRepo.create({
-      ...data,
-      vendedor: { id: data.vendedor_id }, // siempre debe existir
-      ...(data.cliente_id ? { cliente: { id: data.cliente_id } } : {}), // solo si hay cliente
+      fecha: new Date(),
+      vendedor_id,
+      cliente_id: data.cliente_id,
+      descuento_porcentaje: data.descuento_porcentaje,
+      descuento_fijo: data.descuento_fijo,
+      total: total_final,
+      monto_pagado: data.monto_pagado,
+      metodo_pago: data.metodo_pago,
+      VentaDetalle: ventaDetalles,
     });
 
-    // 5️⃣ Aquí deberías:
-    //    🔹 Guardar la venta en DB: await this.ventaRepo.save(venta)
-    //    🔹 Recorres los items de la venta enviados desde el frontend (array de productos/juegos)
-    //       por ejemplo: data.items = [{ productoId, juegoId, cantidad }]
-    //    🔹 Por cada item:
-    //       a) Llamar al JuegoService para disminuir stock del juego específico
-    //          await this.juegoService.disminuirStock(item.juegoId, item.cantidad)
-    //       b) Crear la relación en VentaProducto (producto, cantidad, precio_unitario)
-    //          await this.ventaProductoService.create({ ventaId: venta.id, productoId: item.productoId, cantidad: item.cantidad, precio_unitario })
-    //    🔹 Esto asegura que cada venta tiene sus productos y stock actualizados correctamente
-
-    // 6️⃣ Finalmente devolver la venta ya guardada en DB
-    await this.ventaRepo.save(venta);
-    return venta;
+    return this.ventaRepo.save(venta);
   }
 
-  findAll(): Promise<Venta[]> {
-    return this.ventaRepo.find({
-      relations: [
-        'cliente',
-        'vendedor',
-        'ventaProducto',
-        'ventaProducto.producto',
-      ],
+  async findAll(): Promise<Venta[]> {
+    const ventas = await this.ventaRepo.find({
+      relations: ['cliente', 'vendedor', 'VentaDetalle'],
     });
+    return instanceToPlain(ventas) as Venta[];
   }
 
-  findOne(id: number): Promise<Venta | null> {
-    return this.ventaRepo.findOne({
+  async findOne(id: number): Promise<Venta | null> {
+    const venta = await this.ventaRepo.findOne({
       where: { id },
-      relations: [
-        'cliente',
-        'vendedor',
-        'ventaProducto',
-        'ventaProducto.producto',
-      ],
+      relations: ['cliente', 'vendedor', 'VentaDetalle'],
     });
+    return venta ? (instanceToPlain(venta) as Venta) : null;
   }
+
   async update(id: number, data: Partial<Venta>): Promise<Venta> {
     const result = await this.ventaRepo.update(id, data);
     if (result.affected === 0) {

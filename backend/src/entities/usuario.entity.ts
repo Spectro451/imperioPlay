@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Venta } from './venta.entity';
 import { Intercambio } from './intercambio.entity';
 import { Rol } from './enums';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Usuario {
@@ -18,6 +19,7 @@ export class Usuario {
   correo: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @OneToMany(() => Intercambio, (intercambio) => intercambio.cliente)

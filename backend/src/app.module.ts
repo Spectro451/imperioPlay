@@ -15,7 +15,7 @@ import { Usuario } from './entities/usuario.entity';
 import { Juego } from './entities/juego.entity';
 import { Producto } from './entities/producto.entity';
 import { Venta } from './entities/venta.entity';
-import { VentaProducto } from './entities/ventaProducto';
+import { VentaDetalle } from './entities/ventaDetalle';
 import { Intercambio } from './entities/intercambio.entity';
 import { IntercambioJuego } from './entities/intercambioJuego.entity';
 import { AppController } from './app.controller';
@@ -32,7 +32,7 @@ import { AppService } from './app.service';
         Producto,
         Juego,
         Venta,
-        VentaProducto,
+        VentaDetalle,
         Intercambio,
         IntercambioJuego,
       ],

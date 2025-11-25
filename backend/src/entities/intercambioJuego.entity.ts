@@ -23,7 +23,7 @@ export class IntercambioJuego {
   @ManyToOne(
     () => Intercambio,
     (intercambio) => intercambio.intercambioJuegos,
-    { nullable: false },
+    { nullable: false, onDelete: 'CASCADE' },
   )
   @JoinColumn({ name: 'intercambio_id' })
   intercambio: Intercambio;
