@@ -189,12 +189,15 @@ export class IntercambioService {
     await this.intercambioRepo.update(id, data);
     const updated = await this.findOne(id);
     if (!updated) {
-      throw new Error(`Intercambio con id ${id} no encontrado`);
+      throw new BadRequestException(`Intercambio con id ${id} no encontrado`);
     }
     return updated;
   }
 
   async remove(id: number): Promise<void> {
-    await this.intercambioRepo.delete(id);
+    const result = await this.intercambioRepo.delete(id);
+    if (!result.affected) {
+      throw new BadRequestException(`Intercambio con id ${id} no encontrado`);
+    }
   }
 }
