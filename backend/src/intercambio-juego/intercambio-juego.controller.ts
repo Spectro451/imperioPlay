@@ -6,11 +6,17 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { IntercambioJuegoService } from './intercambio-juego.service';
 import { IntercambioJuego } from '../entities/intercambioJuego.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('intercambio-juego')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class IntercambioJuegoController {
   constructor(
     private readonly intercambioJuegoService: IntercambioJuegoService,

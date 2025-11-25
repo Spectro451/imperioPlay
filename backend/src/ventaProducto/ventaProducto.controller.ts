@@ -6,11 +6,17 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { VentaDetalleService } from './ventaProducto.service';
 import { VentaDetalle } from '../entities/ventaDetalle';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('ventaproducto')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class VentaProductoController {
   constructor(private readonly ventaProductoService: VentaDetalleService) {}
 

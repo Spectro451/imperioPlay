@@ -14,13 +14,16 @@ import { Intercambio } from '../entities/intercambio.entity';
 import { Producto } from 'src/entities/producto.entity';
 import { Consola, estadoJuego, metodoPago } from 'src/entities/enums';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('intercambio')
 export class IntercambioController {
   constructor(private readonly intercambioService: IntercambioService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @Roles('admin', 'empleado')
   async crearIntercambio(
     @Req() req,
     @Body()
@@ -53,16 +56,19 @@ export class IntercambioController {
   }
 
   @Get()
+  @Roles('admin', 'empleado')
   async findAll(): Promise<Intercambio[]> {
     return this.intercambioService.findAll();
   }
 
   @Get(':id')
+  @Roles('admin', 'empleado')
   async findOne(@Param('id') id: string): Promise<Intercambio | null> {
     return this.intercambioService.findOne(Number(id));
   }
 
   @Put(':id')
+  @Roles('admin')
   async update(
     @Param('id') id: string,
     @Body() data: Partial<Intercambio>,
@@ -71,6 +77,7 @@ export class IntercambioController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   async remove(@Param('id') id: string): Promise<void> {
     return this.intercambioService.remove(Number(id));
   }

@@ -85,6 +85,8 @@ export class JuegoController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'empleado')
   async update(
     @Param('id') id: string,
     @Body() data: Partial<Juego>,
@@ -93,6 +95,8 @@ export class JuegoController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async remove(@Param('id') id: string): Promise<void> {
     return this.juegoService.remove(Number(id));
   }
