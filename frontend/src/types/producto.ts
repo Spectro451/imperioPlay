@@ -1,4 +1,4 @@
-import { tipoProducto } from "./enums";
+import { Consola, tipoProducto } from "./enums";
 import { Juego } from "./juego";
 
 export interface Producto {
@@ -6,4 +6,12 @@ export interface Producto {
   nombre: string;
   tipo: tipoProducto;
   juegos?: Juego[];
+}
+
+export interface ProductoFiltro {
+  nombre?: string;
+  tipo?: tipoProducto;
+  page?: number;
+  consola?: Consola;
+  orden?: "id" | "abc";
 }
