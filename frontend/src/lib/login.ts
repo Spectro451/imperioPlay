@@ -12,6 +12,6 @@ export async function Login(correo: string, password: string) {
   if (!res.ok) throw new Error("Usuario o contraseña incorrecto");
   const data = await res.json();
 
-  localStorage.setItem("token", data.access_token);
+  document.cookie = `token=${data.access_token}; path=/;`;
   return data;
 }

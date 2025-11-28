@@ -1,3 +1,7 @@
-export default function juegosPage() {
-  return <p>y aqui juegos</p>;
+export default async function juegosPage() {
+  return (
+    <div>
+      <p>aqui juegos</p>
+    </div>
+  );
 }
