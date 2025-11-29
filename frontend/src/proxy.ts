@@ -21,5 +21,5 @@ export function proxy(request: NextRequest) {
 
 //proteje de que minimo tengo un token en estas rutas
 export const config = {
-  matcher: ["/ventas/:path*", "/intercambio/:path*"],
+  matcher: [],
 };
