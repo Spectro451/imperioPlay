@@ -45,10 +45,10 @@ export async function getOfertas(
 
 //editar
 export async function putProducto(
+  token: string,
   id: number,
   data: Partial<Producto>
 ): Promise<Producto> {
-  const token = localStorage.getItem("token");
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/producto/${id}`, {
@@ -64,8 +64,10 @@ export async function putProducto(
 }
 
 //crear
-export async function postProducto(data: Partial<Producto>): Promise<Producto> {
-  const token = localStorage.getItem("token");
+export async function postProducto(
+  token: string,
+  data: Partial<Producto>
+): Promise<Producto> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/producto/`, {
@@ -81,8 +83,10 @@ export async function postProducto(data: Partial<Producto>): Promise<Producto> {
 }
 
 //borrar
-export async function deleteProducto(id: number): Promise<{ message: string }> {
-  const token = localStorage.getItem("token");
+export async function deleteProducto(
+  token: string,
+  id: number
+): Promise<{ message: string }> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/producto/${id}`, {

@@ -12,11 +12,11 @@ export async function getJuegoId(id: number): Promise<Juego> {
 }
 
 //editar
-export async function putJuego(
+export async function editarJuego(
+  token: string,
   id: number,
   data: Partial<Juego>
 ): Promise<Juego> {
-  const token = localStorage.getItem("token");
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/juego/${id}`, {
@@ -32,19 +32,21 @@ export async function putJuego(
 }
 
 //crear
-export async function postJuego(data: {
-  producto: Partial<Producto>;
-  juego: {
-    consola: Consola;
-    estado: estadoJuego;
-    stock: number;
-    fotos?: string[];
-    precio_base: number;
-    descuento_porcentaje?: number;
-    descuento_fijo?: number;
-  };
-}): Promise<{ producto: Producto; juego: Juego }> {
-  const token = localStorage.getItem("token");
+export async function crearJuego(
+  token: string,
+  data: {
+    producto: Partial<Producto>;
+    juego: {
+      consola: Consola;
+      estado: estadoJuego;
+      stock: number;
+      fotos?: string[];
+      precio_base: number;
+      descuento_porcentaje?: number;
+      descuento_fijo?: number;
+    };
+  }
+): Promise<{ producto: Producto; juego: Juego }> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/juego`, {
@@ -60,8 +62,7 @@ export async function postJuego(data: {
 }
 
 //borrar
-export async function deleteJuego(id: number): Promise<void> {
-  const token = localStorage.getItem("token");
+export async function borrarJuego(token: string, id: number): Promise<void> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/juego/${id}`, {
@@ -78,10 +79,10 @@ export async function deleteJuego(id: number): Promise<void> {
 
 //editarOferta
 export async function editarOferta(
+  token: string,
   id: number,
   data: { descuento_porcentaje?: number; descuento_fijo?: number }
 ): Promise<Juego> {
-  const token = localStorage.getItem("token");
   if (!token) throw new Error("no se encontro el token de usuario");
 
   const res = await fetch(`${API_URL}/juego/${id}/oferta`, {

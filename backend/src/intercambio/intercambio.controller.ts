@@ -28,7 +28,7 @@ export class IntercambioController {
     @Req() req,
     @Body()
     body: {
-      juegosSolicitadosData: Array<{ juegoId: number; cantidad?: number }>;
+      juegosSolicitadosData: Array<{ juegoId: number; cantidad: number }>;
       juegosClienteData: {
         producto: Partial<Producto>;
         consola: Consola;

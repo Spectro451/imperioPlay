@@ -22,8 +22,7 @@ export async function postUsuario(data: {
 }
 
 //getUsuarios
-export async function getUsuarios(): Promise<Usuario[]> {
-  const token = localStorage.getItem("token");
+export async function getUsuarios(token: string): Promise<Usuario[]> {
   if (!token) throw new Error("Usuario no autorizado");
 
   const res = await fetch(`${API_URL}/usuario`, {
@@ -36,8 +35,10 @@ export async function getUsuarios(): Promise<Usuario[]> {
 }
 
 //getId
-export async function getUsuarioId(id: number): Promise<Usuario> {
-  const token = localStorage.getItem("token");
+export async function getUsuarioId(
+  token: string,
+  id: number
+): Promise<Usuario> {
   if (!token) throw new Error("Usuario no autorizado");
 
   const res = await fetch(`${API_URL}/usuario/${id}`, {
@@ -49,11 +50,12 @@ export async function getUsuarioId(id: number): Promise<Usuario> {
   return res.json();
 }
 
+//editar usuario
 export async function editarUsuario(
+  token: string,
   id: number,
   data: Partial<Usuario>
 ): Promise<Usuario> {
-  const token = localStorage.getItem("token");
   if (!token) throw new Error("Usuario no autorizado");
 
   const res = await fetch(`${API_URL}/usuario/${id}`, {
@@ -68,8 +70,11 @@ export async function editarUsuario(
   return res.json();
 }
 
-export async function deleteUsuario(id: number): Promise<Usuario> {
-  const token = localStorage.getItem("token");
+//borrar usuario
+export async function deleteUsuario(
+  token: string,
+  id: number
+): Promise<Usuario> {
   if (!token) throw new Error("Usuario no autorizado");
 
   const res = await fetch(`${API_URL}/usuario/${id}`, {
@@ -82,11 +87,12 @@ export async function deleteUsuario(id: number): Promise<Usuario> {
   return res.json();
 }
 
+//cambiar contraseña
 export async function cambiarContraseña(
+  token: string,
   id: number,
   data: { currentPassword: string; password: string }
 ): Promise<Usuario> {
-  const token = localStorage.getItem("token");
   if (!token) throw new Error("Usuario no autorizado");
 
   const res = await fetch(`${API_URL}/usuario/${id}/password`, {
@@ -101,6 +107,7 @@ export async function cambiarContraseña(
   return res.json();
 }
 
+//rehabilitar cuenta
 export async function recuperarCuenta(data: {
   correo: string;
   password: string;

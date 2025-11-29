@@ -90,7 +90,7 @@ export class UsuarioController {
 
     if (requester.rol !== 'admin' && requester.id !== userId) {
       throw new ForbiddenException(
-        'No tienes permisos para inactivar este usuario',
+        'No tienes permisos para borrar este usuario',
       );
     }
     return this.usuarioService.remove(userId);
