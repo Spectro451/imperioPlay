@@ -1,5 +1,5 @@
 import { getProductos } from "@/lib/producto";
-import { Consola, tipoProducto } from "@/types/enums";
+import { Consola, Orden, tipoProducto } from "@/types/enums";
 
 export default async function ProductosPage({
   searchParams,
@@ -12,7 +12,7 @@ export default async function ProductosPage({
     tipo: params.tipo as tipoProducto,
     page: params.page ? Number(params.page) : undefined,
     consola: params.consola as Consola,
-    orden: params.orden as "id" | "abc",
+    orden: params.orden as Orden,
   });
 
   return (

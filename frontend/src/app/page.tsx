@@ -1,8 +1,15 @@
+import OfertasNuevas from "@/components/home/nuevasOfertas";
+import ProductosNuevos from "@/components/home/nuevosProductos";
+import SobreNosotros from "@/components/home/sobreNosotros";
+
 export default function Home() {
   return (
     <main>
-      <h1>Bienvenido a ImperioPlay</h1>
-      <p>Contenido conceptual de la página</p>
+      <SobreNosotros />
+
+      <ProductosNuevos />
+
+      <OfertasNuevas />
     </main>
   );
 }

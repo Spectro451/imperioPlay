@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import "./globals.css";
 import Link from "next/link";
+import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
   title: "ImperioPlay",
@@ -68,7 +69,7 @@ export default function RootLayout({
         </nav>
         <div className="flex-grow">{children}</div>
 
-        <footer>@Derechos reservados</footer>
+        <Footer />
       </body>
     </html>
   );

@@ -34,3 +34,10 @@ export enum metodoPago {
   efectivo = "efectivo",
   debito = "debito",
 }
+
+export enum Orden {
+  ID = "id",
+  ABC = "abc",
+  ID_DESC = "id-desc",
+  ABC_DESC = "abc-desc",
+}

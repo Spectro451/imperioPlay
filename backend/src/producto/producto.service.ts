@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { And, ILike, IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
-import { Consola, tipoProducto } from 'src/entities/enums';
+import { Consola, Orden, tipoProducto } from 'src/entities/enums';
+import { ORDER_MAP } from 'src/constants/orden';
 
 @Injectable()
 export class ProductoService {
@@ -23,7 +24,7 @@ export class ProductoService {
     tipo?: tipoProducto;
     page?: number;
     consola?: Consola;
-    orden?: 'id' | 'abc';
+    orden?: Orden;
   }) {
     const page = filtro?.page || 1;
     const limit = 20;
@@ -46,10 +47,9 @@ export class ProductoService {
 
     query.take(limit).skip(skip);
 
-    query.orderBy(
-      filtro?.orden === 'abc' ? 'producto.nombre' : 'producto.id',
-      'ASC',
-    );
+    const ordenKey = filtro?.orden || Orden.ID;
+    const [campo, direccion] = ORDER_MAP[ordenKey];
+    query.orderBy(campo, direccion);
 
     const [productos, total] = await query.getManyAndCount();
     const totalPaginas = Math.ceil(total / limit);
@@ -89,7 +89,7 @@ export class ProductoService {
     tipo?: tipoProducto;
     page?: number;
     consola?: Consola;
-    orden?: 'id' | 'abc';
+    orden?: Orden;
   }) {
     const page = filtro?.page || 1;
     const limit = 20;
@@ -111,13 +111,11 @@ export class ProductoService {
     if (filtro?.consola)
       query.andWhere('juego.consola = :consola', { consola: filtro.consola });
 
-    query
-      .take(limit)
-      .skip(skip)
-      .orderBy(
-        filtro?.orden === 'abc' ? 'producto.nombre' : 'producto.id',
-        'ASC',
-      );
+    query.take(limit).skip(skip);
+
+    const ordenKey = filtro?.orden || Orden.ID;
+    const [campo, direccion] = ORDER_MAP[ordenKey];
+    query.orderBy(campo, direccion);
 
     const [productos, total] = await query.getManyAndCount();
     const totalPaginas = Math.ceil(total / limit);
