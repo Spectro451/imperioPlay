@@ -1,11 +1,10 @@
-import FiltrosJuego from "@/components/productos/filtrosJuego";
-
+import FiltrosSidebar from "@/components/productos/filtros";
 import ProductosGrid from "@/components/productos/gridProductos";
 import Paginacion from "@/components/productos/paginacion";
-import { getProductos } from "@/lib/producto";
+import { getOfertas, getProductos } from "@/lib/producto";
 import { Consola, estadoJuego, Orden, tipoProducto } from "@/types/enums";
 
-export default async function JuegosPage({
+export default async function OfertasPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -13,7 +12,7 @@ export default async function JuegosPage({
   const params = await searchParams;
 
   const filtros = {
-    tipo: tipoProducto.juego,
+    tipo: params.tipo as tipoProducto | undefined,
     consola: params.consola as Consola | undefined,
     orden: (params.orden as Orden) || Orden.ID,
     page: params.page ? Number(params.page) : 1,
@@ -21,19 +20,21 @@ export default async function JuegosPage({
     estado: params.estado as estadoJuego | undefined,
   };
 
-  const resultadoData = await getProductos(filtros);
+  const resultadoData = await getOfertas(filtros);
   const productos = resultadoData.productos;
   const totalPaginas = resultadoData.totalPaginas;
 
   return (
     <div className="flex min-h-screen">
       <aside className="w-50 md:w-70 border-1 p-2">
-        <FiltrosJuego />
+        <FiltrosSidebar />
       </aside>
 
+      {/* Main Content */}
       <main className="flex-1  flex flex-col">
         <ProductosGrid productos={productos} />
 
+        {/* Paginación */}
         <Paginacion
           pageActual={filtros.page}
           totalPaginas={totalPaginas}

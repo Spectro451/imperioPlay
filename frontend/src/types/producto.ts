@@ -1,4 +1,4 @@
-import { Consola, Orden, tipoProducto } from "./enums";
+import { Consola, estadoJuego, Orden, tipoProducto } from "./enums";
 import { Juego } from "./juego";
 
 export interface Producto {
@@ -14,4 +14,5 @@ export interface ProductoFiltro {
   page?: number;
   consola?: Consola;
   orden?: Orden;
+  estado?: estadoJuego;
 }

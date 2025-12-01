@@ -13,5 +13,6 @@ export async function Login(correo: string, password: string) {
   const data = await res.json();
 
   document.cookie = `token=${data.access_token}; path=/;`;
+  document.cookie = `rol=${data.rol}; path=/;`;
   return data;
 }

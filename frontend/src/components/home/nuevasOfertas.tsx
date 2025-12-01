@@ -1,9 +1,11 @@
-import { getOfertas, getProductos } from "@/lib/producto";
+import { getOfertas } from "@/lib/producto";
 import { Orden } from "@/types/enums";
 import Image from "next/image";
 
 export default async function OfertasNuevas() {
-  const productos = await getOfertas({ orden: Orden.ID_DESC });
+  const resultadoData = await getOfertas({ orden: Orden.ID_DESC });
+  const productos = resultadoData.productos;
+
   return (
     <section className="overflow-x-auto mx-4 md:mx-10 mb-10 ">
       <h1 className="text-center text-[28px] pt-5">Ofertas recientes</h1>

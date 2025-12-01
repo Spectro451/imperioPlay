@@ -1,54 +1,45 @@
-import { getProductos } from "@/lib/producto";
-import { Consola, Orden, tipoProducto } from "@/types/enums";
+import FiltrosSidebar from "@/components/productos/filtros";
+import ProductosGrid from "@/components/productos/gridProductos";
+import Paginacion from "@/components/productos/paginacion";
+import { getOfertas, getProductos } from "@/lib/producto";
+import { Consola, estadoJuego, Orden, tipoProducto } from "@/types/enums";
 
 export default async function ProductosPage({
   searchParams,
 }: {
-  searchParams: Record<string, string>;
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const params = await searchParams;
-  const productos = await getProductos({
-    nombre: params.nombre,
-    tipo: params.tipo as tipoProducto,
-    page: params.page ? Number(params.page) : undefined,
-    consola: params.consola as Consola,
-    orden: params.orden as Orden,
-  });
+
+  const filtros = {
+    tipo: params.tipo as tipoProducto | undefined,
+    consola: params.consola as Consola | undefined,
+    orden: (params.orden as Orden) || Orden.ID,
+    page: params.page ? Number(params.page) : 1,
+    nombre: params.nombre as string | undefined,
+    estado: params.estado as estadoJuego | undefined,
+  };
+
+  const resultadoData = await getProductos(filtros);
+  const productos = resultadoData.productos;
+  const totalPaginas = resultadoData.totalPaginas;
 
   return (
-    <div>
-      <form action="/productos" method="get">
-        <input
-          name="nombre"
-          defaultValue={params.nombre || ""}
-          placeholder="Buscar producto"
-        />
+    <div className="flex min-h-screen">
+      <aside className="w-50 md:w-70 border-1 p-2">
+        <FiltrosSidebar />
+      </aside>
 
-        <label>
-          <input
-            type="checkbox"
-            name="estado"
-            value="nuevo"
-            defaultChecked={params.tipo === "estado"}
-          />
-          nuevos
-        </label>
-        <button type="submit">Buscar</button>
-      </form>
-      <ul>
-        {productos.map((p) => (
-          <li key={p.id}>
-            <strong>{p.nombre}</strong>
-            <ul>
-              {p.juegos?.map((j) => (
-                <li key={j.id}>
-                  {j.consola} - {j.estado}
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+      {/* Main Content */}
+      <main className="flex-1  flex flex-col">
+        <ProductosGrid productos={productos} />
+
+        {/* Paginación */}
+        <Paginacion
+          pageActual={filtros.page}
+          totalPaginas={totalPaginas}
+        ></Paginacion>
+      </main>
     </div>
   );
 }

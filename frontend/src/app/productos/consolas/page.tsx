@@ -5,7 +5,7 @@ import Paginacion from "@/components/productos/paginacion";
 import { getProductos } from "@/lib/producto";
 import { Consola, estadoJuego, Orden, tipoProducto } from "@/types/enums";
 
-export default async function JuegosPage({
+export default async function ConsolasPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -13,7 +13,7 @@ export default async function JuegosPage({
   const params = await searchParams;
 
   const filtros = {
-    tipo: tipoProducto.juego,
+    tipo: tipoProducto.consola,
     consola: params.consola as Consola | undefined,
     orden: (params.orden as Orden) || Orden.ID,
     page: params.page ? Number(params.page) : 1,
@@ -31,9 +31,11 @@ export default async function JuegosPage({
         <FiltrosJuego />
       </aside>
 
+      {/* Main Content */}
       <main className="flex-1  flex flex-col">
         <ProductosGrid productos={productos} />
 
+        {/* Paginación */}
         <Paginacion
           pageActual={filtros.page}
           totalPaginas={totalPaginas}

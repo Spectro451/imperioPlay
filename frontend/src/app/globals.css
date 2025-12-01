@@ -17,3 +17,7 @@ body {
   color: var(--foreground);
   font-family: sans-serif;
 }
+
+.submenu-group:hover .submenu-group-hover\:block {
+  display: block;
+}

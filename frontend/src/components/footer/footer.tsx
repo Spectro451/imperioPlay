@@ -1,15 +1,24 @@
+import Image from "next/image";
 import Contacto from "./contacto";
 import Enlaces from "./enlaces";
 import RedesSociales from "./redesSociales";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white p-2">
+    <footer className="bg-gray-800 text-white p-2 ">
       <div className="max-w-full mx-4 md:mx-auto px-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 ">
           <Contacto />
           <RedesSociales />
           <Enlaces />
+          <div className="items-center justify-center m-auto">
+            <Image
+              src={"/logo.jpg"}
+              width={100}
+              height={100}
+              alt="Logo"
+            ></Image>
+          </div>
         </div>
       </div>
     </footer>

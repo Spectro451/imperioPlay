@@ -5,18 +5,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 //getall
 export async function getProductos(
   filtro: ProductoFiltro = {}
-): Promise<Producto[]> {
+): Promise<{ productos: Producto[]; total: number; totalPaginas: number }> {
   const params = new URLSearchParams();
   if (filtro.nombre) params.set("nombre", filtro.nombre);
   if (filtro.tipo) params.set("tipo", filtro.tipo);
   if (filtro.page) params.set("page", filtro.page.toString());
   if (filtro.consola) params.set("consola", filtro.consola);
   if (filtro.orden) params.set("orden", filtro.orden);
+  if (filtro.estado) params.set("estado", filtro.estado);
 
   const res = await fetch(`${API_URL}/producto?${params.toString()}`);
   if (!res.ok) throw new Error("Error getProductos");
   const json = await res.json();
-  return json.productos;
+  return json;
 }
 
 //getId
@@ -29,18 +30,19 @@ export async function getProductosId(id: number): Promise<Producto> {
 //getOfertas
 export async function getOfertas(
   filtro: ProductoFiltro = {}
-): Promise<Producto[]> {
+): Promise<{ productos: Producto[]; total: number; totalPaginas: number }> {
   const params = new URLSearchParams();
   if (filtro.nombre) params.set("nombre", filtro.nombre);
   if (filtro.tipo) params.set("tipo", filtro.tipo);
   if (filtro.page) params.set("page", filtro.page.toString());
   if (filtro.consola) params.set("consola", filtro.consola);
   if (filtro.orden) params.set("orden", filtro.orden);
+  if (filtro.estado) params.set("estado", filtro.estado);
 
   const res = await fetch(`${API_URL}/producto/ofertas?${params.toString()}`);
   if (!res.ok) throw new Error("Error getOfertas");
   const json = await res.json();
-  return json.productos;
+  return json;
 }
 
 //editar

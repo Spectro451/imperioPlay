@@ -3,7 +3,8 @@ import { Orden } from "@/types/enums";
 import Image from "next/image";
 
 export default async function ProductosNuevos() {
-  const productos = await getProductos({ orden: Orden.ID_DESC });
+  const productosData = await getProductos({ orden: Orden.ID_DESC });
+  const productos = productosData.productos;
   return (
     <section className="overflow-x-auto mx-4 md:mx-10">
       <h1 className="text-center text-[28px] pt-5">Productos nuevos</h1>

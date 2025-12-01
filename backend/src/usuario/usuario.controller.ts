@@ -22,6 +22,13 @@ import { Rol } from '../entities/enums';
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
+  @Get('yo')
+  @UseGuards(JwtAuthGuard)
+  async getPerfil(@Request() req) {
+    const userId = parseInt(req.user.id);
+    return this.usuarioService.findOne(userId);
+  }
+
   @Post()
   async create(
     @Body()

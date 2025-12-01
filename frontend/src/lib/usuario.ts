@@ -91,7 +91,7 @@ export async function deleteUsuario(
 export async function cambiarContraseña(
   token: string,
   id: number,
-  data: { currentPassword: string; password: string }
+  data: { currentPassword: string; newPassword: string }
 ): Promise<Usuario> {
   if (!token) throw new Error("Usuario no autorizado");
 
@@ -120,5 +120,17 @@ export async function recuperarCuenta(data: {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Error al reestablecer usuario");
+  return res.json();
+}
+
+export async function getUsuarioActual(token: string): Promise<Usuario> {
+  if (!token) throw new Error("Usuario no autorizado");
+
+  const res = await fetch(`${API_URL}/usuario/yo`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Error al cargar perfil");
   return res.json();
 }

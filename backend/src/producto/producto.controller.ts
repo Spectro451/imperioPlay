@@ -17,7 +17,7 @@ import { Producto } from '../entities/producto.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { Consola, Orden, tipoProducto } from 'src/entities/enums';
+import { Consola, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
 
 @Controller('producto')
 export class ProductoController {
@@ -39,6 +39,7 @@ export class ProductoController {
       page?: string;
       consola?: Consola;
       orden?: Orden;
+      estado?: estadoJuego;
     },
   ) {
     return this.productoService.findAll({
@@ -47,6 +48,7 @@ export class ProductoController {
       page: query.page ? parseInt(query.page) : undefined,
       consola: query.consola as Consola | undefined,
       orden: query.orden as Orden,
+      estado: query.estado as estadoJuego,
     });
   }
 
@@ -59,6 +61,7 @@ export class ProductoController {
       page?: string;
       consola?: Consola;
       orden?: Orden;
+      estado?: estadoJuego;
     },
   ) {
     return this.productoService.findOfertas({
@@ -67,6 +70,7 @@ export class ProductoController {
       page: query.page ? parseInt(query.page) : undefined,
       consola: query.consola as Consola | undefined,
       orden: query.orden as Orden,
+      estado: query.estado as estadoJuego,
     });
   }
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { And, ILike, IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
-import { Consola, Orden, tipoProducto } from 'src/entities/enums';
+import { Consola, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
 import { ORDER_MAP } from 'src/constants/orden';
 
 @Injectable()
@@ -25,9 +25,10 @@ export class ProductoService {
     page?: number;
     consola?: Consola;
     orden?: Orden;
+    estado?: estadoJuego;
   }) {
     const page = filtro?.page || 1;
-    const limit = 20;
+    const limit = 18;
     const skip = (page - 1) * limit;
 
     const query = this.productoRepo
@@ -44,6 +45,9 @@ export class ProductoService {
 
     if (filtro?.consola)
       query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+
+    if (filtro?.estado)
+      query.andWhere('juego.estado = :estado', { estado: filtro.estado });
 
     query.take(limit).skip(skip);
 
@@ -90,9 +94,10 @@ export class ProductoService {
     page?: number;
     consola?: Consola;
     orden?: Orden;
+    estado?: estadoJuego;
   }) {
     const page = filtro?.page || 1;
-    const limit = 20;
+    const limit = 18;
     const skip = (page - 1) * limit;
 
     const query = this.productoRepo
@@ -110,6 +115,9 @@ export class ProductoService {
 
     if (filtro?.consola)
       query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+
+    if (filtro?.estado)
+      query.andWhere('juego.estado = :estado', { estado: filtro.estado });
 
     query.take(limit).skip(skip);
 
