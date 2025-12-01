@@ -9,7 +9,7 @@ export default async function ProductosNuevos() {
     <section className="overflow-x-auto mx-4 md:mx-10">
       <h1 className="text-center text-[28px] pt-5">Productos nuevos</h1>
       <div className="flex space-x-3 p-2  justify-center min-w-max ">
-        {productos.slice(0, 10).map((producto) => (
+        {productos.slice(0, 6).map((producto) => (
           <div
             key={producto.id}
             className="w-[130px] h-[200px] md:w-[200px] md:h-[280px] border-1 flex-shrink-0"

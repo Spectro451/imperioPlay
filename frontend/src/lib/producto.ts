@@ -101,3 +101,15 @@ export async function deleteProducto(
   if (!res.ok) throw new Error("Error al borrar producto");
   return res.json();
 }
+
+export async function buscarNombresProductos(
+  busqueda?: string
+): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (busqueda) params.set("busqueda", busqueda);
+
+  const res = await fetch(`${API_URL}/producto/nombres?${params.toString()}`);
+
+  if (!res.ok) throw new Error("Error buscando productos");
+  return res.json();
+}

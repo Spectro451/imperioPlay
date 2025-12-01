@@ -30,6 +30,11 @@ export class ProductoController {
     return this.productoService.crearProductoSiNoExiste(data);
   }
 
+  @Get('nombres')
+  getNombresProductos(@Query('busqueda') busqueda?: string) {
+    return this.productoService.getNombres(busqueda);
+  }
+
   @Get()
   findAll(
     @Query()

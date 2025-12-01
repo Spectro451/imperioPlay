@@ -34,7 +34,8 @@ export default function LoginForm() {
       <div>
         <label className="block text-sm font-medium">Correo</label>
         <input
-          type="email"
+          //acuerdate de dejarlo en email
+          type="text"
           value={form.correo}
           onChange={(e) => setForm({ ...form, correo: e.target.value })}
           className="mt-1 block w-full border  rounded-md px-3 py-2"

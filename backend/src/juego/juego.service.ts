@@ -45,14 +45,18 @@ export class JuegoService {
 
     if (descuento_porcentaje) {
       if (descuento_porcentaje > 100) {
-        throw new Error('El descuento porcentual no puede ser mayor al 100%');
+        throw new BadRequestException(
+          'El descuento porcentual no puede ser mayor al 100%',
+        );
       }
       return Math.round(precio_base * (1 - descuento_porcentaje / 100));
     }
 
     if (descuento_fijo) {
       if (descuento_fijo > precio_base) {
-        throw new Error('El descuento fijo no puede ser mayor al precio base');
+        throw new BadRequestException(
+          'El descuento fijo no puede ser mayor al precio base',
+        );
       }
       return precio_base - descuento_fijo;
     }

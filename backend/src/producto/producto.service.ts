@@ -141,4 +141,22 @@ export class ProductoService {
     const producto = this.productoRepo.create(data);
     return this.productoRepo.save(producto);
   }
+
+  async getNombres(busqueda?: string): Promise<string[]> {
+    const query = this.productoRepo
+      .createQueryBuilder('producto')
+      .select('producto.nombre')
+      .distinct(true);
+
+    if (busqueda) {
+      query.where('LOWER(producto.nombre) LIKE LOWER(:busqueda)', {
+        busqueda: `%${busqueda}%`,
+      });
+    }
+
+    query.orderBy('producto.nombre', 'ASC');
+
+    const productos = await query.getRawMany();
+    return productos.map((p) => p.producto_nombre);
+  }
 }

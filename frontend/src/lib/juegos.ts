@@ -57,7 +57,13 @@ export async function crearJuego(
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Error al crear juego");
+  if (!res.ok) {
+    // Intentar obtener el mensaje de error del backend
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage = errorData.message || "Error al crear juego";
+    throw new Error(errorMessage); // ← Lanza el error específico
+  }
+
   return res.json();
 }
 
