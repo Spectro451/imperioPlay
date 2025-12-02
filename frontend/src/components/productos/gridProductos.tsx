@@ -1,4 +1,6 @@
 import { Producto } from "@/types/producto";
+import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
   productos: Producto[];
@@ -8,14 +10,17 @@ export default function ProductosGrid({ productos }: Props) {
     <section className="p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1 content-start">
       {productos.map((producto) =>
         producto.juegos?.map((juego) => (
-          <div
+          <Link
+            href={`/productos/juegos/${juego.id}`}
             key={juego.id}
             className="w-full aspect-[3/4] border rounded-lg flex flex-col overflow-hidden "
           >
             {juego.fotos?.[0] && (
-              <img
+              <Image
                 src={juego.fotos[0]}
                 alt={producto.nombre}
+                width={200}
+                height={200}
                 className="w-full h-4/5 object-fit"
               />
             )}
@@ -26,6 +31,7 @@ export default function ProductosGrid({ productos }: Props) {
               <p className="text-xs text-gray-600">
                 {juego.consola} - {juego.estado}
               </p>
+              <p className="text-xs  line-clamp-1">Stock: {juego.stock}</p>
               <div className="flex flex-row gap-3 items-baseline">
                 {juego.precio_final !== juego.precio_base ? (
                   <>
@@ -43,7 +49,7 @@ export default function ProductosGrid({ productos }: Props) {
                 )}
               </div>
             </div>
-          </div>
+          </Link>
         ))
       )}
     </section>

@@ -39,6 +39,8 @@ export default async function RootLayout({
             alt="Banner"
             fill
             style={{ objectFit: "cover", objectPosition: "top center" }}
+            priority={true}
+            loading="eager"
           />
         </header>
         {getNavbar()}

@@ -13,11 +13,14 @@ export default function Footer() {
           <Enlaces />
           <div className="items-center justify-center m-auto">
             <Image
-              src={"/logo.jpg"}
+              src="/logo.jpg"
+              alt="Logo"
               width={100}
               height={100}
-              alt="Logo"
-            ></Image>
+              priority={true}
+              loading="eager"
+              className="w-24 h-auto"
+            />
           </div>
         </div>
       </div>

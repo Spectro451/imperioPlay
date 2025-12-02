@@ -15,7 +15,7 @@ export default async function ProductosNuevos() {
             className="w-[130px] h-[200px] md:w-[200px] md:h-[280px] border-1 flex-shrink-0"
           >
             {producto.juegos?.[0]?.fotos?.[0] && (
-              <img
+              <Image
                 src={producto.juegos[0].fotos[0]}
                 alt={producto.nombre}
                 width={200}

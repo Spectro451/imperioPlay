@@ -14,7 +14,7 @@ export default async function ProductosPage({
   const filtros = {
     tipo: params.tipo as tipoProducto | undefined,
     consola: params.consola as Consola | undefined,
-    orden: (params.orden as Orden) || Orden.ID,
+    orden: (params.orden as Orden) || Orden.ID_DESC,
     page: params.page ? Number(params.page) : 1,
     nombre: params.nombre as string | undefined,
     estado: params.estado as estadoJuego | undefined,

@@ -10,6 +10,9 @@ export default async function EmpleadoNav() {
       <Link href="/" className="block p-2 text-center w-full">
         Inicio
       </Link>
+      <Link href="/productos" className="block  text-center w-full">
+        Productos
+      </Link>
       <div className="relative w-full group">
         <Link href="/productos/juegos" className="block p-2 text-center ">
           Juegos
@@ -23,9 +26,7 @@ export default async function EmpleadoNav() {
           </Link>
         </div>
       </div>
-      <Link href="/productos/juegos" className="block p-2 text-center w-full">
-        Juegos
-      </Link>
+
       <Link href="/productos/consolas" className="block  text-center w-full">
         Consolas
       </Link>
