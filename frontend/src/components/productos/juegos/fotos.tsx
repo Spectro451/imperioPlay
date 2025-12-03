@@ -26,7 +26,7 @@ export default function Fotos({ fotos, nombre }: Props) {
           alt={nombre}
           width={500}
           height={500}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-fit"
         />
       </div>
 
