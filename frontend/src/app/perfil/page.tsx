@@ -15,7 +15,7 @@ export default async function PerfilPage() {
   const usuario = await getUsuarioActual(token);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="border rounded-lg shadow-md w-full max-w-md">
         <div className="border-b p-6">
           <h1 className="text-2xl font-bold text-center">Mi Perfil</h1>
@@ -54,10 +54,8 @@ export default async function PerfilPage() {
               Cambiar Contraseña
             </Link>
 
-            <div className="space-y-2">
-              <LogOut />
-              <DeleteButton userId={usuario.id} token={token} />
-            </div>
+            <LogOut />
+            <DeleteButton userId={usuario.id} token={token} />
           </div>
         </div>
       </div>
