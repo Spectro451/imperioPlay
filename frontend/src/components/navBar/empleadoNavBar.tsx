@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import NavJuegos from "./juegosNav";
 
 export default async function EmpleadoNav() {
   const cookieStore = await cookies();
@@ -13,11 +12,14 @@ export default async function EmpleadoNav() {
       <Link href="/productos" className="block  text-center w-full">
         Productos
       </Link>
-      <div className="relative w-full group">
-        <Link href="/productos/juegos" className="block p-2 text-center ">
+      <div className="relative w-full">
+        <Link
+          href="/productos/juegos"
+          className="block p-2 text-center active:bg-blue-100 md:hover:bg-blue-100"
+        >
           Juegos
         </Link>
-        <div className="absolute hidden group-hover:block w-full bg-blue-500">
+        <div className="absolute hidden lg:group-hover:block active:block focus-within:block w-full bg-blue-500">
           <Link
             href="/productos/juegos/nuevo"
             className="block p-2 text-center w-full"
