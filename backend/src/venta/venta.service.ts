@@ -10,6 +10,7 @@ import { JuegoService } from 'src/juego/juego.service';
 import { metodoPago, tipoProducto } from 'src/entities/enums';
 import { VentaDetalle } from 'src/entities/ventaDetalle';
 import { instanceToPlain } from 'class-transformer';
+import { ConsolaService } from 'src/consola/consola.service';
 
 @Injectable()
 export class VentaService {
@@ -17,6 +18,7 @@ export class VentaService {
     @InjectRepository(Venta)
     private readonly ventaRepo: Repository<Venta>,
     private readonly juegoService: JuegoService,
+    private readonly consolaService: ConsolaService,
   ) {}
 
   private calcularTotalFinal(
@@ -60,30 +62,42 @@ export class VentaService {
   ): Promise<Venta> {
     let total_base = 0;
     const ventaDetalles: VentaDetalle[] = [];
-    const juegosMap = new Map<number, any>();
+    const itemsMap = new Map<number, { entidad: any; tipo: tipoProducto }>();
 
     for (const item of data.items) {
-      if (item.tipo !== tipoProducto.juego) {
-        throw new Error(`Tipo de producto ${item.tipo} no implementado`);
+      let entidad: any;
+      let precio_final: number;
+
+      switch (item.tipo) {
+        case tipoProducto.juego:
+          entidad = await this.juegoService.findOne(item.id);
+          if (!entidad)
+            throw new BadRequestException(`Juego ${item.id} no encontrado`);
+          precio_final = entidad.precio_final;
+          break;
+
+        case tipoProducto.consola:
+          entidad = await this.consolaService.findOne(item.id);
+          if (!entidad)
+            throw new BadRequestException(`Consola ${item.id} no encontrado`);
+          precio_final = entidad.precio_final;
+          break;
+
+        default:
+          throw new BadRequestException(`Tipo ${item.tipo} no soportado`);
       }
 
-      const juego = await this.juegoService.findOne(item.id);
-      if (!juego)
-        throw new BadRequestException(
-          `No se encontró el juego con id ${item.id}`,
-        );
+      itemsMap.set(item.id, { entidad, tipo: item.tipo });
 
-      juegosMap.set(item.id, juego);
-
-      const subtotal = juego.precio_final * item.cantidad;
+      const subtotal = precio_final * item.cantidad;
       total_base += subtotal;
 
       ventaDetalles.push(
         Object.assign(new VentaDetalle(), {
-          item_id: juego.id,
+          item_id: entidad.id,
           tipo: item.tipo,
           cantidad: item.cantidad,
-          precio_unitario: juego.precio_final,
+          precio_unitario: precio_final,
           subtotal,
         }),
       );
@@ -97,13 +111,30 @@ export class VentaService {
 
     if (data.monto_pagado < total_final) {
       throw new BadRequestException(
-        `Monto pagado insuficiente: se esperaba ${total_final}, pero se recibieron ${data.monto_pagado}`,
+        `Monto pagado insuficiente: se esperaba ${total_final}, recibido ${data.monto_pagado}`,
       );
     }
 
+    const vuelto = data.monto_pagado - total_final;
+
+    // Restar stock según tipo
     for (const item of data.items) {
-      const juego = juegosMap.get(item.id);
-      await this.juegoService.restarStockJuego(juego, item.cantidad);
+      const itemData = itemsMap.get(item.id);
+      if (!itemData) {
+        throw new Error(
+          `Error interno: item ${item.id} no encontrado en el mapa`,
+        );
+      }
+      const { entidad, tipo } = itemData;
+
+      switch (tipo) {
+        case tipoProducto.juego:
+          await this.juegoService.restarStockJuego(entidad, item.cantidad);
+          break;
+        case tipoProducto.consola:
+          await this.consolaService.restarStockConsola(entidad, item.cantidad);
+          break;
+      }
     }
 
     const venta = this.ventaRepo.create({
@@ -116,6 +147,7 @@ export class VentaService {
       monto_pagado: data.monto_pagado,
       metodo_pago: data.metodo_pago,
       VentaDetalle: ventaDetalles,
+      vuelto: vuelto > 0 ? vuelto : 0,
     });
 
     return this.ventaRepo.save(venta);

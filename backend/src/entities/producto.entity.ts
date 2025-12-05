@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Juego } from './juego.entity';
 
 import { tipoProducto } from './enums';
+import { Consolas } from './consola';
 
 @Entity()
 export class Producto {
@@ -14,6 +15,14 @@ export class Producto {
   @Column({ type: 'enum', enum: tipoProducto })
   tipo: tipoProducto;
 
+  @Column({ nullable: true })
+  sku: string;
+
   @OneToMany(() => Juego, (juego) => juego.producto, { cascade: true })
   juegos: Juego[];
+
+  @OneToMany(() => Consolas, (consolas) => consolas.producto, {
+    nullable: true,
+  })
+  consolas?: Consolas[];
 }

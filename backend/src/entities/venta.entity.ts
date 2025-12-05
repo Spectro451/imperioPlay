@@ -33,6 +33,9 @@ export class Venta {
   @Column()
   total: number;
 
+  @Column({ type: 'int', nullable: true })
+  vuelto?: number;
+
   @Column({ nullable: true })
   descuento_porcentaje?: number;
 

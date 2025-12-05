@@ -30,6 +30,20 @@ export class ProductoController {
     return this.productoService.crearProductoSiNoExiste(data);
   }
 
+  @Get('sku/:sku')
+  async buscarPorSku(@Param('sku') sku: string) {
+    const producto = await this.productoService.findBySku(sku);
+
+    if (!producto) {
+      return { encontrado: false };
+    }
+
+    return {
+      encontrado: true,
+      producto,
+    };
+  }
+
   @Get('nombres')
   getNombresProductos(@Query('busqueda') busqueda?: string) {
     return this.productoService.getNombres(busqueda);
@@ -45,6 +59,7 @@ export class ProductoController {
       consola?: Consola;
       orden?: Orden;
       estado?: estadoJuego;
+      sku?: string;
     },
   ) {
     return this.productoService.findAll({
@@ -54,6 +69,7 @@ export class ProductoController {
       consola: query.consola as Consola | undefined,
       orden: query.orden as Orden,
       estado: query.estado as estadoJuego,
+      sku: query.sku,
     });
   }
 

@@ -1,16 +1,9 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Producto } from './producto.entity';
-import { IntercambioJuego } from './intercambioJuego.entity';
-import { Consola, estadoJuego } from './enums';
+import { estadoJuego, Consola } from './enums';
 
 @Entity()
-export class Juego {
+export class Consolas {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,11 +13,11 @@ export class Juego {
   @Column()
   stock: number;
 
-  @Column({ type: 'enum', enum: Consola })
-  consola: Consola;
-
   @Column({ type: 'enum', enum: estadoJuego })
   estado: estadoJuego;
+
+  @Column({ type: 'enum', enum: Consola })
+  generacion: Consola;
 
   @Column()
   precio_base: number;
@@ -38,18 +31,9 @@ export class Juego {
   @Column({ nullable: true })
   descuento_fijo?: number;
 
-  @Column()
-  tier: number;
-
   @Column('text', { array: true })
   fotos?: string[];
 
-  @ManyToOne(() => Producto, (producto) => producto.juegos)
+  @ManyToOne(() => Producto, (producto) => producto.consolas)
   producto: Producto;
-
-  @OneToMany(
-    () => IntercambioJuego,
-    (intercambioJuego) => intercambioJuego.juego,
-  )
-  intercambioJuegos: IntercambioJuego[];
 }

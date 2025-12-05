@@ -20,6 +20,8 @@ import { Intercambio } from './entities/intercambio.entity';
 import { IntercambioJuego } from './entities/intercambioJuego.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConsolaModule } from './consola/consola.module';
+import { Consolas } from './entities/consola';
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { AppService } from './app.service';
         Juego,
         Venta,
         VentaDetalle,
+        Consolas,
         Intercambio,
         IntercambioJuego,
       ],
@@ -46,6 +49,7 @@ import { AppService } from './app.service';
     IntercambioModule,
     IntercambioJuegoModule,
     AuthModule,
+    ConsolaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

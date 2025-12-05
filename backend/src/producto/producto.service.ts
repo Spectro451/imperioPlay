@@ -26,6 +26,7 @@ export class ProductoService {
     consola?: Consola;
     orden?: Orden;
     estado?: estadoJuego;
+    sku?: string;
   }) {
     const page = filtro?.page || 1;
     const limit = 18;
@@ -33,21 +34,36 @@ export class ProductoService {
 
     const query = this.productoRepo
       .createQueryBuilder('producto')
-      .leftJoinAndSelect('producto.juegos', 'juego');
+      .leftJoinAndSelect('producto.juegos', 'juego')
+      .leftJoinAndSelect('producto.consolas', 'consola');
 
     if (filtro?.nombre)
       query.andWhere('producto.nombre ILIKE :nombre', {
         nombre: `%${filtro.nombre}%`,
       });
 
-    if (filtro?.tipo)
-      query.andWhere('producto.tipo = :tipo', { tipo: filtro.tipo });
+    if (filtro?.estado) {
+      query.andWhere('(juego.estado = :estado OR consola.estado = :estado)', {
+        estado: filtro.estado,
+      });
+    }
 
-    if (filtro?.consola)
-      query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+    if (filtro?.consola) {
+      query.andWhere(
+        '(juego.consola = :consola OR consola.generacion = :consola)',
+        {
+          consola: filtro.consola,
+        },
+      );
+    }
 
     if (filtro?.estado)
       query.andWhere('juego.estado = :estado', { estado: filtro.estado });
+
+    if (filtro?.sku)
+      query.andWhere('producto.sku = :sku', {
+        sku: filtro.sku,
+      });
 
     query.take(limit).skip(skip);
 
@@ -65,7 +81,7 @@ export class ProductoService {
   findOne(id: number): Promise<Producto | null> {
     return this.productoRepo.findOne({
       where: { id },
-      relations: ['juegos'],
+      relations: ['juegos', 'consolas'],
     });
   }
 
@@ -95,6 +111,7 @@ export class ProductoService {
     consola?: Consola;
     orden?: Orden;
     estado?: estadoJuego;
+    sku?: string;
   }) {
     const page = filtro?.page || 1;
     const limit = 18;
@@ -103,7 +120,10 @@ export class ProductoService {
     const query = this.productoRepo
       .createQueryBuilder('producto')
       .leftJoinAndSelect('producto.juegos', 'juego')
-      .where('(juego.descuento_porcentaje > 0 OR juego.descuento_fijo > 0)');
+      .leftJoinAndSelect('producto.consolas', 'consola')
+      .where(
+        '(juego.descuento_porcentaje > 0 OR juego.descuento_fijo > 0 OR consola.descuento_porcentaje > 0 OR consola.descuento_fijo > 0)',
+      );
 
     if (filtro?.nombre)
       query.andWhere('producto.nombre ILIKE :nombre', {
@@ -113,11 +133,20 @@ export class ProductoService {
     if (filtro?.tipo)
       query.andWhere('producto.tipo = :tipo', { tipo: filtro.tipo });
 
-    if (filtro?.consola)
-      query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+    if (filtro?.estado) {
+      query.andWhere('(juego.estado = :estado OR consola.estado = :estado)', {
+        estado: filtro.estado,
+      });
+    }
 
-    if (filtro?.estado)
-      query.andWhere('juego.estado = :estado', { estado: filtro.estado });
+    if (filtro?.consola) {
+      query.andWhere(
+        '(juego.consola = :consola OR consola.generacion = :consola)',
+        { consola: filtro.consola },
+      );
+    }
+
+    if (filtro?.sku) query.andWhere('producto.sku = :sku', { sku: filtro.sku });
 
     query.take(limit).skip(skip);
 
@@ -133,8 +162,8 @@ export class ProductoService {
 
   async crearProductoSiNoExiste(data: Partial<Producto>): Promise<Producto> {
     const existing = await this.productoRepo.findOne({
-      where: { nombre: data.nombre },
-      relations: ['juegos'],
+      where: [{ sku: data.sku }, { nombre: data.nombre }],
+      relations: ['juegos', 'consolas'],
     });
     if (existing) return existing;
 
@@ -158,5 +187,12 @@ export class ProductoService {
 
     const productos = await query.getRawMany();
     return productos.map((p) => p.producto_nombre);
+  }
+
+  async findBySku(sku: string): Promise<Producto | null> {
+    return this.productoRepo.findOne({
+      where: { sku },
+      relations: ['juegos', 'consolas'],
+    });
   }
 }
