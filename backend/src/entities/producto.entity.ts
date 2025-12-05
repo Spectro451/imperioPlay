@@ -18,10 +18,15 @@ export class Producto {
   @Column({ nullable: true })
   sku: string;
 
-  @OneToMany(() => Juego, (juego) => juego.producto, { cascade: true })
-  juegos: Juego[];
+  @OneToMany(() => Juego, (juego) => juego.producto, {
+    cascade: true,
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  juegos?: Juego[];
 
   @OneToMany(() => Consolas, (consolas) => consolas.producto, {
+    cascade: true,
     nullable: true,
   })
   consolas?: Consolas[];
