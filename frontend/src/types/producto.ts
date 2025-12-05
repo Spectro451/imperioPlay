@@ -1,3 +1,4 @@
+import { Consolas } from "./consolas";
 import { Consola, estadoJuego, Orden, tipoProducto } from "./enums";
 import { Juego } from "./juego";
 
@@ -6,6 +7,8 @@ export interface Producto {
   nombre: string;
   tipo: tipoProducto;
   juegos?: Juego[];
+  consolas?: Consolas[];
+  sku?: string;
 }
 
 export interface ProductoFiltro {
@@ -15,4 +18,5 @@ export interface ProductoFiltro {
   consola?: Consola;
   orden?: Orden;
   estado?: estadoJuego;
+  sku?: string;
 }

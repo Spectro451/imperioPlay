@@ -83,6 +83,7 @@ export class ProductoController {
       consola?: Consola;
       orden?: Orden;
       estado?: estadoJuego;
+      sku?: string;
     },
   ) {
     return this.productoService.findOfertas({
@@ -92,6 +93,7 @@ export class ProductoController {
       consola: query.consola as Consola | undefined,
       orden: query.orden as Orden,
       estado: query.estado as estadoJuego,
+      sku: query.sku,
     });
   }
 

@@ -13,6 +13,7 @@ export default function FiltrosSidebar() {
     orden: (searchParams.get("orden") as Orden) || "",
     nombre: searchParams.get("nombre") || "",
     estado: searchParams.get("estado") || "",
+    sku: searchParams.get("sku") || "",
   });
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function FiltrosSidebar() {
       if (filtros.orden) params.set("orden", filtros.orden);
       if (filtros.nombre) params.set("nombre", filtros.nombre);
       if (filtros.estado) params.set("estado", filtros.estado);
+      if (filtros.sku) params.set("sku", filtros.sku);
 
       router.push(`?${params.toString()}`);
     }, 350);
@@ -39,6 +41,16 @@ export default function FiltrosSidebar() {
     <div className="space-y-4">
       <h3 className="font-bold text-lg">Filtros</h3>
 
+      <div>
+        <label className="font-medium">SKU</label>
+        <input
+          type="text"
+          value={filtros.sku || ""}
+          onChange={(e) => handleChange("sku", e.target.value)}
+          className="w-full p-2 border rounded"
+          placeholder="Codigo de barras"
+        />
+      </div>
       <div>
         <label className="font-medium">Nombre</label>
         <input

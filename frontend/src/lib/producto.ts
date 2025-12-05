@@ -13,6 +13,7 @@ export async function getProductos(
   if (filtro.consola) params.set("consola", filtro.consola);
   if (filtro.orden) params.set("orden", filtro.orden);
   if (filtro.estado) params.set("estado", filtro.estado);
+  if (filtro.sku) params.set("sku", filtro.sku);
 
   const res = await fetch(`${API_URL}/producto?${params.toString()}`);
   if (!res.ok) throw new Error("Error getProductos");
@@ -38,6 +39,7 @@ export async function getOfertas(
   if (filtro.consola) params.set("consola", filtro.consola);
   if (filtro.orden) params.set("orden", filtro.orden);
   if (filtro.estado) params.set("estado", filtro.estado);
+  if (filtro.sku) params.set("sku", filtro.sku);
 
   const res = await fetch(`${API_URL}/producto/ofertas?${params.toString()}`);
   if (!res.ok) throw new Error("Error getOfertas");

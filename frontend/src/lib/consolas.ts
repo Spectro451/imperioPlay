@@ -1,25 +1,25 @@
 import { Consola, estadoJuego } from "@/types/enums";
-import { Juego } from "@/types/juego";
+import { Consolas } from "@/types/consolas";
 import { Producto } from "@/types/producto";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 //getId
-export async function getJuegoId(id: number): Promise<Juego> {
-  const res = await fetch(`${API_URL}/juego/${id}`);
-  if (!res.ok) throw new Error("Error getJuegoId");
+export async function getConsolaId(id: number): Promise<Consolas> {
+  const res = await fetch(`${API_URL}/consola/${id}`);
+  if (!res.ok) throw new Error("Error getConsolaId");
   return res.json();
 }
 
 //editar
-export async function editarJuego(
+export async function editarConsola(
   token: string,
   id: number,
-  data: Partial<Juego>
-): Promise<Juego> {
+  data: Partial<Consolas>
+): Promise<Consolas> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
-  const res = await fetch(`${API_URL}/juego/${id}`, {
+  const res = await fetch(`${API_URL}/consola/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -27,29 +27,29 @@ export async function editarJuego(
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Error al editar juego");
+  if (!res.ok) throw new Error("Error al editar consola");
   return res.json();
 }
 
 //crear
-export async function crearJuego(
+export async function crearConsola(
   token: string,
   data: {
     producto: Partial<Producto>;
-    juego: {
-      consola: Consola;
-      estado: estadoJuego;
-      stock: number;
+    consola: {
+      estado?: estadoJuego;
+      generacion?: Consola;
+      stock?: number;
       fotos?: string[];
       precio_base: number;
       descuento_porcentaje?: number;
       descuento_fijo?: number;
     };
   }
-): Promise<{ producto: Producto; juego: Juego }> {
+): Promise<{ producto: Producto; consola: Consolas }> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
-  const res = await fetch(`${API_URL}/juego`, {
+  const res = await fetch(`${API_URL}/consola`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export async function crearJuego(
   });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    const errorMessage = errorData.message || "Error al crear juego";
+    const errorMessage = errorData.message || "Error al crear consola";
     throw new Error(errorMessage);
   }
 
@@ -67,10 +67,10 @@ export async function crearJuego(
 }
 
 //borrar
-export async function borrarJuego(token: string, id: number): Promise<void> {
+export async function borrarConsola(token: string, id: number): Promise<void> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
-  const res = await fetch(`${API_URL}/juego/${id}`, {
+  const res = await fetch(`${API_URL}/consola/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -78,19 +78,19 @@ export async function borrarJuego(token: string, id: number): Promise<void> {
     },
   });
 
-  if (!res.ok) throw new Error("Error al borrar juego");
+  if (!res.ok) throw new Error("Error al borrar consola");
   return;
 }
 
 //editarOferta
-export async function editarOferta(
+export async function editarOfertaConsola(
   token: string,
   id: number,
   data: { descuento_porcentaje?: number; descuento_fijo?: number }
-): Promise<Juego> {
+): Promise<Consolas> {
   if (!token) throw new Error("no se encontro el token de usuario");
 
-  const res = await fetch(`${API_URL}/juego/${id}/oferta`, {
+  const res = await fetch(`${API_URL}/consola/${id}/oferta`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

@@ -10,6 +10,7 @@ export interface Venta {
   vendedor_id: number;
   cliente_id?: number;
   total: number;
+  vuelto?: number;
   descuento_porcentaje?: number;
   descuento_fijo?: number;
   cliente?: Usuario;

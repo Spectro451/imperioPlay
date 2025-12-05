@@ -18,6 +18,7 @@ export default async function ProductosPage({
     page: params.page ? Number(params.page) : 1,
     nombre: params.nombre as string | undefined,
     estado: params.estado as estadoJuego | undefined,
+    sku: params.sku as string | undefined,
   };
 
   const resultadoData = await getProductos(filtros);

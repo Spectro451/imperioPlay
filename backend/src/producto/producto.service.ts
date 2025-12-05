@@ -42,6 +42,9 @@ export class ProductoService {
         nombre: `%${filtro.nombre}%`,
       });
 
+    if (filtro?.tipo)
+      query.andWhere('producto.tipo = :tipo', { tipo: filtro.tipo });
+
     if (filtro?.estado) {
       query.andWhere('(juego.estado = :estado OR consola.estado = :estado)', {
         estado: filtro.estado,
@@ -49,16 +52,14 @@ export class ProductoService {
     }
 
     if (filtro?.consola) {
-      query.andWhere(
-        '(juego.consola = :consola OR consola.generacion = :consola)',
-        {
+      if (!filtro.tipo || filtro.tipo === tipoProducto.juego) {
+        query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+      } else if (filtro.tipo === tipoProducto.consola) {
+        query.andWhere('consola.generacion = :consola', {
           consola: filtro.consola,
-        },
-      );
+        });
+      }
     }
-
-    if (filtro?.estado)
-      query.andWhere('juego.estado = :estado', { estado: filtro.estado });
 
     if (filtro?.sku)
       query.andWhere('producto.sku = :sku', {
@@ -140,10 +141,13 @@ export class ProductoService {
     }
 
     if (filtro?.consola) {
-      query.andWhere(
-        '(juego.consola = :consola OR consola.generacion = :consola)',
-        { consola: filtro.consola },
-      );
+      if (!filtro.tipo || filtro.tipo === tipoProducto.juego) {
+        query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+      } else if (filtro.tipo === tipoProducto.consola) {
+        query.andWhere('consola.generacion = :consola', {
+          consola: filtro.consola,
+        });
+      }
     }
 
     if (filtro?.sku) query.andWhere('producto.sku = :sku', { sku: filtro.sku });
