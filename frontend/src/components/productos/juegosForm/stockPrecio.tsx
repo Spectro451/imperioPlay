@@ -19,8 +19,8 @@ export default function StockPrecioCampo({
         <label className="block text-sm font-medium mb-1">Stock *</label>
         <input
           type="numeric"
-          min="1"
-          value={stock === 0 ? "" : stock}
+          min="0"
+          value={stock}
           onChange={(e) => {
             const value = e.target.value;
             onStockChange(value === "" ? 0 : parseInt(value) || 0);

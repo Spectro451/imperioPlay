@@ -15,10 +15,15 @@ export async function getProductos(
   if (filtro.estado) params.set("estado", filtro.estado);
   if (filtro.sku) params.set("sku", filtro.sku);
 
-  const res = await fetch(`${API_URL}/producto?${params.toString()}`);
-  if (!res.ok) throw new Error("Error getProductos");
-  const json = await res.json();
-  return json;
+  try {
+    const res = await fetch(`${API_URL}/producto?${params.toString()}`);
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Fetch error en getProductos:", error);
+    return { productos: [], total: 0, totalPaginas: 0 };
+  }
 }
 
 //getId
@@ -41,10 +46,19 @@ export async function getOfertas(
   if (filtro.estado) params.set("estado", filtro.estado);
   if (filtro.sku) params.set("sku", filtro.sku);
 
-  const res = await fetch(`${API_URL}/producto/ofertas?${params.toString()}`);
-  if (!res.ok) throw new Error("Error getOfertas");
-  const json = await res.json();
-  return json;
+  try {
+    const res = await fetch(`${API_URL}/producto/ofertas?${params.toString()}`);
+
+    if (!res.ok) {
+      throw new Error(`Backend error: ${res.status}`);
+    }
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Error en getOfertas:", error);
+    return { productos: [], total: 0, totalPaginas: 0 };
+  }
 }
 
 //editar

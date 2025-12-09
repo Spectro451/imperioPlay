@@ -7,6 +7,19 @@ export default async function ProductosNuevos() {
   const productosData = await getProductos({ orden: Orden.ID_DESC });
   const productos = productosData.productos;
 
+  const hayJuegos = productos.some((p) => p.juegos && p.juegos.length > 0);
+
+  if (!hayJuegos) {
+    return (
+      <section className="mx-4 md:mx-10">
+        <h1 className="text-center text-[28px] pt-5">Juegos nuevos</h1>
+        <div className="flex items-center justify-center p-10">
+          <p className="text-gray-500">No hay juegos nuevos disponibles</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="overflow-x-auto mx-4 md:mx-10">
       <h1 className="text-center text-[28px] pt-5">Juegos nuevos</h1>

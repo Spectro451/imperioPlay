@@ -1,4 +1,3 @@
-// components/producto/crear/ConsolaEstadoCampo.tsx
 "use client";
 import { Consola, estadoJuego } from "@/types/enums";
 

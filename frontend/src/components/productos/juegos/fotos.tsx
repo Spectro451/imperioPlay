@@ -10,7 +10,9 @@ interface Props {
 export default function Fotos({ fotos, nombre }: Props) {
   const [imagenPrincipal, setImagenPrincipal] = useState(fotos?.[0] || "");
 
-  if (!fotos || fotos.length === 0) {
+  const fotosValidas = fotos?.filter((foto) => foto && foto.trim() !== "");
+
+  if (!fotosValidas || fotosValidas.length === 0) {
     return (
       <div className="border rounded-lg overflow-hidden aspect-square flex items-center justify-center">
         <span className="text-lg">Sin imagen disponible</span>
@@ -22,7 +24,7 @@ export default function Fotos({ fotos, nombre }: Props) {
     <div className="space-y-4">
       <div className="border rounded-lg overflow-hidden aspect-square">
         <Image
-          src={imagenPrincipal || fotos[0]}
+          src={imagenPrincipal || fotosValidas[0]}
           alt={nombre}
           width={500}
           height={500}
@@ -30,9 +32,9 @@ export default function Fotos({ fotos, nombre }: Props) {
         />
       </div>
 
-      {fotos.length > 1 && (
+      {fotosValidas.length > 1 && (
         <div className="flex gap-2 overflow-x-auto">
-          {fotos.map((foto, index) => (
+          {fotosValidas.map((foto, index) => (
             <button
               key={index}
               onClick={() => setImagenPrincipal(foto)}

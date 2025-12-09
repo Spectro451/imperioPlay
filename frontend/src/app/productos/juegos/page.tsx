@@ -31,13 +31,17 @@ export default async function JuegosPage({
         <FiltrosJuego />
       </aside>
 
-      <main className="flex-1  flex flex-col">
-        <ProductosGrid productos={productos} />
-
-        <Paginacion
-          pageActual={filtros.page}
-          totalPaginas={totalPaginas}
-        ></Paginacion>
+      <main className="flex-1 flex flex-col">
+        {productos.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-lg ">No se encontraron juegos</p>
+          </div>
+        ) : (
+          <>
+            <ProductosGrid productos={productos} />
+            <Paginacion pageActual={filtros.page} totalPaginas={totalPaginas} />
+          </>
+        )}
       </main>
     </div>
   );
