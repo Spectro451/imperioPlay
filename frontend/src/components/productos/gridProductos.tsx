@@ -43,7 +43,7 @@ export default function ProductosGrid({ productos }: Props) {
               {item.productoNombre}
             </p>
             <p className="text-xs text-gray-600">
-              {item.tipo === "juego"
+              {item.tipo === "juegos"
                 ? `${(item as Juego).consola} - ${item.estado}`
                 : `${(item as Consolas).generacion} - ${item.estado}`}
             </p>
