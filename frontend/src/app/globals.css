@@ -20,4 +20,5 @@ body {
 
 .submenu-group:hover .submenu-group-hover\:block {
   display: block;
+  align-items: center;
 }

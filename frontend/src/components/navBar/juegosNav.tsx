@@ -2,17 +2,17 @@ import Link from "next/link";
 
 export default function NavJuegos() {
   return (
-    <div className="relative w-full group">
+    <div className="relative w-full group ">
       <Link
         href="/productos/juegos"
         className="block p-2 text-center hover:bg-green-500"
       >
         Juegos
       </Link>
-      <div className="absolute hidden group-hover:block w-full bg-blue-500">
-        <div className="relative submenu-group">
+      <div className="absolute hidden group-hover:block w-full bg-blue-500 text-center">
+        <div className="relative submenu-group ">
           <div className="p-2 text-center">Estado</div>
-          <div className="absolute left-full top-0 hidden submenu-group-hover:block w-full bg-blue-500">
+          <div className="absolute left-full top-0 hidden submenu-group-hover:block w-full bg-blue-500 ">
             <Link
               href="/productos/juegos?estado=nuevo"
               className="block p-2 hover:bg-green-500"

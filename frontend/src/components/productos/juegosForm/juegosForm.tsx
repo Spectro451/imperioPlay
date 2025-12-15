@@ -10,6 +10,8 @@ import StockPrecioCampo from "./stockPrecio";
 import DescuentoCampos from "./descuentos";
 import FotosCampo from "./fotos";
 import { Juego } from "@/types/juego";
+import BuscarPorSku from "./buscarSku";
+import { putProducto } from "@/lib/producto";
 
 export default function JuegoForm({
   token,
@@ -30,6 +32,7 @@ export default function JuegoForm({
         producto: {
           nombre: juegoData.producto?.nombre || "",
           tipo: tipoProducto.juego,
+          sku: juegoData.producto?.sku || "",
         },
         juego: {
           consola: juegoData.consola,
@@ -47,6 +50,7 @@ export default function JuegoForm({
       producto: {
         nombre: "",
         tipo: tipoProducto.juego,
+        sku: "",
       },
       juego: {
         consola: Consola.Ps5,
@@ -96,9 +100,25 @@ export default function JuegoForm({
         };
 
         await editarJuego(token, juegoData.id, datosActualizacion);
+        if (juegoData.producto?.id) {
+          const productoCambiado =
+            form.producto.nombre !== juegoData.producto.nombre ||
+            form.producto.sku !== juegoData.producto.sku;
+
+          if (productoCambiado) {
+            await putProducto(token, juegoData.producto.id, {
+              nombre: form.producto.nombre,
+              sku: form.producto.sku,
+            });
+          }
+        }
       } else {
         await crearJuego(token, {
           ...form,
+          producto: {
+            ...form.producto,
+            sku: form.producto.sku,
+          },
           juego: { ...form.juego, fotos: todasLasFotos },
         });
       }
@@ -121,6 +141,40 @@ export default function JuegoForm({
           {error}
         </div>
       )}
+
+      <BuscarPorSku
+        value={form.producto.sku || ""}
+        onChange={(sku) =>
+          setForm((prev) => ({
+            ...prev,
+            producto: { ...prev.producto, sku },
+          }))
+        }
+        onProductoEncontrado={(producto) => {
+          if (modo === "crear") {
+            const primerJuego = producto.juegos?.[0];
+
+            setForm((prev) => ({
+              ...prev,
+              producto: {
+                ...prev.producto,
+                nombre: producto.nombre,
+                sku: producto.sku,
+              },
+
+              ...(primerJuego && {
+                juego: {
+                  ...prev.juego,
+                  consola: primerJuego.consola,
+                  stock: primerJuego.stock,
+                  precio_base: primerJuego.precio_base,
+                },
+              }),
+            }));
+          }
+        }}
+        modo={modo}
+      />
 
       <ProductoNombre
         value={form.producto.nombre}

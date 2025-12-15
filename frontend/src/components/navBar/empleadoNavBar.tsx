@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import NavJuegos from "./juegosNav";
 
 export default async function EmpleadoNav() {
   const cookieStore = await cookies();

@@ -9,7 +9,6 @@ export default async function OfertasNuevas() {
   const resultadoData = await getOfertas({ orden: Orden.ID_DESC });
   const productos = resultadoData.productos;
 
-  // Combinar juegos + consolas (igual que ProductosGrid)
   const items = productos.flatMap((producto) => [
     ...(producto.juegos?.map((j) => ({
       ...j,
@@ -46,7 +45,7 @@ export default async function OfertasNuevas() {
             key={`${item.tipo}-${item.id}`}
             className="w-[140px] h-[220px] md:w-[200px] md:h-[280px] border-1 flex-shrink-0"
           >
-            {item.fotos?.[0] && (
+            {item.fotos?.[0] ? (
               <Image
                 src={item.fotos[0]}
                 alt={item.productoNombre}
@@ -54,7 +53,12 @@ export default async function OfertasNuevas() {
                 height={200}
                 className="w-full h-3/5 md:h-4/6 object-fit"
               />
+            ) : (
+              <div className="w-full h-3/5 md:h-4/6 flex flex-col items-center justify-center">
+                <p className="text-center p-2">Imagen no disponible</p>
+              </div>
             )}
+
             <div className="p-1 flex-1 flex flex-col justify-between">
               <p className="text-m line-clamp-1" title={item.productoNombre}>
                 {item.productoNombre}

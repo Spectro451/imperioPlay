@@ -29,7 +29,7 @@ export default function ProductosGrid({ productos }: Props) {
           key={`${item.tipo}-${item.id}`}
           className="w-full aspect-[3/4] border rounded-lg flex flex-col overflow-hidden"
         >
-          {item.fotos?.[0] && (
+          {item.fotos?.[0] ? (
             <Image
               src={item.fotos[0]}
               alt={item.productoNombre}
@@ -37,6 +37,10 @@ export default function ProductosGrid({ productos }: Props) {
               height={200}
               className="w-full h-4/5 object-fit"
             />
+          ) : (
+            <div className="w-full h-4/5 flex flex-col items-center justify-center">
+              <p className="text-center p-2">Imagen no disponible</p>
+            </div>
           )}
           <div className="p-1 flex-1 flex flex-col justify-between">
             <p className="text-m line-clamp-1" title={item.productoNombre}>

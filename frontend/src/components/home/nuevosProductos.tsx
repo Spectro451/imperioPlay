@@ -31,15 +31,20 @@ export default async function ProductosNuevos() {
               key={juego.id}
               className="w-[140px] h-[220px] md:w-[200px] md:h-[280px] border-1 flex-shrink-0"
             >
-              {juego.fotos?.[0] && (
+              {juego.fotos?.[0] ? (
                 <Image
                   src={juego.fotos[0]}
                   alt={producto.nombre}
                   width={200}
                   height={200}
-                  className="w-full h-3/5  md:h-4/6 object-fit"
+                  className="w-full h-3/5 md:h-4/6 object-cover"
                 />
+              ) : (
+                <div className="w-full h-3/5 md:h-4/6 flex flex-col items-center justify-center  ">
+                  <p className="  text-center p-2">Imagen no disponible</p>
+                </div>
               )}
+
               <div className="p-1 flex-1 flex flex-col justify-between">
                 <p className="text-m line-clamp-1" title={producto.nombre}>
                   {producto.nombre}

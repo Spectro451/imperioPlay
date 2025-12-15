@@ -129,3 +129,28 @@ export async function buscarNombresProductos(
   if (!res.ok) throw new Error("Error buscando productos");
   return res.json();
 }
+
+export async function buscarProductoPorSku(sku: string): Promise<{
+  encontrado: boolean;
+  producto?: Producto;
+}> {
+  if (!sku || sku.trim().length === 0) {
+    return { encontrado: false };
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/producto/sku/${sku.trim()}`);
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        return { encontrado: false };
+      }
+      throw new Error(`Error ${res.status}: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error en buscarProductoPorSku:", error);
+    return { encontrado: false };
+  }
+}
