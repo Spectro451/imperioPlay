@@ -88,6 +88,7 @@ export default function BuscarPorSku({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        required
         className="w-full border p-2 rounded "
         placeholder="Ingresa SKU (mínimo 3 caracteres)"
       />
