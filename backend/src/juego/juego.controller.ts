@@ -57,6 +57,7 @@ export class JuegoController {
         id: producto.id,
         nombre: producto.nombre,
         tipo: producto.tipo,
+        sku: producto.sku,
       },
       juego: {
         id: juego.id,

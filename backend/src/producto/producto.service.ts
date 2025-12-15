@@ -166,7 +166,7 @@ export class ProductoService {
 
   async crearProductoSiNoExiste(data: Partial<Producto>): Promise<Producto> {
     const existing = await this.productoRepo.findOne({
-      where: [{ sku: data.sku }, { nombre: data.nombre }],
+      where: { sku: data.sku },
       relations: ['juegos', 'consolas'],
     });
     if (existing) return existing;

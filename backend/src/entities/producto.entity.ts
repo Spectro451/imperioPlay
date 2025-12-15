@@ -15,7 +15,7 @@ export class Producto {
   @Column({ type: 'enum', enum: tipoProducto })
   tipo: tipoProducto;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   sku: string;
 
   @OneToMany(() => Juego, (juego) => juego.producto, {
