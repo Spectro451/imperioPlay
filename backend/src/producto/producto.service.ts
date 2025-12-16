@@ -46,9 +46,10 @@ export class ProductoService {
       query.andWhere('producto.tipo = :tipo', { tipo: filtro.tipo });
 
     if (filtro?.estado) {
-      query.andWhere('(juego.estado = :estado OR consola.estado = :estado)', {
-        estado: filtro.estado,
-      });
+      query.andWhere(
+        `(juego.estado::text = :estado OR consola.estado::text = :estado)`,
+        { estado: filtro.estado },
+      );
     }
 
     if (filtro?.consola) {
@@ -135,9 +136,10 @@ export class ProductoService {
       query.andWhere('producto.tipo = :tipo', { tipo: filtro.tipo });
 
     if (filtro?.estado) {
-      query.andWhere('(juego.estado = :estado OR consola.estado = :estado)', {
-        estado: filtro.estado,
-      });
+      query.andWhere(
+        `(juego.estado::text = :estado OR consola.estado::text = :estado)`,
+        { estado: filtro.estado },
+      );
     }
 
     if (filtro?.consola) {
