@@ -1,13 +1,16 @@
 import OfertasNuevas from "@/components/home/nuevasOfertas";
-import ProductosNuevos from "@/components/home/nuevosProductos";
 import SobreNosotros from "@/components/home/sobreNosotros";
+import JuegosNuevos from "@/components/home/juegosNuevos";
+import ConsolasNuevas from "@/components/home/consolasNuevas";
 
 export default function Home() {
   return (
     <main>
       <SobreNosotros />
 
-      <ProductosNuevos />
+      <JuegosNuevos />
+
+      <ConsolasNuevas />
 
       <OfertasNuevas />
     </main>

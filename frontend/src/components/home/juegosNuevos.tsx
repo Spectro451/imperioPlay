@@ -1,10 +1,13 @@
 import { getProductos } from "@/lib/producto";
-import { Orden } from "@/types/enums";
+import { Orden, tipoProducto } from "@/types/enums";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function ProductosNuevos() {
-  const productosData = await getProductos({ orden: Orden.ID_DESC });
+export default async function JuegosNuevos() {
+  const productosData = await getProductos({
+    orden: Orden.ID_DESC,
+    tipo: tipoProducto.juego,
+  });
   const productos = productosData.productos;
 
   const hayJuegos = productos.some((p) => p.juegos && p.juegos.length > 0);

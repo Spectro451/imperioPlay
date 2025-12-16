@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { And, ILike, IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
@@ -171,7 +171,14 @@ export class ProductoService {
       where: { sku: data.sku },
       relations: ['juegos', 'consolas'],
     });
-    if (existing) return existing;
+    if (existing) {
+      if (existing.tipo !== data.tipo) {
+        throw new BadRequestException(
+          `SKU "${data.sku}" ya está registrado para un producto tipo "${existing.tipo}" (nombre: "${existing.nombre}"). No puede usarse para tipo "${data.tipo}".`,
+        );
+      }
+      return existing;
+    }
 
     const producto = this.productoRepo.create(data);
     return this.productoRepo.save(producto);

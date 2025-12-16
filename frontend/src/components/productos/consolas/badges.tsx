@@ -1,14 +1,15 @@
 interface Props {
-  consola: string;
+  generacion: string;
   stock: number;
   estado: string;
-  tier: number;
 }
 
-export default function Badges({ consola, stock, estado, tier }: Props) {
+export default function Badges({ generacion, stock, estado }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
-      <span className="px-3 py-1 border rounded-full text-sm">{consola}</span>
+      <span className="px-3 py-1 border rounded-full text-sm">
+        {generacion}
+      </span>
 
       <span
         className={`px-3 py-1 border rounded-full text-sm ${
@@ -27,8 +28,6 @@ export default function Badges({ consola, stock, estado, tier }: Props) {
       </span>
 
       <span className="px-3 py-1 border rounded-full text-sm">{estado}</span>
-
-      <span className="px-3 py-1 border rounded-full text-sm">Tier {tier}</span>
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function BuscarPorSku({
         const resultado = await buscarProductoPorSku(debouncedSku);
 
         if (resultado.encontrado && resultado.producto) {
-          if (resultado.producto.tipo === "juego") {
+          if (resultado.producto.tipo === "consola") {
             setSuggestions([resultado.producto]);
           } else {
             setSuggestions([]);
@@ -115,21 +115,23 @@ export default function BuscarPorSku({
                 </div>
               </div>
 
-              {producto.juegos && producto.juegos.length > 0 && (
+              {producto.consolas && producto.consolas.length > 0 && (
                 <div className="mt-3 pt-2 border-t ">
                   <p className=" mb-1">Variantes disponibles:</p>
                   <div className="space-y-1">
-                    {producto.juegos.map((juego: any, index: number) => (
+                    {producto.consolas.map((consola: any, index: number) => (
                       <div key={index} className="flex items-center text-xs ">
                         <span className="w-2 h-2  rounded-full mr-2 border"></span>
-                        <span className="font-medium">{juego.consola}</span>
+                        <span className="font-medium">
+                          {consola.generacion}
+                        </span>
                         <span className="mx-1">•</span>
-                        <span className="capitalize">{juego.estado}</span>
+                        <span className="capitalize">{consola.estado}</span>
                         <span className="mx-1">•</span>
-                        <span>Stock: {juego.stock}</span>
+                        <span>Stock: {consola.stock}</span>
                         <span className="mx-1">•</span>
                         <span className="font-bold text-green-700">
-                          ${juego.precio_final?.toLocaleString()}
+                          ${consola.precio_final?.toLocaleString()}
                         </span>
                       </div>
                     ))}

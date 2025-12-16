@@ -26,9 +26,19 @@ export default async function EmpleadoNav() {
         </div>
       </div>
 
-      <Link href="/productos/consolas" className="block  text-center w-full">
-        Consolas
-      </Link>
+      <div className="relative w-full group">
+        <Link href="/productos/consolas" className="block p-2 text-center">
+          Consolas
+        </Link>
+        <div className="absolute hidden group-hover:block group-focus-within:block w-full bg-blue-500">
+          <Link
+            href="/productos/consolas/nuevo"
+            className="block p-2 text-center w-full"
+          >
+            Crear
+          </Link>
+        </div>
+      </div>
 
       <Link href="/productos/ofertas" className="block  text-center w-full">
         Ofertas
