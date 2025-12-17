@@ -56,7 +56,7 @@ export default async function JuegosNuevos() {
                   {juego.consola} - {juego.estado}
                 </p>
                 <p className="text-xs line-clamp-1">Stock: {juego.stock}</p>
-                <div className="flex flex-row gap-3 items-baseline">
+                <div className="flex flex-col md:flex-row md:gap-3 items-baseline">
                   {juego.precio_final !== juego.precio_base ? (
                     <>
                       <span className="text-green-600 font-bold">

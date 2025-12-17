@@ -69,7 +69,7 @@ export default async function OfertasNuevas() {
                   : `${(item as Consolas).generacion} - ${item.estado}`}
               </p>
               <p className="text-xs line-clamp-1">Stock: {item.stock}</p>
-              <div className="flex flex-row gap-3 items-baseline">
+              <div className="flex flex-col md:flex-row md:gap-3 items-baseline">
                 {item.precio_final !== item.precio_base ? (
                   <>
                     <span className="text-green-600 font-bold">

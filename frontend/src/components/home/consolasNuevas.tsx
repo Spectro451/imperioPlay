@@ -58,7 +58,7 @@ export default async function ConsolasNuevas() {
                   {consola.generacion} - {consola.estado}
                 </p>
                 <p className="text-xs line-clamp-1">Stock: {consola.stock}</p>
-                <div className="flex flex-row gap-3 items-baseline">
+                <div className="flex flex-col md:flex-row md:gap-3 items-baseline">
                   {consola.precio_final !== consola.precio_base ? (
                     <>
                       <span className="text-green-600 font-bold">

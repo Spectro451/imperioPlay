@@ -5,6 +5,7 @@ import Footer from "@/components/footer/footer";
 import ClienteNav from "@/components/navBar/clienteNavBar";
 import { cookies } from "next/headers";
 import EmpleadoNav from "@/components/navBar/empleadoNavBar";
+import AdminNav from "@/components/navBar/adminNav";
 
 export const metadata: Metadata = {
   title: "ImperioPlay",
@@ -21,7 +22,7 @@ export default async function RootLayout({
   const getNavbar = () => {
     switch (rol) {
       case "admin":
-      //return <AdminNav />;
+        return <AdminNav />;
       case "empleado":
         return <EmpleadoNav />;
       case "cliente":
