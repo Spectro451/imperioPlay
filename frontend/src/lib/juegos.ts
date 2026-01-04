@@ -2,7 +2,10 @@ import { Consola, estadoJuego } from "@/types/enums";
 import { Juego } from "@/types/juego";
 import { Producto } from "@/types/producto";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL =
+  typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
 
 //getId
 export async function getJuegoId(id: number): Promise<Juego> {

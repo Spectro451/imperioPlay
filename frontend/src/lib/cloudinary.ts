@@ -1,4 +1,3 @@
-// lib/cloudinary.ts
 const CLOUD_NAME = "dayhhjn4m";
 const UPLOAD_PRESET = "imperioPlay";
 

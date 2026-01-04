@@ -1,7 +1,10 @@
 import { metodoPago, tipoProducto } from "@/types/enums";
 import { Venta } from "@/types/venta";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL =
+  typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
 
 //crear venta
 export async function crearVenta(

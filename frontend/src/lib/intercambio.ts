@@ -2,7 +2,10 @@ import { Consola, estadoJuego, metodoPago } from "@/types/enums";
 import { Intercambio } from "@/types/intercambio";
 import { Producto } from "@/types/producto";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL =
+  typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
 
 //get intercambio
 export async function getIntercambios(token: string): Promise<Intercambio[]> {

@@ -1,7 +1,10 @@
 import { Rol } from "@/types/enums";
 import { Usuario } from "@/types/usuario";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL =
+  typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
 
 //crear usuario
 export async function postUsuario(data: {
