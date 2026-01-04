@@ -1,7 +1,4 @@
-const API_URL =
-  typeof window === "undefined"
-    ? process.env.API_URL
-    : process.env.NEXT_PUBLIC_API_URL;
+import { API_URL } from "./api";
 
 export async function Login(correo: string, password: string) {
   const res = await fetch(`${API_URL}/auth/login`, {

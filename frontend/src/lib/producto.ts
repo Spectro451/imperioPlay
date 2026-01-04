@@ -1,9 +1,5 @@
 import { Producto, ProductoFiltro } from "@/types/producto";
-
-const API_URL =
-  typeof window === "undefined"
-    ? process.env.API_URL
-    : process.env.NEXT_PUBLIC_API_URL;
+import { API_URL } from "./api";
 
 //getall
 export async function getProductos(

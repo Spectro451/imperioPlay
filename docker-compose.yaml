@@ -8,8 +8,6 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
-    networks:
-      - back-tier
   backend:
     build: ./backend
     container_name: backend
@@ -19,8 +17,6 @@ services:
       - ./backend/.env
     depends_on:
       - db
-    networks:
-      - back-tier
   db:
     image: postgres:17-alpine
     container_name: db
@@ -33,9 +29,5 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - back-tier
 volumes:
   db-data:
-networks:
-  back-tier: {}
