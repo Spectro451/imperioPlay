@@ -9,7 +9,7 @@ export async function postUsuario(data: {
   password: string;
   rol?: Rol;
 }): Promise<Usuario> {
-  const res = await fetch(`${API_URL}/usuario`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuario`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
