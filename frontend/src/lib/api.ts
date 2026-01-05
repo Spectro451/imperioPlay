@@ -1,4 +1,1 @@
-console.log("🔍 API_URL:", process.env.NEXT_PUBLIC_API_URL);
-
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.kiwi-dev.xyz";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL!;
