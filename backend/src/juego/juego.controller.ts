@@ -13,11 +13,12 @@ import {
 import { JuegoService } from './juego.service';
 import { Juego } from '../entities/juego.entity';
 import { ProductoService } from 'src/producto/producto.service';
-import { Producto } from 'src/entities/producto.entity';
-import { Consola, estadoJuego } from 'src/entities/enums';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
+import { CreateJuegoDto } from './dto/create-juego.dto';
+import { UpdateJuegoDto } from './dto/update-juego.dto';
+import { OfertaDto } from './dto/oferta.dto';
 
 @Controller('juego')
 export class JuegoController {
@@ -29,21 +30,7 @@ export class JuegoController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
-  async create(
-    @Body()
-    data: {
-      producto: Partial<Producto>;
-      juego: {
-        consola: Consola;
-        estado: estadoJuego;
-        stock?: number;
-        fotos?: string[];
-        precio_base: number;
-        descuento_porcentaje?: number;
-        descuento_fijo?: number;
-      };
-    },
-  ) {
+  async create(@Body() data: CreateJuegoDto) {
     const producto = await this.productoService.crearProductoSiNoExiste(
       data.producto,
     );
@@ -51,7 +38,6 @@ export class JuegoController {
       producto,
       data.juego,
     );
-
     return {
       producto: {
         id: producto.id,
@@ -90,7 +76,7 @@ export class JuegoController {
   @Roles('admin', 'empleado')
   async update(
     @Param('id') id: string,
-    @Body() data: Partial<Juego>,
+    @Body() data: UpdateJuegoDto,
   ): Promise<Juego> {
     return this.juegoService.update(Number(id), data);
   }
@@ -107,8 +93,7 @@ export class JuegoController {
   @Roles('admin', 'empleado')
   async changeOferta(
     @Param('id') id: string,
-    @Body()
-    descuentos: { descuento_porcentaje?: number; descuento_fijo?: number },
+    @Body() descuentos: OfertaDto,
   ): Promise<Juego> {
     try {
       return await this.juegoService.modificarOferta(Number(id), descuentos);

@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { And, ILike, IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
-import { Consola, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
+import { Plataforma, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
 import { ORDER_MAP } from 'src/constants/orden';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class ProductoService {
     nombre?: string;
     tipo?: tipoProducto;
     page?: number;
-    consola?: Consola;
+    consola?: Plataforma;
     orden?: Orden;
     estado?: estadoJuego;
     sku?: string;
@@ -35,7 +35,8 @@ export class ProductoService {
     const query = this.productoRepo
       .createQueryBuilder('producto')
       .leftJoinAndSelect('producto.juegos', 'juego')
-      .leftJoinAndSelect('producto.consolas', 'consola');
+      .leftJoinAndSelect('producto.consolas', 'consola')
+      .where('producto.isActive = :isActive', { isActive: true });
 
     if (filtro?.nombre)
       query.andWhere('producto.nombre ILIKE :nombre', {
@@ -97,12 +98,14 @@ export class ProductoService {
     return await this.productoRepo.save(producto);
   }
 
-  //borrar producto
   async remove(id: number): Promise<void> {
-    const result = await this.productoRepo.delete(id);
-    if (result.affected === 0) {
-      throw new Error(`Producto con id ${id} no encontrado`);
-    }
+    const producto = await this.findOne(id);
+    if (!producto)
+      throw new NotFoundException(`Producto con id ${id} no encontrado`);
+    if (!producto.isActive)
+      throw new BadRequestException(`Producto con id ${id} ya está inactivo`);
+    producto.isActive = false;
+    await this.productoRepo.save(producto);
   }
 
   //llamar solo las ofertas
@@ -110,7 +113,7 @@ export class ProductoService {
     nombre?: string;
     tipo?: tipoProducto;
     page?: number;
-    consola?: Consola;
+    consola?: Plataforma;
     orden?: Orden;
     estado?: estadoJuego;
     sku?: string;
@@ -123,7 +126,8 @@ export class ProductoService {
       .createQueryBuilder('producto')
       .leftJoinAndSelect('producto.juegos', 'juego')
       .leftJoinAndSelect('producto.consolas', 'consola')
-      .where(
+      .where('producto.isActive = :isActive', { isActive: true })
+      .andWhere(
         '(juego.descuento_porcentaje > 0 OR juego.descuento_fijo > 0 OR consola.descuento_porcentaje > 0 OR consola.descuento_fijo > 0)',
       );
 

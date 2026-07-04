@@ -6,7 +6,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { JuegoModule } from './juego/juego.module';
 import { ProductoModule } from './producto/producto.module';
 import { VentaModule } from './venta/venta.module';
-import { VentaProductoModule } from './ventaProducto/ventaProducto.module';
+import { VentaDetalleModule } from './venta-detalle/venta-detalle.module';
 import { IntercambioModule } from './intercambio/intercambio.module';
 import { IntercambioJuegoModule } from './intercambio-juego/intercambio-juego.module';
 import { AuthModule } from './auth/auth.module';
@@ -21,7 +21,7 @@ import { IntercambioJuego } from './entities/intercambioJuego.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConsolaModule } from './consola/consola.module';
-import { Consolas } from './entities/consola';
+import { Consola } from './entities/consola';
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ import { Consolas } from './entities/consola';
         Juego,
         Venta,
         VentaDetalle,
-        Consolas,
+        Consola,
         Intercambio,
         IntercambioJuego,
       ],
@@ -45,7 +45,7 @@ import { Consolas } from './entities/consola';
     JuegoModule,
     ProductoModule,
     VentaModule,
-    VentaProductoModule,
+    VentaDetalleModule,
     IntercambioModule,
     IntercambioJuegoModule,
     AuthModule,

@@ -1,9 +1,9 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Producto } from './producto.entity';
-import { estadoJuego, Consola } from './enums';
+import { estadoJuego, Plataforma } from './enums';
 
-@Entity()
-export class Consolas {
+@Entity('consolas')
+export class Consola {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -16,8 +16,8 @@ export class Consolas {
   @Column({ type: 'enum', enum: estadoJuego })
   estado: estadoJuego;
 
-  @Column({ type: 'enum', enum: Consola })
-  generacion: Consola;
+  @Column({ type: 'enum', enum: Plataforma })
+  generacion: Plataforma;
 
   @Column()
   precio_base: number;
@@ -33,6 +33,9 @@ export class Consolas {
 
   @Column('text', { array: true })
   fotos?: string[];
+
+  @Column({ default: true })
+  isActive: boolean;
 
   @ManyToOne(() => Producto, (producto) => producto.consolas)
   producto: Producto;

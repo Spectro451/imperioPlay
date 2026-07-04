@@ -7,8 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Juego } from '../entities/juego.entity';
 import { Producto } from 'src/entities/producto.entity';
-import { Consola, estadoJuego } from 'src/entities/enums';
-import { VALOR_TIER } from 'src/constants/tiers.constant';
+import { Plataforma, estadoJuego } from 'src/entities/enums';
+import { calcularPrecioFinal, calcularTier } from 'src/utils/pricing';
 
 @Injectable()
 export class JuegoService {
@@ -17,60 +17,12 @@ export class JuegoService {
     private readonly juegoRepo: Repository<Juego>,
   ) {}
 
-  calcularTier(precioFinal: number): number {
-    const tiers = Object.entries(VALOR_TIER)
-      .map(([tier, valor]) => ({ tier: Number(tier), valor }))
-      .sort((a, b) => a.valor - b.valor);
-
-    for (const t of tiers) {
-      if (precioFinal <= t.valor) return t.tier;
-    }
-
-    return tiers[tiers.length - 1].tier;
-  }
-
-  //funcion para recalcular el precio final del producto en base a que descuento tiene
-  private calcularPrecioFinal(
-    precio_base: number,
-    descuento_porcentaje?: number,
-    descuento_fijo?: number,
-  ): number {
-    descuento_porcentaje =
-      descuento_porcentaje === 0 ? undefined : descuento_porcentaje;
-    descuento_fijo = descuento_fijo === 0 ? undefined : descuento_fijo;
-
-    if (descuento_porcentaje && descuento_fijo) {
-      throw new Error('Solo puede haber un descuento a la vez');
-    }
-
-    if (descuento_porcentaje) {
-      if (descuento_porcentaje > 100) {
-        throw new BadRequestException(
-          'El descuento porcentual no puede ser mayor al 100%',
-        );
-      }
-      return Math.round(precio_base * (1 - descuento_porcentaje / 100));
-    }
-
-    if (descuento_fijo) {
-      if (descuento_fijo > precio_base) {
-        throw new BadRequestException(
-          'El descuento fijo no puede ser mayor al precio base',
-        );
-      }
-      return precio_base - descuento_fijo;
-    }
-
-    return precio_base;
-  }
-
   async restarStockJuego(juego: Juego, cantidad: number): Promise<Juego> {
     if (juego.stock < cantidad) {
       throw new BadRequestException(
         `No hay suficiente stock para el juego ${juego.id}. Stock disponible: ${juego.stock}`,
       );
     }
-
     juego.stock -= cantidad;
     return this.juegoRepo.save(juego);
   }
@@ -87,13 +39,12 @@ export class JuegoService {
     if (juego.descuento_porcentaje) juego.descuento_fijo = 0;
     if (juego.descuento_fijo) juego.descuento_porcentaje = 0;
 
-    juego.precio_final = this.calcularPrecioFinal(
+    juego.precio_final = calcularPrecioFinal(
       juego.precio_base,
       juego.descuento_porcentaje,
       juego.descuento_fijo,
     );
-
-    juego.tier = this.calcularTier(juego.precio_final);
+    juego.tier = calcularTier(juego.precio_final);
 
     return this.juegoRepo.save(juego);
   }
@@ -101,7 +52,7 @@ export class JuegoService {
   async crearJuegoSiNoExiste(
     producto: Producto,
     dataJuegoCliente: {
-      consola: Consola;
+      consola: Plataforma;
       estado?: estadoJuego;
       stock?: number;
       fotos?: string[];
@@ -128,11 +79,12 @@ export class JuegoService {
     if (dataJuegoCliente.descuento_fijo)
       dataJuegoCliente.descuento_porcentaje = 0;
 
-    const precio_final = this.calcularPrecioFinal(
+    const precio_final = calcularPrecioFinal(
       dataJuegoCliente.precio_base,
       dataJuegoCliente.descuento_porcentaje,
       dataJuegoCliente.descuento_fijo,
     );
+
     const nuevoJuego = this.juegoRepo.create({
       producto,
       consola: dataJuegoCliente.consola,
@@ -140,7 +92,7 @@ export class JuegoService {
       estado,
       stock,
       precio_final,
-      tier: this.calcularTier(precio_final),
+      tier: calcularTier(precio_final),
       fotos: dataJuegoCliente.fotos || [],
       descuento_porcentaje: dataJuegoCliente.descuento_porcentaje,
       descuento_fijo: dataJuegoCliente.descuento_fijo,
@@ -156,6 +108,7 @@ export class JuegoService {
 
   findAll(): Promise<Juego[]> {
     return this.juegoRepo.find({
+      where: { isActive: true },
       relations: ['producto'],
     });
   }
@@ -183,12 +136,12 @@ export class JuegoService {
       if (juego.descuento_porcentaje) juego.descuento_fijo = 0;
       if (juego.descuento_fijo) juego.descuento_porcentaje = 0;
 
-      juego.precio_final = this.calcularPrecioFinal(
+      juego.precio_final = calcularPrecioFinal(
         juego.precio_base,
         juego.descuento_porcentaje,
         juego.descuento_fijo,
       );
-      juego.tier = this.calcularTier(juego.precio_final);
+      juego.tier = calcularTier(juego.precio_final);
     }
 
     if (
@@ -214,9 +167,12 @@ export class JuegoService {
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.juegoRepo.delete(id);
-    if (result.affected === 0) {
-      throw new Error(`Juego con id ${id} no encontrado`);
-    }
+    const juego = await this.findOne(id);
+    if (!juego)
+      throw new NotFoundException(`Juego con id ${id} no encontrado`);
+    if (!juego.isActive)
+      throw new BadRequestException(`Juego con id ${id} ya está inactivo`);
+    juego.isActive = false;
+    await this.juegoRepo.save(juego);
   }
 }

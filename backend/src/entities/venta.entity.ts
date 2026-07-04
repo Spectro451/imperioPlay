@@ -53,5 +53,5 @@ export class Venta {
   @OneToMany(() => VentaDetalle, (detalle) => detalle.venta, {
     cascade: true,
   })
-  VentaDetalle: VentaDetalle[];
+  ventaDetalles: VentaDetalle[];
 }

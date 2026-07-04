@@ -17,7 +17,8 @@ import { Producto } from '../entities/producto.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { Consola, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
+import { Plataforma, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
+import { CreateProductoDto } from './dto/create-producto.dto';
 
 @Controller('producto')
 export class ProductoController {
@@ -26,7 +27,7 @@ export class ProductoController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
-  async create(@Body() data: Partial<Producto>): Promise<Producto> {
+  async create(@Body() data: CreateProductoDto): Promise<Producto> {
     return this.productoService.crearProductoSiNoExiste(data);
   }
 
@@ -56,7 +57,7 @@ export class ProductoController {
       nombre?: string;
       tipo?: tipoProducto;
       page?: string;
-      consola?: Consola;
+      consola?: Plataforma;
       orden?: Orden;
       estado?: estadoJuego;
       sku?: string;
@@ -66,7 +67,7 @@ export class ProductoController {
       nombre: query.nombre,
       tipo: query.tipo as tipoProducto,
       page: query.page ? parseInt(query.page) : undefined,
-      consola: query.consola as Consola | undefined,
+      consola: query.consola as Plataforma | undefined,
       orden: query.orden as Orden,
       estado: query.estado as estadoJuego,
       sku: query.sku,
@@ -80,7 +81,7 @@ export class ProductoController {
       nombre?: string;
       tipo?: tipoProducto;
       page?: string;
-      consola?: Consola;
+      consola?: Plataforma;
       orden?: Orden;
       estado?: estadoJuego;
       sku?: string;
@@ -90,7 +91,7 @@ export class ProductoController {
       nombre: query.nombre,
       tipo: query.tipo as tipoProducto,
       page: query.page ? parseInt(query.page) : undefined,
-      consola: query.consola as Consola | undefined,
+      consola: query.consola as Plataforma | undefined,
       orden: query.orden as Orden,
       estado: query.estado as estadoJuego,
       sku: query.sku,
@@ -120,11 +121,7 @@ export class ProductoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
   async remove(@Param('id') id: string) {
-    try {
-      await this.productoService.remove(Number(id));
-      return { message: `Producto con id: ${id} eliminado correctamente` };
-    } catch (err) {
-      throw new NotFoundException(err.message);
-    }
+    await this.productoService.remove(Number(id));
+    return { message: `Producto con id: ${id} desactivado correctamente` };
   }
 }

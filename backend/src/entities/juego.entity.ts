@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Producto } from './producto.entity';
 import { IntercambioJuego } from './intercambioJuego.entity';
-import { Consola, estadoJuego } from './enums';
+import { Plataforma, estadoJuego } from './enums';
 
 @Entity()
 export class Juego {
@@ -20,8 +20,8 @@ export class Juego {
   @Column()
   stock: number;
 
-  @Column({ type: 'enum', enum: Consola })
-  consola: Consola;
+  @Column({ type: 'enum', enum: Plataforma })
+  consola: Plataforma;
 
   @Column({ type: 'enum', enum: estadoJuego })
   estado: estadoJuego;
@@ -43,6 +43,9 @@ export class Juego {
 
   @Column('text', { array: true })
   fotos?: string[];
+
+  @Column({ default: true })
+  isActive: boolean;
 
   @ManyToOne(() => Producto, (producto) => producto.juegos)
   producto: Producto;

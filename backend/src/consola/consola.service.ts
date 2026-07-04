@@ -6,54 +6,21 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
-import { Consolas } from 'src/entities/consola';
-import { Consola, estadoJuego } from 'src/entities/enums';
+import { Consola } from 'src/entities/consola';
+import { Plataforma, estadoJuego } from 'src/entities/enums';
+import { calcularPrecioFinal } from 'src/utils/pricing';
 
 @Injectable()
 export class ConsolaService {
   constructor(
-    @InjectRepository(Consolas)
-    private readonly consolaRepo: Repository<Consolas>,
+    @InjectRepository(Consola)
+    private readonly consolaRepo: Repository<Consola>,
   ) {}
 
-  private calcularPrecioFinal(
-    precio_base: number,
-    descuento_porcentaje?: number,
-    descuento_fijo?: number,
-  ): number {
-    descuento_porcentaje =
-      descuento_porcentaje === 0 ? undefined : descuento_porcentaje;
-    descuento_fijo = descuento_fijo === 0 ? undefined : descuento_fijo;
-
-    if (descuento_porcentaje && descuento_fijo) {
-      throw new Error('Solo puede haber un descuento a la vez');
-    }
-
-    if (descuento_porcentaje) {
-      if (descuento_porcentaje > 100) {
-        throw new BadRequestException(
-          'El descuento porcentual no puede ser mayor al 100%',
-        );
-      }
-      return Math.round(precio_base * (1 - descuento_porcentaje / 100));
-    }
-
-    if (descuento_fijo) {
-      if (descuento_fijo > precio_base) {
-        throw new BadRequestException(
-          'El descuento fijo no puede ser mayor al precio base',
-        );
-      }
-      return precio_base - descuento_fijo;
-    }
-
-    return precio_base;
-  }
-
   async restarStockConsola(
-    consola: Consolas,
+    consola: Consola,
     cantidad: number,
-  ): Promise<Consolas> {
+  ): Promise<Consola> {
     if (consola.stock < cantidad) {
       throw new BadRequestException(
         `No hay suficiente stock para la consola ${consola.id}. Stock disponible: ${consola.stock}`,
@@ -66,13 +33,13 @@ export class ConsolaService {
   async modificarOferta(
     id: number,
     descuentos: { descuento_porcentaje?: number; descuento_fijo?: number },
-  ): Promise<Consolas> {
+  ): Promise<Consola> {
     const consola = await this.findOne(id);
     if (!consola) throw new Error(`Consola con id ${id} no encontrada`);
     Object.assign(consola, descuentos);
     if (consola.descuento_porcentaje) consola.descuento_fijo = 0;
     if (consola.descuento_fijo) consola.descuento_porcentaje = 0;
-    consola.precio_final = this.calcularPrecioFinal(
+    consola.precio_final = calcularPrecioFinal(
       consola.precio_base,
       consola.descuento_porcentaje,
       consola.descuento_fijo,
@@ -84,16 +51,16 @@ export class ConsolaService {
     producto: Producto,
     dataConsolaCliente: {
       estado?: estadoJuego;
-      generacion?: Consola;
+      generacion?: Plataforma;
       stock?: number;
       fotos?: string[];
       precio_base: number;
       descuento_porcentaje?: number;
       descuento_fijo?: number;
     },
-  ): Promise<Consolas> {
+  ): Promise<Consola> {
     const estado = dataConsolaCliente.estado ?? estadoJuego.usado;
-    const generacion = dataConsolaCliente.generacion ?? Consola.Ps3;
+    const generacion = dataConsolaCliente.generacion ?? Plataforma.Ps3;
     const stock = dataConsolaCliente.stock ?? 1;
     const consolas = producto.consolas ?? [];
 
@@ -109,7 +76,7 @@ export class ConsolaService {
     if (dataConsolaCliente.descuento_fijo)
       dataConsolaCliente.descuento_porcentaje = 0;
 
-    const precio_final = this.calcularPrecioFinal(
+    const precio_final = calcularPrecioFinal(
       dataConsolaCliente.precio_base,
       dataConsolaCliente.descuento_porcentaje,
       dataConsolaCliente.descuento_fijo,
@@ -130,20 +97,23 @@ export class ConsolaService {
     return this.consolaRepo.save(nuevaConsola);
   }
 
-  create(data: Partial<Consolas>): Promise<Consolas> {
+  create(data: Partial<Consola>): Promise<Consola> {
     const consola = this.consolaRepo.create(data);
     return this.consolaRepo.save(consola);
   }
 
-  findAll(): Promise<Consolas[]> {
-    return this.consolaRepo.find({ relations: ['producto'] });
+  findAll(): Promise<Consola[]> {
+    return this.consolaRepo.find({
+      where: { isActive: true },
+      relations: ['producto'],
+    });
   }
 
-  findOne(id: number): Promise<Consolas | null> {
+  findOne(id: number): Promise<Consola | null> {
     return this.consolaRepo.findOne({ where: { id }, relations: ['producto'] });
   }
 
-  async update(id: number, data: Partial<Consolas>): Promise<Consolas> {
+  async update(id: number, data: Partial<Consola>): Promise<Consola> {
     const consola = await this.findOne(id);
     if (!consola)
       throw new NotFoundException(`Consola con id ${id} no encontrada`);
@@ -154,7 +124,7 @@ export class ConsolaService {
     ) {
       if (consola.descuento_porcentaje) consola.descuento_fijo = 0;
       if (consola.descuento_fijo) consola.descuento_porcentaje = 0;
-      consola.precio_final = this.calcularPrecioFinal(
+      consola.precio_final = calcularPrecioFinal(
         consola.precio_base,
         consola.descuento_porcentaje,
         consola.descuento_fijo,
@@ -164,8 +134,12 @@ export class ConsolaService {
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.consolaRepo.delete(id);
-    if (result.affected === 0)
-      throw new Error(`Consola con id ${id} no encontrada`);
+    const consola = await this.findOne(id);
+    if (!consola)
+      throw new NotFoundException(`Consola con id ${id} no encontrada`);
+    if (!consola.isActive)
+      throw new BadRequestException(`Consola con id ${id} ya está inactiva`);
+    consola.isActive = false;
+    await this.consolaRepo.save(consola);
   }
 }

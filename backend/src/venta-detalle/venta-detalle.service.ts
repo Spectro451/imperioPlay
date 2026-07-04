@@ -7,39 +7,39 @@ import { VentaDetalle } from '../entities/ventaDetalle';
 export class VentaDetalleService {
   constructor(
     @InjectRepository(VentaDetalle)
-    private readonly ventaProductoRepo: Repository<VentaDetalle>,
+    private readonly ventaDetalleRepo: Repository<VentaDetalle>,
   ) {}
 
   create(data: Partial<VentaDetalle>): Promise<VentaDetalle> {
-    const ventaProducto = this.ventaProductoRepo.create(data);
-    return this.ventaProductoRepo.save(ventaProducto);
+    const detalle = this.ventaDetalleRepo.create(data);
+    return this.ventaDetalleRepo.save(detalle);
   }
 
   findAll(): Promise<VentaDetalle[]> {
-    return this.ventaProductoRepo.find({
+    return this.ventaDetalleRepo.find({
       relations: ['venta'],
     });
   }
 
   findOne(id: number): Promise<VentaDetalle | null> {
-    return this.ventaProductoRepo.findOne({
+    return this.ventaDetalleRepo.findOne({
       where: { id },
       relations: ['venta'],
     });
   }
 
   async update(id: number, data: Partial<VentaDetalle>): Promise<VentaDetalle> {
-    const result = await this.ventaProductoRepo.update(id, data);
+    const result = await this.ventaDetalleRepo.update(id, data);
     if (result.affected === 0) {
-      throw new NotFoundException(`VentaJuego con id ${id} no encontrado`);
+      throw new NotFoundException(`VentaDetalle con id ${id} no encontrado`);
     }
     return this.findOne(id) as Promise<VentaDetalle>;
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.ventaProductoRepo.delete(id);
+    const result = await this.ventaDetalleRepo.delete(id);
     if (result.affected === 0) {
-      throw new NotFoundException(`VentaJuego con id ${id} no encontrado`);
+      throw new NotFoundException(`VentaDetalle con id ${id} no encontrado`);
     }
   }
 }

@@ -12,12 +12,13 @@ import {
 } from '@nestjs/common';
 import { ConsolaService } from './consola.service';
 import { ProductoService } from 'src/producto/producto.service';
-import { Producto } from 'src/entities/producto.entity';
-import { Consola, estadoJuego } from 'src/entities/enums';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { Consolas } from 'src/entities/consola';
+import { Consola } from 'src/entities/consola';
+import { CreateConsolaDto } from './dto/create-consola.dto';
+import { UpdateConsolaDto } from './dto/update-consola.dto';
+import { OfertaDto } from 'src/juego/dto/oferta.dto';
 
 @Controller('consola')
 export class ConsolaController {
@@ -29,21 +30,7 @@ export class ConsolaController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
-  async create(
-    @Body()
-    data: {
-      producto: Partial<Producto>;
-      consola: {
-        estado?: estadoJuego;
-        generacion?: Consola;
-        stock?: number;
-        fotos?: string[];
-        precio_base: number;
-        descuento_porcentaje?: number;
-        descuento_fijo?: number;
-      };
-    },
-  ) {
+  async create(@Body() data: CreateConsolaDto) {
     const producto = await this.productoService.crearProductoSiNoExiste(
       data.producto,
     );
@@ -51,7 +38,6 @@ export class ConsolaController {
       producto,
       data.consola,
     );
-
     return {
       producto: {
         id: producto.id,
@@ -74,12 +60,12 @@ export class ConsolaController {
   }
 
   @Get()
-  async findAll(): Promise<Consolas[]> {
+  async findAll(): Promise<Consola[]> {
     return this.consolaService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Consolas | null> {
+  async findOne(@Param('id') id: string): Promise<Consola | null> {
     return this.consolaService.findOne(Number(id));
   }
 
@@ -88,8 +74,8 @@ export class ConsolaController {
   @Roles('admin', 'empleado')
   async update(
     @Param('id') id: string,
-    @Body() data: Partial<Consolas>,
-  ): Promise<Consolas> {
+    @Body() data: UpdateConsolaDto,
+  ): Promise<Consola> {
     return this.consolaService.update(Number(id), data);
   }
 
@@ -105,9 +91,8 @@ export class ConsolaController {
   @Roles('admin', 'empleado')
   async changeOferta(
     @Param('id') id: string,
-    @Body()
-    descuentos: { descuento_porcentaje?: number; descuento_fijo?: number },
-  ): Promise<Consolas> {
+    @Body() descuentos: OfertaDto,
+  ): Promise<Consola> {
     try {
       return await this.consolaService.modificarOferta(Number(id), descuentos);
     } catch (err) {

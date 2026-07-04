@@ -19,7 +19,7 @@ export enum estadoJuego {
   usado = 'usado',
 }
 
-export enum Consola {
+export enum Plataforma {
   Xbox360 = 'Xbox360',
   XboxOne = 'XboxOne',
   XboxSeries = 'XboxSeries',

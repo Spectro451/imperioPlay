@@ -14,7 +14,7 @@ import { Venta } from '../entities/venta.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { metodoPago, tipoProducto } from 'src/entities/enums';
+import { CreateVentaDto } from './dto/create-venta.dto';
 
 @Controller('venta')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -23,25 +23,8 @@ export class VentaController {
 
   @Post()
   @Roles('admin', 'empleado')
-  async create(
-    @Body()
-    data: {
-      cliente_id?: number;
-      descuento_porcentaje?: number;
-      descuento_fijo?: number;
-      metodo_pago: metodoPago;
-      monto_pagado: number;
-      items: {
-        id: number;
-        tipo: tipoProducto;
-        cantidad: number;
-      }[];
-    },
-    @Req() req: any,
-  ): Promise<Venta> {
-    const vendedor_id = req.user.id;
-
-    return this.ventaService.create(vendedor_id, data);
+  async create(@Body() data: CreateVentaDto, @Req() req: any): Promise<Venta> {
+    return this.ventaService.create(req.user.id, data);
   }
 
   @Get()

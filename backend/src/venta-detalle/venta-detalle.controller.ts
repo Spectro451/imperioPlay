@@ -8,31 +8,31 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { VentaDetalleService } from './ventaProducto.service';
+import { VentaDetalleService } from './venta-detalle.service';
 import { VentaDetalle } from '../entities/ventaDetalle';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 
-@Controller('ventaproducto')
+@Controller('venta-detalle')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
-export class VentaProductoController {
-  constructor(private readonly ventaProductoService: VentaDetalleService) {}
+export class VentaDetalleController {
+  constructor(private readonly ventaDetalleService: VentaDetalleService) {}
 
   @Post()
   async create(@Body() data: Partial<VentaDetalle>): Promise<VentaDetalle> {
-    return this.ventaProductoService.create(data);
+    return this.ventaDetalleService.create(data);
   }
 
   @Get()
   async findAll(): Promise<VentaDetalle[]> {
-    return this.ventaProductoService.findAll();
+    return this.ventaDetalleService.findAll();
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<VentaDetalle | null> {
-    return this.ventaProductoService.findOne(Number(id));
+    return this.ventaDetalleService.findOne(Number(id));
   }
 
   @Put(':id')
@@ -40,11 +40,11 @@ export class VentaProductoController {
     @Param('id') id: string,
     @Body() data: Partial<VentaDetalle>,
   ): Promise<VentaDetalle> {
-    return this.ventaProductoService.update(Number(id), data);
+    return this.ventaDetalleService.update(Number(id), data);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
-    return this.ventaProductoService.remove(Number(id));
+    return this.ventaDetalleService.remove(Number(id));
   }
 }

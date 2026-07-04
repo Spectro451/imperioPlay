@@ -7,7 +7,7 @@ export class VentaDetalle {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Venta, (venta) => venta.VentaDetalle, {
+  @ManyToOne(() => Venta, (venta) => venta.ventaDetalles, {
     onDelete: 'CASCADE',
   })
   venta: Venta;

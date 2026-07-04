@@ -11,11 +11,10 @@ import {
 } from '@nestjs/common';
 import { IntercambioService } from './intercambio.service';
 import { Intercambio } from '../entities/intercambio.entity';
-import { Producto } from 'src/entities/producto.entity';
-import { Consola, estadoJuego, metodoPago } from 'src/entities/enums';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
+import { CreateIntercambioDto } from './dto/create-intercambio.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('intercambio')
@@ -25,28 +24,11 @@ export class IntercambioController {
   @Post()
   @Roles('admin', 'empleado')
   async crearIntercambio(
-    @Req() req,
-    @Body()
-    body: {
-      juegosSolicitadosData: Array<{ juegoId: number; cantidad: number }>;
-      juegosClienteData: {
-        producto: Partial<Producto>;
-        consola: Consola;
-        estado?: estadoJuego;
-        cantidad: number;
-        fotos?: string[];
-        precio_base: number;
-        descuento_porcentaje?: number;
-        descuento_fijo?: number;
-      }[];
-      clienteId?: number;
-      dinero_extra?: number;
-      metodo_pago?: metodoPago;
-    },
+    @Req() req: any,
+    @Body() body: CreateIntercambioDto,
   ) {
-    const vendedorId = req.user.id;
     return this.intercambioService.intercambio(
-      vendedorId,
+      req.user.id,
       body.juegosSolicitadosData,
       body.juegosClienteData,
       body.clienteId,

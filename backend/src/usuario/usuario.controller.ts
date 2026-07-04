@@ -16,7 +16,9 @@ import { Usuario } from '../entities/usuario.entity';
 import { Roles } from 'src/auth/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { Rol } from '../entities/enums';
+import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { RestoreUsuarioDto } from './dto/restore-usuario.dto';
 
 @Controller('usuario')
 export class UsuarioController {
@@ -30,15 +32,7 @@ export class UsuarioController {
   }
 
   @Post()
-  async create(
-    @Body()
-    data: {
-      nombre: string;
-      correo: string;
-      password: string;
-      rol?: Rol;
-    },
-  ): Promise<Usuario> {
+  async create(@Body() data: CreateUsuarioDto): Promise<Usuario> {
     return this.usuarioService.create(data);
   }
 
@@ -60,11 +54,9 @@ export class UsuarioController {
     if (requester.rol === 'admin') {
       return this.usuarioService.findOne(Number(id));
     }
-
     if (requester.id !== userId) {
       throw new ForbiddenException('No tienes permisos para ver este usuario');
     }
-
     return this.usuarioService.findOne(userId);
   }
 
@@ -77,7 +69,6 @@ export class UsuarioController {
   ): Promise<Usuario> {
     const userId = Number(id);
     const requester = req.user;
-
     if (requester.rol !== 'admin' && requester.id !== userId) {
       throw new ForbiddenException(
         'No tienes permisos para editar este usuario',
@@ -94,7 +85,6 @@ export class UsuarioController {
   async remove(@Param('id') id: string, @Request() req): Promise<Usuario> {
     const userId = Number(id);
     const requester = req.user;
-
     if (requester.rol !== 'admin' && requester.id !== userId) {
       throw new ForbiddenException(
         'No tienes permisos para borrar este usuario',
@@ -108,28 +98,24 @@ export class UsuarioController {
   async changePassword(
     @Param('id') id: string,
     @Request() req,
-    @Body() body: { currentPassword: string; newPassword: string },
+    @Body() body: ChangePasswordDto,
   ) {
     const userId = Number(id);
     const currentUser = req.user;
-
     if (currentUser.rol !== 'admin' && currentUser.id !== userId) {
       throw new ForbiddenException(
         'No tienes permisos para cambiar esta contraseña',
       );
     }
-
     return this.usuarioService.changePassword(
       userId,
       body.currentPassword,
       body.newPassword,
     );
   }
+
   @Patch('restore')
-  async restore(
-    @Body() body: { correo: string; password: string },
-  ): Promise<Usuario> {
-    const { correo, password } = body;
-    return this.usuarioService.restore(correo, password);
+  async restore(@Body() body: RestoreUsuarioDto): Promise<Usuario> {
+    return this.usuarioService.restore(body.correo, body.password);
   }
 }
