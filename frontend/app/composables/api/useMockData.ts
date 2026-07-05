@@ -4,34 +4,34 @@ export const mockProductos: ItemFlat[] = [
   // Juegos usados
   {
     id: 1, nombre: 'The Last of Us Part II', tipo: 'juego',
-    plataforma: 'PS4', estado: 'usado',
+    plataforma: 'Ps4', estado: 'usado',
     precio_base: 8500, precio_final: 8500, stock: 3,
   },
   {
     id: 2, nombre: 'Red Dead Redemption 2', tipo: 'juego',
-    plataforma: 'PS4', estado: 'usado',
+    plataforma: 'Ps4', estado: 'usado',
     precio_base: 7000, precio_final: 5600, descuento_porcentaje: 20, stock: 1,
   },
   {
     id: 3, nombre: 'God of War Ragnarök', tipo: 'juego',
-    plataforma: 'PS5', estado: 'usado',
+    plataforma: 'Ps5', estado: 'usado',
     precio_base: 12000, precio_final: 12000, stock: 2,
   },
 
   // Juegos nuevos
   {
     id: 4, nombre: 'Elden Ring', tipo: 'juego',
-    plataforma: 'PS5', estado: 'nuevo',
+    plataforma: 'Ps5', estado: 'nuevo',
     precio_base: 15000, precio_final: 15000, stock: 4,
   },
   {
     id: 5, nombre: 'Hogwarts Legacy', tipo: 'juego',
-    plataforma: 'Xbox Series X', estado: 'nuevo',
+    plataforma: 'XboxSeries', estado: 'nuevo',
     precio_base: 13000, precio_final: 10400, descuento_porcentaje: 20, stock: 2,
   },
   {
     id: 6, nombre: 'Spider-Man 2', tipo: 'juego',
-    plataforma: 'PS5', estado: 'nuevo',
+    plataforma: 'Ps5', estado: 'nuevo',
     precio_base: 16000, precio_final: 16000, stock: 5,
   },
 

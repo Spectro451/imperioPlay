@@ -2,6 +2,7 @@
 const props = defineProps<{
   item: ItemFlat
   featured?: boolean
+  fluid?: boolean
 }>()
 
 const tieneOferta = computed(
@@ -16,14 +17,14 @@ const foto = computed(() => props.item.fotos?.[0] ?? null)
     :to="link"
     :class="[
       'group bg-bg-card rounded-lg overflow-hidden flex flex-col transition-transform duration-200 hover:scale-[1.02]',
-      featured ? 'w-64 md:w-80' : 'w-44 md:w-56',
+      fluid ? 'w-full' : featured ? 'w-64 md:w-80' : 'w-44 md:w-56',
     ]"
   >
     <!-- Imagen -->
     <div
       :class="[
         'bg-bg-soft relative overflow-hidden',
-        featured ? 'h-44 md:h-60' : 'h-32 md:h-40',
+        featured ? 'h-44 md:h-60' : 'h-44',
       ]"
     >
       <img
@@ -38,13 +39,13 @@ const foto = computed(() => props.item.fotos?.[0] ?? null)
 
       <span
         v-if="tieneOferta"
-        class="absolute top-2 left-2 bg-bg-hard text-fg text-xs font-bold px-2 py-0.5 rounded"
+        class="absolute top-2 left-2 bg-acento-1 text-bg-hard text-xs font-bold px-2 py-0.5 rounded"
       >
         OFERTA
       </span>
       <span
         v-if="item.stock > 0 && item.stock <= 2"
-        class="absolute top-2 right-2 bg-bg-hard text-fg text-xs font-bold px-2 py-0.5 rounded"
+        class="absolute top-2 right-2 bg-bg-hard text-acento-1 text-xs font-bold px-2 py-0.5 rounded"
       >
         Últimas {{ item.stock }}
       </span>
@@ -64,7 +65,7 @@ const foto = computed(() => props.item.fotos?.[0] ?? null)
         <p v-if="tieneOferta" class="text-xs text-muted line-through">
           ${{ item.precio_base.toLocaleString('es-AR') }}
         </p>
-        <p class="text-base font-bold text-fg">
+        <p class="text-base font-bold text-acento-1">
           ${{ item.precio_final.toLocaleString('es-AR') }}
         </p>
       </div>

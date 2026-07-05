@@ -29,7 +29,7 @@ export class ProductoService {
     sku?: string;
   }) {
     const page = filtro?.page || 1;
-    const limit = 18;
+    const limit = 20;
     const skip = (page - 1) * limit;
 
     const query = this.productoRepo
@@ -119,7 +119,7 @@ export class ProductoService {
     sku?: string;
   }) {
     const page = filtro?.page || 1;
-    const limit = 18;
+    const limit = 20;
     const skip = (page - 1) * limit;
 
     const query = this.productoRepo
