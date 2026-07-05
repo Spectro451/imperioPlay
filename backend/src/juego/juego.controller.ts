@@ -38,12 +38,24 @@ export class JuegoController {
       producto,
       data.juego,
     );
+
+    const advertencias: string[] = [];
+    if (!producto.isActive)
+      advertencias.push(
+        `El producto "${producto.nombre}" está desactivado y no será visible en el catálogo hasta que lo reactives.`,
+      );
+    if (!juego.isActive)
+      advertencias.push(
+        `El juego (${juego.consola} / ${juego.estado}) está desactivado y no será visible hasta que lo reactives.`,
+      );
+
     return {
       producto: {
         id: producto.id,
         nombre: producto.nombre,
         tipo: producto.tipo,
         sku: producto.sku,
+        isActive: producto.isActive,
       },
       juego: {
         id: juego.id,
@@ -57,7 +69,9 @@ export class JuegoController {
         descuento_fijo: juego.descuento_fijo,
         tier: juego.tier,
         fotos: juego.fotos,
+        isActive: juego.isActive,
       },
+      ...(advertencias.length > 0 && { advertencias }),
     };
   }
 

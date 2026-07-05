@@ -38,11 +38,24 @@ export class ConsolaController {
       producto,
       data.consola,
     );
+
+    const advertencias: string[] = [];
+    if (!producto.isActive)
+      advertencias.push(
+        `El producto "${producto.nombre}" está desactivado y no será visible en el catálogo hasta que lo reactives.`,
+      );
+    if (!consola.isActive)
+      advertencias.push(
+        `La consola (${consola.generacion} / ${consola.estado}) está desactivada y no será visible hasta que la reactives.`,
+      );
+
     return {
       producto: {
         id: producto.id,
         nombre: producto.nombre,
         tipo: producto.tipo,
+        sku: producto.sku,
+        isActive: producto.isActive,
       },
       consola: {
         id: consola.id,
@@ -55,7 +68,9 @@ export class ConsolaController {
         descuento_porcentaje: consola.descuento_porcentaje,
         descuento_fijo: consola.descuento_fijo,
         fotos: consola.fotos,
+        isActive: consola.isActive,
       },
+      ...(advertencias.length > 0 && { advertencias }),
     };
   }
 
