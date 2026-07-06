@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { mockProductos } from '~/composables/api/useMockData'
-
 const route = useRoute()
-const consola = mockProductos.find(p => p.id === Number(route.params.id) && p.tipo === 'consola')
+const { data: consola, error } = await useAsyncData(
+  `consola-${route.params.id}`,
+  () => useConsolaApi().getOne(Number(route.params.id)),
+)
 
-if (!consola) throw createError({ statusCode: 404, message: 'Consola no encontrada' })
+if (!error.value && !consola.value) throw createError({ statusCode: 404, message: 'Consola no encontrada' })
 
-const tieneOferta = (consola.descuento_porcentaje ?? 0) > 0 || (consola.descuento_fijo ?? 0) > 0
+const tieneOferta = computed(() =>
+  (consola.value?.descuento_porcentaje ?? 0) > 0 || (consola.value?.descuento_fijo ?? 0) > 0,
+)
 </script>
 
 <template>
@@ -15,25 +18,29 @@ const tieneOferta = (consola.descuento_porcentaje ?? 0) > 0 || (consola.descuent
       ← Volver a consolas
     </NuxtLink>
 
-    <div class="grid md:grid-cols-2 gap-8 mt-4">
+    <div v-if="error" class="text-muted text-sm py-20 text-center">
+      No se pudo cargar el producto. El servidor no está disponible.
+    </div>
+
+    <div v-else-if="consola" class="grid md:grid-cols-2 gap-8 mt-4">
       <div class="bg-bg-card rounded-lg overflow-hidden aspect-square flex items-center justify-center text-muted text-sm">
-        <img v-if="consola.fotos?.[0]" :src="consola.fotos[0]" :alt="consola.nombre" class="w-full h-full object-cover" />
+        <img v-if="consola.fotos?.[0]" :src="consola.fotos[0]" :alt="consola.producto.nombre" class="w-full h-full object-cover" />
         <span v-else>Sin foto</span>
       </div>
 
       <div class="flex flex-col gap-4">
         <div>
           <p class="text-acento-1 text-xs font-bold uppercase tracking-widest mb-1">
-            {{ consola.plataforma }} · {{ consola.estado }}
+            {{ consola.generacion }} · {{ consola.estado }}
           </p>
-          <h1 class="text-3xl font-black tracking-tight leading-tight">{{ consola.nombre }}</h1>
+          <h1 class="text-3xl font-black tracking-tight leading-tight">{{ consola.producto.nombre }}</h1>
         </div>
 
         <div>
           <p v-if="tieneOferta" class="text-sm text-muted line-through">
             ${{ consola.precio_base.toLocaleString('es-AR') }}
           </p>
-          <p class="text-3xl font-black">${{ consola.precio_final.toLocaleString('es-AR') }}</p>
+          <p class="text-3xl font-black text-acento-1">${{ consola.precio_final.toLocaleString('es-AR') }}</p>
           <span v-if="tieneOferta" class="inline-block mt-1 text-xs font-bold bg-bg-card border border-border px-2 py-0.5 rounded">
             {{ consola.descuento_porcentaje ? `${consola.descuento_porcentaje}% OFF` : `$${consola.descuento_fijo} OFF` }}
           </span>
