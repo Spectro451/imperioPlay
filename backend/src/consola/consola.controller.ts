@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ConsolaService } from './consola.service';
@@ -15,6 +16,7 @@ import { ProductoService } from 'src/producto/producto.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
+import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
 import { Consola } from 'src/entities/consola';
 import { CreateConsolaDto } from './dto/create-consola.dto';
 import { UpdateConsolaDto } from './dto/update-consola.dto';
@@ -75,8 +77,22 @@ export class ConsolaController {
   }
 
   @Get()
-  async findAll(): Promise<Consola[]> {
-    return this.consolaService.findAll();
+  async findAll(@Query() query: {
+    nombre?: string;
+    consola?: string;
+    estado?: string;
+    orden?: string;
+    page?: string;
+    limit?: string;
+  }) {
+    return this.consolaService.findAll({
+      nombre: query.nombre,
+      consola: query.consola as Plataforma,
+      estado: query.estado as estadoJuego,
+      orden: query.orden as Orden,
+      page: query.page ? parseInt(query.page) : undefined,
+      limit: query.limit ? parseInt(query.limit) : undefined,
+    });
   }
 
   @Get(':id')

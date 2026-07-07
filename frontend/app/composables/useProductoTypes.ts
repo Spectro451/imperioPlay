@@ -11,3 +11,12 @@ export interface ItemFlat {
   fotos?: string[]
   stock: number
 }
+
+export interface FiltrosApi {
+  nombre?: string
+  consola?: string
+  estado?: string
+  orden?: string
+  page?: number
+  limit?: number
+}

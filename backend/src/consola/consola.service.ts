@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
 import { Consola } from 'src/entities/consola';
-import { Plataforma, estadoJuego } from 'src/entities/enums';
+import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
 import { calcularPrecioFinal } from 'src/utils/pricing';
 
 @Injectable()
@@ -102,11 +102,42 @@ export class ConsolaService {
     return this.consolaRepo.save(consola);
   }
 
-  findAll(): Promise<Consola[]> {
-    return this.consolaRepo.find({
-      where: { isActive: true },
-      relations: ['producto'],
-    });
+  async findAll(filtro?: {
+    nombre?: string;
+    consola?: Plataforma;
+    estado?: estadoJuego;
+    orden?: Orden;
+    page?: number;
+    limit?: number;
+  }): Promise<{ consolas: Consola[]; totalPaginas: number }> {
+    const page = filtro?.page || 1;
+    const limit = filtro?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const query = this.consolaRepo
+      .createQueryBuilder('consola')
+      .leftJoinAndSelect('consola.producto', 'producto')
+      .where('producto.isActive = true');
+
+    if (filtro?.nombre)
+      query.andWhere('producto.nombre ILIKE :nombre', { nombre: `%${filtro.nombre}%` });
+    if (filtro?.consola)
+      query.andWhere('consola.generacion = :consola', { consola: filtro.consola });
+    if (filtro?.estado)
+      query.andWhere('consola.estado = :estado', { estado: filtro.estado });
+
+    const ordenKey = filtro?.orden || Orden.ID_DESC;
+    if (ordenKey === Orden.PRECIO_ASC) query.orderBy('consola.precio_final', 'ASC');
+    else if (ordenKey === Orden.PRECIO_DESC) query.orderBy('consola.precio_final', 'DESC');
+    else if (ordenKey === Orden.ABC) query.orderBy('producto.nombre', 'ASC');
+    else if (ordenKey === Orden.ABC_DESC) query.orderBy('producto.nombre', 'DESC');
+    else if (ordenKey === Orden.ID) query.orderBy('consola.id', 'ASC');
+    else query.orderBy('consola.id', 'DESC');
+
+    query.take(limit).skip(skip);
+
+    const [consolas, total] = await query.getManyAndCount();
+    return { consolas, totalPaginas: Math.ceil(total / limit) };
   }
 
   findOne(id: number): Promise<Consola | null> {

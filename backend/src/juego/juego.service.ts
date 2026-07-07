@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Juego } from '../entities/juego.entity';
 import { Producto } from 'src/entities/producto.entity';
-import { Plataforma, estadoJuego } from 'src/entities/enums';
+import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
 import { calcularPrecioFinal, calcularTier } from 'src/utils/pricing';
 
 @Injectable()
@@ -106,11 +106,43 @@ export class JuegoService {
     return this.juegoRepo.save(juego);
   }
 
-  findAll(): Promise<Juego[]> {
-    return this.juegoRepo.find({
-      where: { isActive: true },
-      relations: ['producto'],
-    });
+  async findAll(filtro?: {
+    nombre?: string;
+    consola?: Plataforma;
+    estado?: estadoJuego;
+    orden?: Orden;
+    page?: number;
+    limit?: number;
+  }): Promise<{ juegos: Juego[]; totalPaginas: number }> {
+    const page = filtro?.page || 1;
+    const limit = filtro?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const query = this.juegoRepo
+      .createQueryBuilder('juego')
+      .leftJoinAndSelect('juego.producto', 'producto')
+      .where('juego.isActive = true')
+      .andWhere('producto.isActive = true');
+
+    if (filtro?.nombre)
+      query.andWhere('producto.nombre ILIKE :nombre', { nombre: `%${filtro.nombre}%` });
+    if (filtro?.consola)
+      query.andWhere('juego.consola = :consola', { consola: filtro.consola });
+    if (filtro?.estado)
+      query.andWhere('juego.estado = :estado', { estado: filtro.estado });
+
+    const ordenKey = filtro?.orden || Orden.ID_DESC;
+    if (ordenKey === Orden.PRECIO_ASC) query.orderBy('juego.precio_final', 'ASC');
+    else if (ordenKey === Orden.PRECIO_DESC) query.orderBy('juego.precio_final', 'DESC');
+    else if (ordenKey === Orden.ABC) query.orderBy('producto.nombre', 'ASC');
+    else if (ordenKey === Orden.ABC_DESC) query.orderBy('producto.nombre', 'DESC');
+    else if (ordenKey === Orden.ID) query.orderBy('juego.id', 'ASC');
+    else query.orderBy('juego.id', 'DESC');
+
+    query.take(limit).skip(skip);
+
+    const [juegos, total] = await query.getManyAndCount();
+    return { juegos, totalPaginas: Math.ceil(total / limit) };
   }
 
   findOne(id: number): Promise<Juego | null> {

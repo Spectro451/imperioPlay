@@ -20,7 +20,6 @@ const foto = computed(() => props.item.fotos?.[0] ?? null)
       fluid ? 'w-full' : featured ? 'w-64 md:w-80' : 'w-44 md:w-56',
     ]"
   >
-    <!-- Imagen -->
     <div
       :class="[
         'bg-bg-soft relative overflow-hidden',
@@ -57,7 +56,6 @@ const foto = computed(() => props.item.fotos?.[0] ?? null)
       </span>
     </div>
 
-    <!-- Info -->
     <div class="p-3 flex flex-col gap-1 flex-1">
       <p class="text-xs text-muted">{{ item.plataforma }} · {{ item.estado }}</p>
       <h3 class="text-sm font-semibold leading-tight line-clamp-2">{{ item.nombre }}</h3>

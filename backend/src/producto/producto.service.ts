@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { And, ILike, IsNull, MoreThan, Not, Repository } from 'typeorm';
+import { And, ILike, IsNull, MoreThan, Not, Repository, DataSource } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
 import { Plataforma, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
 import { ORDER_MAP } from 'src/constants/orden';
@@ -10,6 +10,7 @@ export class ProductoService {
   constructor(
     @InjectRepository(Producto)
     private readonly productoRepo: Repository<Producto>,
+    private readonly dataSource: DataSource,
   ) {}
 
   //crear producto
@@ -70,9 +71,14 @@ export class ProductoService {
 
     query.take(limit).skip(skip);
 
-    const ordenKey = filtro?.orden || Orden.ID;
-    const [campo, direccion] = ORDER_MAP[ordenKey];
-    query.orderBy(campo, direccion);
+    const ordenKey = filtro?.orden || Orden.ID_DESC;
+    if (ordenKey === Orden.PRECIO_ASC || ordenKey === Orden.PRECIO_DESC) {
+      const dir = ordenKey === Orden.PRECIO_ASC ? 'ASC' : 'DESC';
+      query.orderBy('COALESCE(juego.precio_final, consola.precio_final)', dir);
+    } else {
+      const [campo, direccion] = ORDER_MAP[ordenKey];
+      query.orderBy(campo, direccion);
+    }
 
     const [productos, total] = await query.getManyAndCount();
     const totalPaginas = Math.ceil(total / limit);
@@ -160,9 +166,14 @@ export class ProductoService {
 
     query.take(limit).skip(skip);
 
-    const ordenKey = filtro?.orden || Orden.ID;
-    const [campo, direccion] = ORDER_MAP[ordenKey];
-    query.orderBy(campo, direccion);
+    const ordenKey = filtro?.orden || Orden.ID_DESC;
+    if (ordenKey === Orden.PRECIO_ASC || ordenKey === Orden.PRECIO_DESC) {
+      const dir = ordenKey === Orden.PRECIO_ASC ? 'ASC' : 'DESC';
+      query.orderBy('COALESCE(juego.precio_final, consola.precio_final)', dir);
+    } else {
+      const [campo, direccion] = ORDER_MAP[ordenKey];
+      query.orderBy(campo, direccion);
+    }
 
     const [productos, total] = await query.getManyAndCount();
     const totalPaginas = Math.ceil(total / limit);
@@ -204,6 +215,82 @@ export class ProductoService {
 
     const productos = await query.getRawMany();
     return productos.map((p) => p.producto_nombre);
+  }
+
+  async findVariantes(filtro?: {
+    nombre?: string;
+    tipo?: tipoProducto;
+    consola?: Plataforma;
+    estado?: estadoJuego;
+    orden?: Orden;
+    page?: number;
+    oferta?: boolean;
+  }) {
+    const limit = 20;
+    const offset = ((filtro?.page || 1) - 1) * limit;
+    const params: any[] = [];
+    let pi = 1;
+
+    const nombreCond = filtro?.nombre
+      ? `AND p.nombre ILIKE $${(() => { params.push(`%${filtro.nombre}%`); return pi++; })()}`
+      : '';
+    const estadoCond = filtro?.estado
+      ? `AND variante_estado::text = $${(() => { params.push(filtro.estado); return pi++; })()}`
+      : '';
+    const consolaCond = filtro?.consola
+      ? `AND plataforma::text = $${(() => { params.push(filtro.consola); return pi++; })()}`
+      : '';
+    const ofertaCond = filtro?.oferta
+      ? `AND (descuento_porcentaje > 0 OR descuento_fijo > 0)`
+      : '';
+
+    const ORDEN_MAP: Record<string, string> = {
+      [Orden.ID]: 'id ASC',
+      [Orden.ID_DESC]: 'id DESC',
+      [Orden.ABC]: 'nombre ASC',
+      [Orden.ABC_DESC]: 'nombre DESC',
+      [Orden.PRECIO_ASC]: 'precio_final ASC',
+      [Orden.PRECIO_DESC]: 'precio_final DESC',
+    };
+    const orderClause = ORDEN_MAP[filtro?.orden ?? Orden.ID_DESC] ?? 'id DESC';
+
+    // Cada tipo de producto es un bloque independiente — agregar uno nuevo es añadir otro bloque al array
+    const branches: string[] = [];
+
+    if (!filtro?.tipo || filtro.tipo === tipoProducto.juego) {
+      branches.push(`
+        SELECT j.id, p.nombre, p.tipo::text AS tipo, j.consola::text AS plataforma,
+               j.estado::text AS variante_estado, j.precio_base, j.precio_final,
+               j.descuento_porcentaje, j.descuento_fijo, j.fotos, j.stock
+        FROM juego j
+        INNER JOIN producto p ON j."productoId" = p.id
+        WHERE j."isActive" = true AND p."isActive" = true ${nombreCond} ${estadoCond} ${consolaCond} ${ofertaCond}
+      `);
+    }
+
+    if (!filtro?.tipo || filtro.tipo === tipoProducto.consola) {
+      branches.push(`
+        SELECT c.id, p.nombre, p.tipo::text AS tipo, c.generacion::text AS plataforma,
+               c.estado::text AS variante_estado, c.precio_base, c.precio_final,
+               c.descuento_porcentaje, c.descuento_fijo, c.fotos, c.stock
+        FROM consolas c
+        INNER JOIN producto p ON c."productoId" = p.id
+        WHERE p."isActive" = true ${nombreCond} ${estadoCond} ${consolaCond} ${ofertaCond}
+      `);
+    }
+
+    const union = branches.join(' UNION ALL ');
+
+    const [variantes, countResult] = await Promise.all([
+      this.dataSource.query(
+        `SELECT * FROM (${union}) AS v ORDER BY ${orderClause} LIMIT ${limit} OFFSET ${offset}`,
+        params,
+      ),
+      this.dataSource.query(`SELECT COUNT(*)::int AS total FROM (${union}) AS v`, params),
+    ]);
+
+    const total: number = countResult[0]?.total ?? 0;
+    return { variantes, totalPaginas: Math.ceil(total / limit) };
   }
 
   async findBySku(sku: string): Promise<Producto | null> {

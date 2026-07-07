@@ -5,7 +5,7 @@ const error = ref('')
 
 async function submit() {
   error.value = ''
-  // TODO: conectar a useAuthApi
+
 }
 </script>
 

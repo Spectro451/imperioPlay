@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const { data } = await useAsyncData('consolas', () => useProductoApi().getAll({ tipo: 'consola' }))
-const { filtros, page, items, totalPages } = useCatalogo(data.value?.items ?? [])
+const { filtros, page, items, totalPages } = await useCatalogo('consola')
 </script>
 
 <template>

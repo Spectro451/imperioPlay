@@ -98,6 +98,29 @@ export class ProductoController {
     });
   }
 
+  @Get('variantes')
+  findVariantes(
+    @Query() query: {
+      nombre?: string;
+      tipo?: string;
+      consola?: string;
+      estado?: string;
+      orden?: string;
+      page?: string;
+      oferta?: string;
+    },
+  ) {
+    return this.productoService.findVariantes({
+      nombre: query.nombre,
+      tipo: query.tipo as tipoProducto,
+      consola: query.consola as Plataforma,
+      estado: query.estado as estadoJuego,
+      orden: query.orden as Orden,
+      page: query.page ? parseInt(query.page) : undefined,
+      oferta: query.oferta === 'true',
+    });
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Producto | null> {
     return this.productoService.findOne(Number(id));

@@ -1,8 +1,10 @@
-import type { ItemFlat } from './useProductoTypes'
+import type { FiltrosApi } from './useProductoTypes'
 
-const PAGE_SIZE = 20
+export async function useCatalogo(tipo?: string, esOfertas = false) {
+  const { getAll: getAllProducto, getOfertas } = useProductoApi()
+  const { getAll: getAllJuegos } = useJuegoApi()
+  const { getAll: getAllConsolas } = useConsolaApi()
 
-export function useCatalogo(allItems: ItemFlat[]) {
   const filtros = reactive({
     busqueda: '',
     plataforma: '',
@@ -12,38 +14,38 @@ export function useCatalogo(allItems: ItemFlat[]) {
 
   const page = ref(1)
 
-  watch(filtros, () => { page.value = 1 })
+  const params = computed<FiltrosApi>(() => ({
+    nombre: filtros.busqueda || undefined,
+    consola: filtros.plataforma || undefined,
+    estado: filtros.estado || undefined,
+    orden: filtros.orden,
+    page: page.value,
+  }))
 
-  const filtered = computed(() => {
-    let result = allItems
-
-    if (filtros.busqueda) {
-      const q = filtros.busqueda.toLowerCase()
-      result = result.filter(p => p.nombre.toLowerCase().includes(q))
-    }
-    if (filtros.plataforma)
-      result = result.filter(p => p.plataforma === filtros.plataforma)
-
-    if (filtros.estado)
-      result = result.filter(p => p.estado === filtros.estado)
-
-    if (filtros.orden === 'precio-asc')
-      result = [...result].sort((a, b) => a.precio_final - b.precio_final)
-    else if (filtros.orden === 'precio-desc')
-      result = [...result].sort((a, b) => b.precio_final - a.precio_final)
-    else if (filtros.orden === 'abc')
-      result = [...result].sort((a, b) => a.nombre.localeCompare(b.nombre))
-    else
-      result = [...result].sort((a, b) => b.id - a.id)
-
-    return result
-  })
-
-  const items = computed(() =>
-    filtered.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE)
+  watch(
+    () => [filtros.busqueda, filtros.plataforma, filtros.estado, filtros.orden],
+    () => { page.value = 1 },
+    { flush: 'sync' },
   )
 
-  const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)))
+  const fetchFn = tipo === 'juego'
+    ? (p: FiltrosApi) => getAllJuegos(p)
+    : tipo === 'consola'
+      ? (p: FiltrosApi) => getAllConsolas(p)
+      : esOfertas
+        ? (p: FiltrosApi) => getOfertas(p)
+        : (p: FiltrosApi) => getAllProducto(p)
 
-  return { filtros, page, items, totalPages }
+  const { data } = await useAsyncData(
+    `catalogo-${tipo ?? 'todos'}${esOfertas ? '-ofertas' : ''}`,
+    () => fetchFn(params.value),
+    { watch: [params] },
+  )
+
+  return {
+    filtros,
+    page,
+    items: computed(() => data.value?.items ?? []),
+    totalPages: computed(() => data.value?.totalPaginas ?? 1),
+  }
 }
