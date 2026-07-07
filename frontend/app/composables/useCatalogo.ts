@@ -13,9 +13,18 @@ export async function useCatalogo(tipo?: string, esOfertas = false) {
   })
 
   const page = ref(1)
+  const busquedaDebounced = ref('')
+
+  watch(
+    () => filtros.busqueda,
+    (val) => {
+      const timer = setTimeout(() => { busquedaDebounced.value = val }, 350)
+      return () => clearTimeout(timer)
+    },
+  )
 
   const params = computed<FiltrosApi>(() => ({
-    nombre: filtros.busqueda || undefined,
+    nombre: busquedaDebounced.value || undefined,
     consola: filtros.plataforma || undefined,
     estado: filtros.estado || undefined,
     orden: filtros.orden,
@@ -23,7 +32,7 @@ export async function useCatalogo(tipo?: string, esOfertas = false) {
   }))
 
   watch(
-    () => [filtros.busqueda, filtros.plataforma, filtros.estado, filtros.orden],
+    () => [busquedaDebounced.value, filtros.plataforma, filtros.estado, filtros.orden],
     () => { page.value = 1 },
     { flush: 'sync' },
   )

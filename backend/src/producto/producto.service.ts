@@ -235,11 +235,16 @@ export class ProductoService {
       ? `AND p.nombre ILIKE $${(() => { params.push(`%${filtro.nombre}%`); return pi++; })()}`
       : '';
     const estadoCond = filtro?.estado
-      ? `AND variante_estado::text = $${(() => { params.push(filtro.estado); return pi++; })()}`
+      ? `AND estado::text = $${(() => { params.push(filtro.estado); return pi++; })()}`
       : '';
-    const consolaCond = filtro?.consola
-      ? `AND plataforma::text = $${(() => { params.push(filtro.consola); return pi++; })()}`
-      : '';
+    let consolaJuegoCond = '';
+    let consolaConsolaCond = '';
+    if (filtro?.consola) {
+      const idx = pi++;
+      params.push(filtro.consola);
+      consolaJuegoCond = `AND j.consola::text = $${idx}`;
+      consolaConsolaCond = `AND c.generacion::text = $${idx}`;
+    }
     const ofertaCond = filtro?.oferta
       ? `AND (descuento_porcentaje > 0 OR descuento_fijo > 0)`
       : '';
@@ -264,7 +269,7 @@ export class ProductoService {
                j.descuento_porcentaje, j.descuento_fijo, j.fotos, j.stock
         FROM juego j
         INNER JOIN producto p ON j."productoId" = p.id
-        WHERE j."isActive" = true AND p."isActive" = true ${nombreCond} ${estadoCond} ${consolaCond} ${ofertaCond}
+        WHERE j."isActive" = true AND p."isActive" = true ${nombreCond} ${estadoCond} ${consolaJuegoCond} ${ofertaCond}
       `);
     }
 
@@ -275,7 +280,7 @@ export class ProductoService {
                c.descuento_porcentaje, c.descuento_fijo, c.fotos, c.stock
         FROM consolas c
         INNER JOIN producto p ON c."productoId" = p.id
-        WHERE p."isActive" = true ${nombreCond} ${estadoCond} ${consolaCond} ${ofertaCond}
+        WHERE p."isActive" = true ${nombreCond} ${estadoCond} ${consolaConsolaCond} ${ofertaCond}
       `);
     }
 
