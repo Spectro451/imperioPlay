@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { mockProductos } from '~/composables/api/useMockData'
-
-const { filtros, page, items, totalPages } = useCatalogo(mockProductos.filter(p => p.tipo === 'consola'))
+const { data } = await useAsyncData('consolas', () => useProductoApi().getAll({ tipo: 'consola' }))
+const { filtros, page, items, totalPages } = useCatalogo(data.value?.items ?? [])
 </script>
 
 <template>

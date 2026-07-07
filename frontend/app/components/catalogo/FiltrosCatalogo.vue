@@ -4,14 +4,7 @@ const props = defineProps<{
   tipo?: 'juego' | 'consola' | 'todos'
 }>()
 
-const plataformasJuego = ['Xbox360', 'XboxOne', 'XboxSeries', 'Ps3', 'Ps4', 'Ps5', 'Switch', 'Switch2']
-const plataformasConsola = ['Gen 8', 'Gen 9']
-
-const plataformas = computed(() => {
-  if (props.tipo === 'juego') return plataformasJuego
-  if (props.tipo === 'consola') return plataformasConsola
-  return [...plataformasJuego, ...plataformasConsola]
-})
+const plataformas = ['Xbox360', 'XboxOne', 'XboxSeries', 'Ps3', 'Ps4', 'Ps5', 'Switch', 'Switch2']
 
 const ordenes = [
   { label: 'Más recientes', value: 'id-desc' },

@@ -1,2 +1,5 @@
-.next
+.output
+.nuxt
 node_modules
+.env
+README.md

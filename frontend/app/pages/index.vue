@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { mockProductos, mockOfertas } from '~/composables/api/useMockData'
+const { getAll, getOfertas } = useProductoApi()
 
-const ultimosAgregados = mockProductos.slice(0, 10)
-const ofertas = mockOfertas.slice(0, 10)
+const [{ data: ultimosData }, { data: ofertasData }] = await Promise.all([
+  useAsyncData('home-ultimos', () => getAll({ orden: 'id-desc' })),
+  useAsyncData('home-ofertas', () => getOfertas()),
+])
+
+const ultimosAgregados = ultimosData.value?.items ?? []
+const ofertas = ofertasData.value?.items ?? []
 </script>
 
 <template>
   <div>
-    <!-- Hero editorial -->
     <div class="bg-bg-hard border-b border-border">
       <div class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
         <p class="text-acento-1 text-xs font-bold uppercase tracking-widest mb-4">
@@ -28,25 +32,11 @@ const ofertas = mockOfertas.slice(0, 10)
       </div>
     </div>
 
-    <!-- Carrusel: Últimos agregados -->
-    <CarruselProductos
-      titulo="Últimos agregados"
-      :items="ultimosAgregados"
-      ver-todos-link="/catalogo"
-    />
-
+    <CarruselProductos titulo="Últimos agregados" :items="ultimosAgregados.slice(0, 10)" ver-todos-link="/catalogo" />
+    <div class="border-t border-border" />
+    <CarruselProductos titulo="Últimas ofertas" :items="ofertas.slice(0, 10)" ver-todos-link="/ofertas" />
     <div class="border-t border-border" />
 
-    <!-- Carrusel: Ofertas -->
-    <CarruselProductos
-      titulo="Últimas ofertas"
-      :items="ofertas"
-      ver-todos-link="/ofertas"
-    />
-
-    <div class="border-t border-border" />
-
-    <!-- Tercer carrusel (por definir) -->
     <section class="py-10">
       <div class="max-w-7xl mx-auto px-4 md:px-8">
         <h2 class="text-2xl font-black tracking-tight mb-5 text-muted">Por definir</h2>
