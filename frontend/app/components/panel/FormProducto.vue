@@ -101,8 +101,38 @@ const error = ref('')
 
 const productoBloqueado = ref(false)
 const skuBuscando = ref(false)
-const skuMensaje = ref('')
+const productoEncontrado = ref<any>(null)
 const lastSku = ref('')
+
+const skuMensaje = computed(() => {
+  const prod = productoEncontrado.value
+  if (!prod) {
+    if (lastSku.value && !isEdit.value) return 'SKU nuevo: podés cargar el producto desde cero.'
+    return ''
+  }
+  if (!prod.isActive) {
+    return 'SKU pertenece a un producto desactivado. Al guardar se reactivará y se sumará el stock ingresado.'
+  }
+  const variantes = tipo.value === 'juego' ? (prod.juegos ?? []) : (prod.consolas ?? [])
+  const variante = variantes.find((v: any) =>
+    (v.consola ?? v.generacion) === plataforma.value && v.estado === estado.value,
+  )
+  if (variante && !variante.isActive) {
+    return `Esta variante está desactivada (stock actual: ${variante.stock}). Al guardar se reactivará y se sumarán las unidades.`
+  }
+  return 'Producto existente: solo estado, precio y descuentos son editables.'
+})
+
+const skuAvisoReactivacion = computed(() => {
+  const prod = productoEncontrado.value
+  if (!prod) return false
+  if (!prod.isActive) return true
+  const variantes = tipo.value === 'juego' ? (prod.juegos ?? []) : (prod.consolas ?? [])
+  const variante = variantes.find((v: any) =>
+    (v.consola ?? v.generacion) === plataforma.value && v.estado === estado.value,
+  )
+  return !!variante && !variante.isActive
+})
 
 const sugerenciasNombre = ref<string[]>([])
 const mostrarSugerencias = ref(false)
@@ -115,7 +145,7 @@ async function onSkuBlur() {
   if (val === lastSku.value) return
   lastSku.value = val
   skuBuscando.value = true
-  skuMensaje.value = ''
+  productoEncontrado.value = null
   try {
     const res = await buscarPorSku(val)
     if (res.encontrado && res.producto) {
@@ -126,15 +156,18 @@ async function onSkuBlur() {
         : res.producto.consolas?.[0]
       if (primeraVariante) {
         plataforma.value = primeraVariante.consola ?? primeraVariante.generacion ?? plataforma.value
+        estado.value = primeraVariante.estado ?? estado.value
+        precio_base.value = primeraVariante.precio_base ?? 0
+        descuento_porcentaje.value = primeraVariante.descuento_porcentaje ?? 0
+        descuento_fijo.value = primeraVariante.descuento_fijo ?? 0
       }
       productoBloqueado.value = true
-      skuMensaje.value = 'Producto existente: solo estado, precio y descuentos son editables.'
+      productoEncontrado.value = res.producto
     } else {
       productoBloqueado.value = false
-      skuMensaje.value = 'SKU nuevo: podés cargar el producto desde cero.'
     }
   } catch {
-    skuMensaje.value = ''
+    productoEncontrado.value = null
   } finally {
     skuBuscando.value = false
   }
@@ -167,6 +200,8 @@ async function elegirSugerencia(n: string) {
   tipo.value = prod.tipo
   sku.value = prod.sku ?? sku.value
   lastSku.value = sku.value.trim()
+  productoEncontrado.value = prod
+  productoBloqueado.value = true
   const primeraVariante = prod.tipo === 'juego' ? prod.juegos?.[0] : prod.consolas?.[0]
   if (primeraVariante) {
     plataforma.value = primeraVariante.consola ?? primeraVariante.generacion ?? plataforma.value
@@ -330,7 +365,7 @@ async function submit() {
             @keydown.enter.prevent="onSkuBlur"
           />
           <p v-if="skuBuscando" class="text-xs text-muted">Buscando...</p>
-          <p v-else-if="skuMensaje" class="text-xs" :class="productoBloqueado ? 'text-acento-1' : 'text-muted'">
+          <p v-else-if="skuMensaje" class="text-xs" :class="skuAvisoReactivacion ? 'text-acento-1' : 'text-muted'">
             {{ skuMensaje }}
           </p>
         </div>

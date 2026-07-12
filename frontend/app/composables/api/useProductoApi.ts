@@ -4,6 +4,7 @@ function mapVariante(v: any): ItemFlat {
   return {
     id: v.id,
     nombre: v.nombre,
+    sku: v.sku,
     tipo: v.tipo,
     plataforma: v.plataforma,
     estado: v.variante_estado,
@@ -13,6 +14,7 @@ function mapVariante(v: any): ItemFlat {
     descuento_fijo: v.descuento_fijo,
     fotos: v.fotos,
     stock: v.stock,
+    isActive: v.isActive,
   }
 }
 
@@ -38,7 +40,7 @@ export function useProductoApi() {
   }
 
   async function buscarPorNombreExacto(nombre: string) {
-    const data = await api<{ productos: any[] }>('/producto', { query: { nombre, limit: 1 } })
+    const data = await api<{ productos: any[] }>('/producto', { query: { nombre, limit: 1, activo: 'todos' } })
     return data.productos.find(p => p.nombre.toLowerCase() === nombre.toLowerCase()) ?? data.productos[0] ?? null
   }
 

@@ -84,7 +84,11 @@ export class ConsolaController {
     orden?: string;
     page?: string;
     limit?: string;
+    activo?: string;
   }) {
+    const activo = query.activo === 'false' || query.activo === 'todos'
+      ? query.activo
+      : 'true';
     return this.consolaService.findAll({
       nombre: query.nombre,
       consola: query.consola as Plataforma,
@@ -92,6 +96,7 @@ export class ConsolaController {
       orden: query.orden as Orden,
       page: query.page ? parseInt(query.page) : undefined,
       limit: query.limit ? parseInt(query.limit) : undefined,
+      activo: activo as 'true' | 'false' | 'todos',
     });
   }
 
@@ -129,5 +134,12 @@ export class ConsolaController {
     } catch (err) {
       throw new BadRequestException(err.message);
     }
+  }
+
+  @Patch(':id/restore')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'empleado')
+  async restore(@Param('id') id: string): Promise<Consola> {
+    return this.consolaService.restore(Number(id));
   }
 }

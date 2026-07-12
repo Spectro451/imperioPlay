@@ -61,8 +61,12 @@ export class ProductoController {
       orden?: Orden;
       estado?: estadoJuego;
       sku?: string;
+      activo?: string;
     },
   ) {
+    const activo = query.activo === 'false' || query.activo === 'todos'
+      ? query.activo
+      : 'true';
     return this.productoService.findAll({
       nombre: query.nombre,
       tipo: query.tipo as tipoProducto,
@@ -71,6 +75,7 @@ export class ProductoController {
       orden: query.orden as Orden,
       estado: query.estado as estadoJuego,
       sku: query.sku,
+      activo: activo as 'true' | 'false' | 'todos',
     });
   }
 
@@ -102,22 +107,29 @@ export class ProductoController {
   findVariantes(
     @Query() query: {
       nombre?: string;
+      sku?: string;
       tipo?: string;
       consola?: string;
       estado?: string;
       orden?: string;
       page?: string;
       oferta?: string;
+      activo?: string;
     },
   ) {
+    const activo = query.activo === 'false' || query.activo === 'todos'
+      ? query.activo
+      : 'true';
     return this.productoService.findVariantes({
       nombre: query.nombre,
+      sku: query.sku,
       tipo: query.tipo as tipoProducto,
       consola: query.consola as Plataforma,
       estado: query.estado as estadoJuego,
       orden: query.orden as Orden,
       page: query.page ? parseInt(query.page) : undefined,
       oferta: query.oferta === 'true',
+      activo: activo as 'true' | 'false' | 'todos',
     });
   }
 

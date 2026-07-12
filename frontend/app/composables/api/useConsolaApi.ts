@@ -13,6 +13,7 @@ function mapConsola(c: any): ItemFlat {
     descuento_fijo: c.descuento_fijo,
     fotos: c.fotos,
     stock: c.stock,
+    isActive: c.isActive && c.producto.isActive,
   }
 }
 
@@ -53,5 +54,9 @@ export function useConsolaApi() {
     return api<any>(`/consola/${id}`, { method: 'DELETE' })
   }
 
-  return { getAll, getOne, create, update, remove }
+  async function restore(id: number) {
+    return api<any>(`/consola/${id}/restore`, { method: 'PATCH' })
+  }
+
+  return { getAll, getOne, create, update, remove, restore }
 }

@@ -24,6 +24,8 @@ export default {
         'acento-1': 'var(--acento-1)',
         'acento-2': 'var(--acento-2)',
         'acento-3': 'var(--acento-3)',
+        danger: 'var(--danger)',
+        warning: 'var(--warning)',
       },
     },
   },

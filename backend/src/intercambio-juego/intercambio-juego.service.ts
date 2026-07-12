@@ -50,7 +50,7 @@ export class IntercambioJuegoService {
   }
 
   async crearVinculos(
-    intercambio: Intercambio, // ENTIDAD COMPLETA
+    intercambio: Intercambio,
     juegosSolicitados: Array<{ juego: Juego; cantidad?: number }> = [],
     juegosCliente: Array<{ juego: Juego; cantidad: number }> = [],
   ) {
@@ -59,8 +59,8 @@ export class IntercambioJuegoService {
     for (const js of juegosSolicitados) {
       registros.push(
         this.intercambioJuegoRepo.create({
-          intercambio, // ENTIDAD COMPLETA
-          juego: js.juego, // ENTIDAD COMPLETA
+          intercambio,
+          juego: js.juego,
           rol: rolIntercambio.solicitado,
           cantidad: js.cantidad ?? 1,
         }),
@@ -70,8 +70,8 @@ export class IntercambioJuegoService {
     for (const j of juegosCliente) {
       registros.push(
         this.intercambioJuegoRepo.create({
-          intercambio, // ENTIDAD COMPLETA
-          juego: j.juego, // ENTIDAD COMPLETA
+          intercambio,
+          juego: j.juego,
           rol: rolIntercambio.entregado,
           cantidad: j.cantidad,
         }),

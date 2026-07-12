@@ -13,6 +13,7 @@ function mapJuego(j: any): ItemFlat {
     descuento_fijo: j.descuento_fijo,
     fotos: j.fotos,
     stock: j.stock,
+    isActive: j.isActive && j.producto.isActive,
   }
 }
 
@@ -53,5 +54,9 @@ export function useJuegoApi() {
     return api<any>(`/juego/${id}`, { method: 'DELETE' })
   }
 
-  return { getAll, getOne, create, update, remove }
+  async function restore(id: number) {
+    return api<any>(`/juego/${id}/restore`, { method: 'PATCH' })
+  }
+
+  return { getAll, getOne, create, update, remove, restore }
 }

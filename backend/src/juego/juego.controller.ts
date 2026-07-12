@@ -85,7 +85,11 @@ export class JuegoController {
     orden?: string;
     page?: string;
     limit?: string;
+    activo?: string;
   }) {
+    const activo = query.activo === 'false' || query.activo === 'todos'
+      ? query.activo
+      : 'true';
     return this.juegoService.findAll({
       nombre: query.nombre,
       consola: query.consola as Plataforma,
@@ -93,6 +97,7 @@ export class JuegoController {
       orden: query.orden as Orden,
       page: query.page ? parseInt(query.page) : undefined,
       limit: query.limit ? parseInt(query.limit) : undefined,
+      activo: activo as 'true' | 'false' | 'todos',
     });
   }
 
@@ -130,5 +135,12 @@ export class JuegoController {
     } catch (err) {
       throw new BadRequestException(err.message);
     }
+  }
+
+  @Patch(':id/restore')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'empleado')
+  async restore(@Param('id') id: string): Promise<Juego> {
+    return this.juegoService.restore(Number(id));
   }
 }

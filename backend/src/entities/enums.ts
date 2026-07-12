@@ -42,4 +42,6 @@ export enum Orden {
   ABC_DESC = 'abc-desc',
   PRECIO_ASC = 'precio-asc',
   PRECIO_DESC = 'precio-desc',
+  STOCK_ASC = 'stock-asc',
+  STOCK_DESC = 'stock-desc',
 }

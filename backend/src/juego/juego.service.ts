@@ -9,12 +9,14 @@ import { Juego } from '../entities/juego.entity';
 import { Producto } from 'src/entities/producto.entity';
 import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
 import { calcularPrecioFinal, calcularTier } from 'src/utils/pricing';
+import { ProductoService } from 'src/producto/producto.service';
 
 @Injectable()
 export class JuegoService {
   constructor(
     @InjectRepository(Juego)
     private readonly juegoRepo: Repository<Juego>,
+    private readonly productoService: ProductoService,
   ) {}
 
   async restarStockJuego(juego: Juego, cantidad: number): Promise<Juego> {
@@ -71,6 +73,7 @@ export class JuegoService {
 
     if (juegoExistente) {
       juegoExistente.stock += stock;
+      if (!juegoExistente.isActive) juegoExistente.isActive = true;
       return this.juegoRepo.save(juegoExistente);
     }
 
@@ -113,16 +116,24 @@ export class JuegoService {
     orden?: Orden;
     page?: number;
     limit?: number;
+    activo?: 'true' | 'false' | 'todos';
   }): Promise<{ juegos: Juego[]; totalPaginas: number }> {
     const page = filtro?.page || 1;
     const limit = filtro?.limit || 20;
     const skip = (page - 1) * limit;
+    const activo = filtro?.activo ?? 'true';
 
     const query = this.juegoRepo
       .createQueryBuilder('juego')
-      .leftJoinAndSelect('juego.producto', 'producto')
-      .where('juego.isActive = true')
-      .andWhere('producto.isActive = true');
+      .leftJoinAndSelect('juego.producto', 'producto');
+
+    if (activo === 'true') {
+      query
+        .andWhere('juego.isActive = true')
+        .andWhere('producto.isActive = true');
+    } else if (activo === 'false') {
+      query.andWhere('(juego.isActive = false OR producto.isActive = false)');
+    }
 
     if (filtro?.nombre)
       query.andWhere('producto.nombre ILIKE :nombre', { nombre: `%${filtro.nombre}%` });
@@ -134,6 +145,8 @@ export class JuegoService {
     const ordenKey = filtro?.orden || Orden.ID_DESC;
     if (ordenKey === Orden.PRECIO_ASC) query.orderBy('juego.precio_final', 'ASC');
     else if (ordenKey === Orden.PRECIO_DESC) query.orderBy('juego.precio_final', 'DESC');
+    else if (ordenKey === Orden.STOCK_ASC) query.orderBy('juego.stock', 'ASC');
+    else if (ordenKey === Orden.STOCK_DESC) query.orderBy('juego.stock', 'DESC');
     else if (ordenKey === Orden.ABC) query.orderBy('producto.nombre', 'ASC');
     else if (ordenKey === Orden.ABC_DESC) query.orderBy('producto.nombre', 'DESC');
     else if (ordenKey === Orden.ID) query.orderBy('juego.id', 'ASC');
@@ -207,5 +220,18 @@ export class JuegoService {
       throw new BadRequestException(`Juego con id ${id} ya está inactivo`);
     juego.isActive = false;
     await this.juegoRepo.save(juego);
+  }
+
+  async restore(id: number): Promise<Juego> {
+    const juego = await this.findOne(id);
+    if (!juego)
+      throw new NotFoundException(`Juego con id ${id} no encontrado`);
+    if (juego.isActive)
+      throw new BadRequestException(`Juego con id ${id} ya está activo`);
+    juego.isActive = true;
+    if (juego.producto && !juego.producto.isActive) {
+      await this.productoService.reactivarSiInactivo(juego.productoId);
+    }
+    return this.juegoRepo.save(juego);
   }
 }

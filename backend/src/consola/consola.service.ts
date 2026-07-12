@@ -9,12 +9,14 @@ import { Producto } from '../entities/producto.entity';
 import { Consola } from 'src/entities/consola';
 import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
 import { calcularPrecioFinal } from 'src/utils/pricing';
+import { ProductoService } from 'src/producto/producto.service';
 
 @Injectable()
 export class ConsolaService {
   constructor(
     @InjectRepository(Consola)
     private readonly consolaRepo: Repository<Consola>,
+    private readonly productoService: ProductoService,
   ) {}
 
   async restarStockConsola(
@@ -68,6 +70,7 @@ export class ConsolaService {
 
     if (consolaExistente) {
       consolaExistente.stock += stock;
+      if (!consolaExistente.isActive) consolaExistente.isActive = true;
       return this.consolaRepo.save(consolaExistente);
     }
 
@@ -109,15 +112,24 @@ export class ConsolaService {
     orden?: Orden;
     page?: number;
     limit?: number;
+    activo?: 'true' | 'false' | 'todos';
   }): Promise<{ consolas: Consola[]; totalPaginas: number }> {
     const page = filtro?.page || 1;
     const limit = filtro?.limit || 20;
     const skip = (page - 1) * limit;
+    const activo = filtro?.activo ?? 'true';
 
     const query = this.consolaRepo
       .createQueryBuilder('consola')
-      .leftJoinAndSelect('consola.producto', 'producto')
-      .where('producto.isActive = true');
+      .leftJoinAndSelect('consola.producto', 'producto');
+
+    if (activo === 'true') {
+      query
+        .andWhere('consola.isActive = true')
+        .andWhere('producto.isActive = true');
+    } else if (activo === 'false') {
+      query.andWhere('(consola.isActive = false OR producto.isActive = false)');
+    }
 
     if (filtro?.nombre)
       query.andWhere('producto.nombre ILIKE :nombre', { nombre: `%${filtro.nombre}%` });
@@ -129,6 +141,8 @@ export class ConsolaService {
     const ordenKey = filtro?.orden || Orden.ID_DESC;
     if (ordenKey === Orden.PRECIO_ASC) query.orderBy('consola.precio_final', 'ASC');
     else if (ordenKey === Orden.PRECIO_DESC) query.orderBy('consola.precio_final', 'DESC');
+    else if (ordenKey === Orden.STOCK_ASC) query.orderBy('consola.stock', 'ASC');
+    else if (ordenKey === Orden.STOCK_DESC) query.orderBy('consola.stock', 'DESC');
     else if (ordenKey === Orden.ABC) query.orderBy('producto.nombre', 'ASC');
     else if (ordenKey === Orden.ABC_DESC) query.orderBy('producto.nombre', 'DESC');
     else if (ordenKey === Orden.ID) query.orderBy('consola.id', 'ASC');
@@ -173,5 +187,18 @@ export class ConsolaService {
       throw new BadRequestException(`Consola con id ${id} ya está inactiva`);
     consola.isActive = false;
     await this.consolaRepo.save(consola);
+  }
+
+  async restore(id: number): Promise<Consola> {
+    const consola = await this.findOne(id);
+    if (!consola)
+      throw new NotFoundException(`Consola con id ${id} no encontrada`);
+    if (consola.isActive)
+      throw new BadRequestException(`Consola con id ${id} ya está activa`);
+    consola.isActive = true;
+    if (consola.producto && !consola.producto.isActive) {
+      await this.productoService.reactivarSiInactivo(consola.productoId);
+    }
+    return this.consolaRepo.save(consola);
   }
 }

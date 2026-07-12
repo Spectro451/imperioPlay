@@ -1,6 +1,7 @@
 export interface ItemFlat {
   id: number
   nombre: string
+  sku?: string
   tipo: 'juego' | 'consola'
   plataforma: string
   estado: string
@@ -10,13 +11,16 @@ export interface ItemFlat {
   descuento_fijo?: number
   fotos?: string[]
   stock: number
+  isActive: boolean
 }
 
 export interface FiltrosApi {
   nombre?: string
+  sku?: string
   consola?: string
   estado?: string
   orden?: string
   page?: number
   limit?: number
+  activo?: 'true' | 'false' | 'todos'
 }
