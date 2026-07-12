@@ -3,6 +3,7 @@ defineProps<{
   titulo: string
   items: ItemFlat[]
   verTodosLink?: string
+  loading?: boolean
 }>()
 
 const carouselRef = ref<HTMLElement>()
@@ -36,7 +37,10 @@ function scroll(dir: 'left' | 'right') {
         </svg>
       </button>
 
+      <SkeletonHomeCarrusel v-if="loading" />
+
       <div
+        v-else
         ref="carouselRef"
         class="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scroll-pl-4 md:scroll-pl-8 pb-2 scrollbar-hide"
       >

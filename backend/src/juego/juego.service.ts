@@ -162,6 +162,7 @@ export class JuegoService {
     Object.assign(juego, data);
 
     if (
+      data.precio_base !== undefined ||
       data.descuento_porcentaje !== undefined ||
       data.descuento_fijo !== undefined
     ) {

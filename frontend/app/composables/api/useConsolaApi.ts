@@ -16,6 +16,19 @@ function mapConsola(c: any): ItemFlat {
   }
 }
 
+export interface CreateConsolaPayload {
+  producto: { nombre: string; tipo: 'consola'; sku?: string }
+  consola: {
+    generacion?: string
+    estado?: string
+    stock?: number
+    fotos?: string[]
+    precio_base: number
+    descuento_porcentaje?: number
+    descuento_fijo?: number
+  }
+}
+
 export function useConsolaApi() {
   const api = useApi()
 
@@ -28,5 +41,17 @@ export function useConsolaApi() {
     return api<any>(`/consola/${id}`)
   }
 
-  return { getAll, getOne }
+  async function create(payload: CreateConsolaPayload) {
+    return api<any>('/consola', { method: 'POST', body: payload })
+  }
+
+  async function update(id: number, payload: Partial<CreateConsolaPayload['consola']>) {
+    return api<any>(`/consola/${id}`, { method: 'PUT', body: payload })
+  }
+
+  async function remove(id: number) {
+    return api<any>(`/consola/${id}`, { method: 'DELETE' })
+  }
+
+  return { getAll, getOne, create, update, remove }
 }

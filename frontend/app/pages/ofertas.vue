@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { filtros, page, items, totalPages } = await useCatalogo(undefined, true)
+const { filtros, page, items, totalPages, pending } = await useCatalogo(undefined, true)
 </script>
 
 <template>
@@ -9,6 +9,6 @@ const { filtros, page, items, totalPages } = await useCatalogo(undefined, true)
       <h1 class="text-3xl font-black tracking-tight mb-4">Últimas ofertas</h1>
       <FiltrosCatalogo :filtros="filtros" tipo="todos" />
     </div>
-    <GridProductos :items="items" :page="page" :total-pages="totalPages" @update:page="page = $event" />
+    <GridProductos :items="items" :page="page" :total-pages="totalPages" :loading="pending" @update:page="page = $event" />
   </div>
 </template>

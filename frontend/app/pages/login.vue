@@ -2,10 +2,24 @@
 const correo = ref('')
 const password = ref('')
 const error = ref('')
+const loading = ref(false)
+
+const { login } = useAuthApi()
+const { refresh, isStaff } = useAuth()
 
 async function submit() {
   error.value = ''
-
+  loading.value = true
+  try {
+    await login(correo.value, password.value)
+    await refresh()
+    await navigateTo(isStaff.value ? '/panel' : '/cuenta')
+  } catch (e: any) {
+    const msg = e?.data?.message
+    error.value = Array.isArray(msg) ? msg[0] : (msg ?? 'Credenciales invalidas')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -22,7 +36,8 @@ async function submit() {
             v-model="correo"
             type="email"
             required
-            class="bg-bg-card border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-acento-1 transition-colors"
+            :disabled="loading"
+            class="bg-bg-card border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-acento-1 transition-colors disabled:opacity-50"
             placeholder="tu@correo.com"
           />
         </div>
@@ -33,7 +48,8 @@ async function submit() {
             v-model="password"
             type="password"
             required
-            class="bg-bg-card border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-acento-1 transition-colors"
+            :disabled="loading"
+            class="bg-bg-card border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-acento-1 transition-colors disabled:opacity-50"
             placeholder="••••••••"
           />
         </div>
@@ -42,9 +58,10 @@ async function submit() {
 
         <button
           type="submit"
-          class="mt-2 px-6 py-3 border border-acento-1 text-acento-1 font-bold rounded-lg hover:bg-acento-1 hover:text-bg-hard transition-colors text-sm"
+          :disabled="loading"
+          class="mt-2 px-6 py-3 border border-acento-1 text-acento-1 font-bold rounded-lg hover:bg-acento-1 hover:text-bg-hard transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Entrar
+          {{ loading ? 'Entrando...' : 'Entrar' }}
         </button>
       </form>
     </div>

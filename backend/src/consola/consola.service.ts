@@ -150,6 +150,7 @@ export class ConsolaService {
       throw new NotFoundException(`Consola con id ${id} no encontrada`);
     Object.assign(consola, data);
     if (
+      data.precio_base !== undefined ||
       data.descuento_porcentaje !== undefined ||
       data.descuento_fijo !== undefined
     ) {

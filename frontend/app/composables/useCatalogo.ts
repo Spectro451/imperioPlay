@@ -45,7 +45,7 @@ export async function useCatalogo(tipo?: string, esOfertas = false) {
         ? (p: FiltrosApi) => getOfertas(p)
         : (p: FiltrosApi) => getAllProducto(p)
 
-  const { data } = await useAsyncData(
+  const { data, pending } = await useAsyncData(
     `catalogo-${tipo ?? 'todos'}${esOfertas ? '-ofertas' : ''}`,
     () => fetchFn(params.value),
     { watch: [params] },
@@ -56,5 +56,6 @@ export async function useCatalogo(tipo?: string, esOfertas = false) {
     page,
     items: computed(() => data.value?.items ?? []),
     totalPages: computed(() => data.value?.totalPaginas ?? 1),
+    pending,
   }
 }

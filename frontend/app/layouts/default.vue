@@ -43,7 +43,7 @@ watch(() => route.path, () => { menuAbierto.value = false })
           </NuxtLink>
           <NuxtLink
             :to="isLoggedIn ? '/cuenta' : '/login'"
-            class="text-sm px-4 py-1.5 bg-bg-card hover:bg-acento-1 hover:text-bg-hard rounded transition-colors font-medium"
+            class="text-sm text-acento-1 px-4 py-1.5 border border-acento-1 rounded hover:bg-acento-1 hover:text-bg-hard transition-colors"
           >
             {{ isLoggedIn ? 'Mi cuenta' : 'Iniciar sesión' }}
           </NuxtLink>
@@ -82,7 +82,11 @@ watch(() => route.path, () => { menuAbierto.value = false })
           <NuxtLink v-if="isStaff" to="/panel" class="text-muted hover:text-acento-1">
             Panel
           </NuxtLink>
-          <NuxtLink :to="isLoggedIn ? '/cuenta' : '/login'" class="text-fg font-medium">
+          <NuxtLink
+            :to="isLoggedIn ? '/cuenta' : '/login'"
+            class="text-muted hover:text-acento-1 transition-colors"
+            active-class="!text-fg !font-medium"
+          >
             {{ isLoggedIn ? 'Mi cuenta' : 'Iniciar sesión' }}
           </NuxtLink>
         </div>

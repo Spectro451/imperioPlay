@@ -1,13 +1,16 @@
 <script setup lang="ts">
 const { getAll, getOfertas } = useProductoApi()
 
-const [{ data: ultimosData }, { data: ofertasData }] = await Promise.all([
+const [
+  { data: ultimosData, pending: ultimosPending },
+  { data: ofertasData, pending: ofertasPending },
+] = await Promise.all([
   useAsyncData('home-ultimos', () => getAll({ orden: 'id-desc' })),
   useAsyncData('home-ofertas', () => getOfertas()),
 ])
 
-const ultimosAgregados = ultimosData.value?.items ?? []
-const ofertas = ofertasData.value?.items ?? []
+const ultimosAgregados = computed(() => ultimosData.value?.items?.slice(0, 10) ?? [])
+const ofertas = computed(() => ofertasData.value?.items?.slice(0, 10) ?? [])
 </script>
 
 <template>
@@ -32,9 +35,9 @@ const ofertas = ofertasData.value?.items ?? []
       </div>
     </div>
 
-    <CarruselProductos titulo="Últimos agregados" :items="ultimosAgregados.slice(0, 10)" ver-todos-link="/catalogo" />
+    <CarruselProductos titulo="Últimos agregados" :items="ultimosAgregados" :loading="ultimosPending" ver-todos-link="/catalogo" />
     <div class="border-t border-border" />
-    <CarruselProductos titulo="Últimas ofertas" :items="ofertas.slice(0, 10)" ver-todos-link="/ofertas" />
+    <CarruselProductos titulo="Últimas ofertas" :items="ofertas" :loading="ofertasPending" ver-todos-link="/ofertas" />
     <div class="border-t border-border" />
 
     <section class="py-10">

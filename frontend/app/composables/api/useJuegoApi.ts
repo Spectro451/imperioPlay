@@ -16,6 +16,19 @@ function mapJuego(j: any): ItemFlat {
   }
 }
 
+export interface CreateJuegoPayload {
+  producto: { nombre: string; tipo: 'juego'; sku?: string }
+  juego: {
+    consola: string
+    estado: string
+    stock?: number
+    fotos?: string[]
+    precio_base: number
+    descuento_porcentaje?: number
+    descuento_fijo?: number
+  }
+}
+
 export function useJuegoApi() {
   const api = useApi()
 
@@ -28,5 +41,17 @@ export function useJuegoApi() {
     return api<any>(`/juego/${id}`)
   }
 
-  return { getAll, getOne }
+  async function create(payload: CreateJuegoPayload) {
+    return api<any>('/juego', { method: 'POST', body: payload })
+  }
+
+  async function update(id: number, payload: Partial<CreateJuegoPayload['juego']>) {
+    return api<any>(`/juego/${id}`, { method: 'PUT', body: payload })
+  }
+
+  async function remove(id: number) {
+    return api<any>(`/juego/${id}`, { method: 'DELETE' })
+  }
+
+  return { getAll, getOne, create, update, remove }
 }

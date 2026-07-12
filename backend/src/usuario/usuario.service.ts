@@ -16,19 +16,17 @@ export class UsuarioService {
     private readonly usuarioRepo: Repository<Usuario>,
   ) {}
 
-  //crear usuario, por default cliente
   async create(data: {
     nombre: string;
     correo: string;
     password: string;
-    rol?: Rol;
   }): Promise<Usuario> {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const usuario = this.usuarioRepo.create({
       nombre: data.nombre,
       correo: data.correo,
       password: hashedPassword,
-      rol: data.rol ?? Rol.cliente,
+      rol: Rol.cliente,
     });
     return this.usuarioRepo.save(usuario);
   }

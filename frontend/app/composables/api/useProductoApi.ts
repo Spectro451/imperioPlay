@@ -29,5 +29,18 @@ export function useProductoApi() {
     return { items: data.variantes.map(mapVariante), totalPaginas: data.totalPaginas }
   }
 
-  return { getAll, getOfertas }
+  async function buscarPorSku(sku: string) {
+    return api<{ encontrado: boolean; producto?: any }>(`/producto/sku/${encodeURIComponent(sku)}`)
+  }
+
+  async function getNombres(busqueda: string) {
+    return api<string[]>('/producto/nombres', { query: { busqueda } })
+  }
+
+  async function buscarPorNombreExacto(nombre: string) {
+    const data = await api<{ productos: any[] }>('/producto', { query: { nombre, limit: 1 } })
+    return data.productos.find(p => p.nombre.toLowerCase() === nombre.toLowerCase()) ?? data.productos[0] ?? null
+  }
+
+  return { getAll, getOfertas, buscarPorSku, getNombres, buscarPorNombreExacto }
 }

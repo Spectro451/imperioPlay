@@ -1,9 +1,7 @@
+type SessionUser = { id: number; correo: string; rol: string; nombre: string }
+
 export const useAuth = () => {
-  const user = useState<{ sub: number; correo: string; rol: string } | null>(
-    'auth.user',
-    () => null,
-  )
-  const token = useState<string | null>('auth.token', () => null)
+  const user = useState<SessionUser | null>('auth.user', () => null)
 
   const isLoggedIn = computed(() => !!user.value)
   const isStaff = computed(
@@ -11,5 +9,24 @@ export const useAuth = () => {
   )
   const isAdmin = computed(() => user.value?.rol === 'admin')
 
-  return { user, token, isLoggedIn, isStaff, isAdmin }
+  async function refresh() {
+    try {
+      const api = useApi()
+      user.value = await api<SessionUser>('/auth/me')
+    } catch {
+      user.value = null
+    }
+  }
+
+  async function logout() {
+    try {
+      const api = useApi()
+      await api('/auth/logout', { method: 'POST' })
+    } finally {
+      user.value = null
+      await navigateTo('/')
+    }
+  }
+
+  return { user, isLoggedIn, isStaff, isAdmin, refresh, logout }
 }

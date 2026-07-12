@@ -1,6 +1,6 @@
 export function useApi() {
   const config = useRuntimeConfig()
-  const { token } = useAuth()
+  const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {}
 
   const baseURL = import.meta.server
     ? config.apiBaseServer
@@ -8,11 +8,12 @@ export function useApi() {
 
   return $fetch.create({
     baseURL,
+    credentials: 'include',
     onRequest({ options }) {
-      if (token.value) {
+      if (import.meta.server && requestHeaders.cookie) {
         options.headers = {
           ...options.headers as Record<string, string>,
-          Authorization: `Bearer ${token.value}`,
+          cookie: requestHeaders.cookie,
         }
       }
     },

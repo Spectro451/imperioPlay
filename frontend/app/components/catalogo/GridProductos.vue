@@ -13,13 +13,7 @@ defineEmits<{
 
 <template>
   <div>
-    <div v-if="loading" class="grid grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      <div
-        v-for="n in 20"
-        :key="n"
-        class="bg-bg-card rounded-lg animate-pulse h-64"
-      />
-    </div>
+    <SkeletonCatalogoGrid v-if="loading" />
 
     <div v-else-if="items.length" class="grid grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       <TarjetaProducto

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'cuenta' })
 
-const { user } = useAuth()
+const { user, logout } = useAuth()
 </script>
 
 <template>
@@ -11,6 +11,10 @@ const { user } = useAuth()
 
     <div class="bg-bg-card rounded-lg p-6 flex flex-col gap-4 border border-border">
       <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-muted mb-1">Nombre</p>
+        <p class="text-fg font-medium">{{ user?.nombre }}</p>
+      </div>
+      <div>
         <p class="text-xs font-semibold uppercase tracking-widest text-muted mb-1">Correo</p>
         <p class="text-fg font-medium">{{ user?.correo }}</p>
       </div>
@@ -19,5 +23,12 @@ const { user } = useAuth()
         <p class="text-fg font-medium capitalize">{{ user?.rol }}</p>
       </div>
     </div>
+
+    <button
+      class="mt-6 text-sm text-muted hover:text-acento-1 transition-colors"
+      @click="logout"
+    >
+      Cerrar sesión →
+    </button>
   </div>
 </template>
