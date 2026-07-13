@@ -33,6 +33,7 @@ export enum Plataforma {
 export enum metodoPago {
   efectivo = 'efectivo',
   debito = 'debito',
+  credito = 'credito',
 }
 
 export enum Orden {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ItemFlat } from '~/composables/useProductoTypes'
+import type { SortCol, SortDir } from '~/components/panel/TablaProductos.vue'
 
 definePageMeta({ middleware: 'panel', layout: 'panel' })
 
@@ -14,8 +15,6 @@ const plataformaFiltro = ref('')
 const activoFiltro = ref<'todos' | 'true' | 'false'>('todos')
 const page = ref(1)
 
-type SortCol = 'id' | 'nombre' | 'stock' | 'precio'
-type SortDir = 'asc' | 'desc'
 const sortCol = ref<SortCol>('id')
 const sortDir = ref<SortDir>('desc')
 
@@ -130,16 +129,6 @@ async function reactivar(item: ItemFlat) {
   }
 }
 
-function tieneOferta(item: ItemFlat): boolean {
-  return (item.descuento_porcentaje ?? 0) > 0 || (item.descuento_fijo ?? 0) > 0
-}
-
-function stockClass(stock: number): string {
-  if (stock <= 1) return 'text-danger'
-  if (stock <= 5) return 'text-warning'
-  return ''
-}
-
 const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3 py-2 focus:outline-none focus:border-acento-1 transition-colors'
 </script>
 
@@ -177,192 +166,26 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
       </select>
     </div>
 
-    <div class="hidden md:block bg-bg-card border border-border rounded-lg overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-bg-hard border-b border-border">
-            <tr class="text-left text-xs uppercase tracking-widest text-muted">
-              <th class="px-4 py-3 font-bold">
-                <button
-                  class="inline-flex items-center gap-1 hover:text-fg transition-colors"
-                  :class="sortCol === 'nombre' && 'text-fg'"
-                  @click="toggleSort('nombre')"
-                >
-                  Nombre
-                  <span class="text-[10px]">{{ sortCol === 'nombre' ? (sortDir === 'asc' ? '▲' : '▼') : '↕' }}</span>
-                </button>
-              </th>
-              <th class="px-4 py-3 font-bold">SKU</th>
-              <th class="px-4 py-3 font-bold">Tipo</th>
-              <th class="px-4 py-3 font-bold">Plataforma</th>
-              <th class="px-4 py-3 font-bold">Estado</th>
-              <th class="px-4 py-3 font-bold text-right">
-                <button
-                  class="inline-flex items-center gap-1 hover:text-fg transition-colors"
-                  :class="sortCol === 'stock' && 'text-fg'"
-                  @click="toggleSort('stock')"
-                >
-                  Stock
-                  <span class="text-[10px]">{{ sortCol === 'stock' ? (sortDir === 'asc' ? '▲' : '▼') : '↕' }}</span>
-                </button>
-              </th>
-              <th class="px-4 py-3 font-bold text-right">
-                <button
-                  class="inline-flex items-center gap-1 hover:text-fg transition-colors"
-                  :class="sortCol === 'precio' && 'text-fg'"
-                  @click="toggleSort('precio')"
-                >
-                  Precio
-                  <span class="text-[10px]">{{ sortCol === 'precio' ? (sortDir === 'asc' ? '▲' : '▼') : '↕' }}</span>
-                </button>
-              </th>
-              <th class="px-4 py-3 font-bold text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-if="pending">
-              <SkeletonProductosFilas />
-            </template>
-            <template v-else-if="!items.length">
-              <tr>
-                <td colspan="8" class="px-4 py-16 text-center text-muted">Sin resultados.</td>
-              </tr>
-            </template>
-            <template v-else>
-            <tr
-              v-for="item in items"
-              :key="`${item.tipo}-${item.id}`"
-              class="border-b border-border last:border-b-0 hover:bg-bg-hard/50 transition-colors"
-              :class="!item.isActive && 'opacity-50'"
-            >
-              <td class="px-4 py-3 font-medium">{{ item.nombre }}</td>
-              <td class="px-4 py-3 text-muted font-mono text-xs">{{ item.sku || '—' }}</td>
-              <td class="px-4 py-3 capitalize text-muted">{{ item.tipo }}</td>
-              <td class="px-4 py-3">{{ item.plataforma }}</td>
-              <td class="px-4 py-3 capitalize">{{ item.estado }}</td>
-              <td class="px-4 py-3 text-right font-bold" :class="stockClass(item.stock)">{{ item.stock }}</td>
-              <td class="px-4 py-3 text-right">
-                <div class="flex flex-col items-end leading-tight">
-                  <span
-                    v-if="tieneOferta(item)"
-                    class="text-xs text-muted line-through"
-                  >
-                    ${{ item.precio_base.toLocaleString('es-AR') }}
-                  </span>
-                  <span class="font-bold text-acento-1">
-                    ${{ item.precio_final.toLocaleString('es-AR') }}
-                  </span>
-                  <span
-                    v-if="tieneOferta(item)"
-                    class="text-[10px] font-bold text-muted uppercase tracking-wider"
-                  >
-                    {{ item.descuento_porcentaje ? `-${item.descuento_porcentaje}%` : `-$${item.descuento_fijo?.toLocaleString('es-AR')}` }}
-                  </span>
-                </div>
-              </td>
-              <td class="px-4 py-3 text-right">
-                <div class="flex gap-2 justify-end">
-                  <button
-                    class="text-xs text-muted hover:text-acento-1 transition-colors"
-                    @click="abrirEditar(item)"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    v-if="item.isActive"
-                    class="text-xs text-muted hover:text-red-500 transition-colors"
-                    @click="eliminar(item)"
-                  >
-                    Eliminar
-                  </button>
-                  <button
-                    v-else
-                    class="text-xs text-muted hover:text-acento-1 transition-colors"
-                    @click="reactivar(item)"
-                  >
-                    Reactivar
-                  </button>
-                </div>
-              </td>
-            </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
+    <div class="hidden md:block">
+      <TablaProductos
+        :items="items"
+        :pending="pending"
+        :sort-col="sortCol"
+        :sort-dir="sortDir"
+        @toggle-sort="toggleSort"
+        @editar="abrirEditar"
+        @eliminar="eliminar"
+        @reactivar="reactivar"
+      />
     </div>
-
-    <div class="md:hidden flex flex-col gap-3">
-      <template v-if="pending">
-        <SkeletonProductosCards />
-      </template>
-      <template v-else-if="!items.length">
-        <p class="bg-bg-card border border-border rounded-lg p-6 text-center text-muted text-sm">
-          Sin resultados.
-        </p>
-      </template>
-      <template v-else>
-      <div
-        v-for="item in items"
-        :key="`card-${item.tipo}-${item.id}`"
-        class="bg-bg-card border border-border rounded-lg p-4 flex flex-col gap-3"
-        :class="!item.isActive && 'opacity-50'"
-      >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0 flex-1">
-            <p class="font-bold truncate">{{ item.nombre }}</p>
-            <p class="text-xs text-muted capitalize mt-0.5">
-              {{ item.tipo }} · {{ item.plataforma }} · {{ item.estado }}
-            </p>
-            <p v-if="item.sku" class="text-[10px] text-muted font-mono mt-0.5">SKU: {{ item.sku }}</p>
-          </div>
-          <div class="flex flex-col items-end shrink-0 leading-tight">
-            <span
-              v-if="tieneOferta(item)"
-              class="text-xs text-muted line-through"
-            >
-              ${{ item.precio_base.toLocaleString('es-AR') }}
-            </span>
-            <span class="text-base font-bold text-acento-1">
-              ${{ item.precio_final.toLocaleString('es-AR') }}
-            </span>
-            <span
-              v-if="tieneOferta(item)"
-              class="text-[10px] font-bold text-muted uppercase tracking-wider"
-            >
-              {{ item.descuento_porcentaje ? `-${item.descuento_porcentaje}%` : `-$${item.descuento_fijo?.toLocaleString('es-AR')}` }}
-            </span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between text-xs">
-          <span class="text-muted">
-            Stock: <span class="font-bold" :class="stockClass(item.stock) || 'text-fg'">{{ item.stock }}</span>
-          </span>
-          <div class="flex gap-4">
-            <button
-              class="text-muted hover:text-acento-1 transition-colors"
-              @click="abrirEditar(item)"
-            >
-              Editar
-            </button>
-            <button
-              v-if="item.isActive"
-              class="text-muted hover:text-red-500 transition-colors"
-              @click="eliminar(item)"
-            >
-              Eliminar
-            </button>
-            <button
-              v-else
-              class="text-muted hover:text-acento-1 transition-colors"
-              @click="reactivar(item)"
-            >
-              Reactivar
-            </button>
-          </div>
-        </div>
-      </div>
-      </template>
+    <div class="md:hidden">
+      <CardsProductos
+        :items="items"
+        :pending="pending"
+        @editar="abrirEditar"
+        @eliminar="eliminar"
+        @reactivar="reactivar"
+      />
     </div>
 
     <div v-if="totalPaginas > 1" class="flex items-center justify-center gap-3 mt-6">

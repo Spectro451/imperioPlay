@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { CreateVentaDto } from './dto/create-venta.dto';
+import { FiltroVentasDto } from './dto/filtro-ventas.dto';
 
 @Controller('venta')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,8 +31,8 @@ export class VentaController {
 
   @Get()
   @Roles('admin', 'empleado')
-  async findAll(): Promise<Venta[]> {
-    return this.ventaService.findAll();
+  async findAll(@Query() filtro: FiltroVentasDto) {
+    return this.ventaService.findAll(filtro);
   }
 
   @Get(':id')

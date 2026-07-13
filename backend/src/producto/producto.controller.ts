@@ -114,6 +114,7 @@ export class ProductoController {
       orden?: string;
       page?: string;
       oferta?: string;
+      conStock?: string;
       activo?: string;
     },
   ) {
@@ -129,6 +130,7 @@ export class ProductoController {
       orden: query.orden as Orden,
       page: query.page ? parseInt(query.page) : undefined,
       oferta: query.oferta === 'true',
+      conStock: query.conStock === 'true',
       activo: activo as 'true' | 'false' | 'todos',
     });
   }

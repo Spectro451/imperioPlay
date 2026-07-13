@@ -23,4 +23,5 @@ export interface FiltrosApi {
   page?: number
   limit?: number
   activo?: 'true' | 'false' | 'todos'
+  conStock?: boolean
 }

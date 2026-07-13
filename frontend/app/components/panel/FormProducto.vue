@@ -470,7 +470,7 @@ async function submit() {
         <div class="flex items-center justify-between bg-bg-hard border border-border rounded px-3 py-2">
           <span :class="labelClass" class="!mb-0">Precio final</span>
           <span class="text-lg font-bold text-acento-1">
-            ${{ precioFinal.toLocaleString('es-AR') }}
+            ${{ formatearPrecio(precioFinal) }}
           </span>
         </div>
 

@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Venta } from '../entities/venta.entity';
 import { metodoPago, tipoProducto } from 'src/entities/enums';
 import { VentaDetalle } from 'src/entities/ventaDetalle';
@@ -12,6 +12,42 @@ import { instanceToPlain } from 'class-transformer';
 import { Juego } from 'src/entities/juego.entity';
 import { Consola } from 'src/entities/consola';
 import { calcularPrecioFinal } from 'src/utils/pricing';
+import { FiltroVentasDto, OrdenVentas } from './dto/filtro-ventas.dto';
+
+interface DatosVariante {
+  nombre: string;
+  estado: string;
+}
+
+export interface DetalleListado {
+  nombre: string;
+  tipo: tipoProducto;
+  estado: string;
+  cantidad: number;
+  precio_unitario: number;
+  subtotal: number;
+}
+
+export interface VentaListado {
+  id: number;
+  fecha: Date;
+  metodo_pago: metodoPago;
+  total: number;
+  monto_pagado: number;
+  vuelto?: number;
+  descuento_porcentaje?: number;
+  descuento_fijo?: number;
+  vendedor: { id: number; nombre: string };
+  items: DetalleListado[];
+}
+
+export interface ListadoVentas {
+  ventas: VentaListado[];
+  totalPaginas: number;
+  totalRegistros: number;
+}
+
+const LIMIT_POR_DEFECTO = 20;
 
 @Injectable()
 export class VentaService {
@@ -132,11 +168,149 @@ export class VentaService {
     });
   }
 
-  async findAll(): Promise<Venta[]> {
-    const ventas = await this.ventaRepo.find({
-      relations: ['cliente', 'vendedor', 'ventaDetalles'],
+  async findAll(filtro: FiltroVentasDto = {}): Promise<ListadoVentas> {
+    const { ventas, totalRegistros, totalPaginas } =
+      await this.buscarConFiltros(filtro);
+    const mapaVariantes = await this.resolverCatalogo(ventas);
+    const listado = ventas.map((v) => this.mapearListado(v, mapaVariantes));
+    return { ventas: listado, totalPaginas, totalRegistros };
+  }
+
+  private async buscarConFiltros(filtro: FiltroVentasDto): Promise<{
+    ventas: Venta[];
+    totalRegistros: number;
+    totalPaginas: number;
+  }> {
+    const page = filtro.page ?? 1;
+    const limit = filtro.limit ?? LIMIT_POR_DEFECTO;
+
+    const qb = this.ventaRepo
+      .createQueryBuilder('venta')
+      .leftJoinAndSelect('venta.vendedor', 'vendedor')
+      .leftJoinAndSelect('venta.ventaDetalles', 'detalle');
+
+    this.aplicarOrden(qb, filtro.orden);
+
+    if (filtro.desde) qb.andWhere('venta.fecha >= :desde', { desde: filtro.desde });
+    if (filtro.hasta) qb.andWhere('venta.fecha <= :hasta', { hasta: filtro.hasta });
+    if (filtro.vendedor_id)
+      qb.andWhere('venta.vendedor_id = :vendedor_id', {
+        vendedor_id: filtro.vendedor_id,
+      });
+    if (filtro.metodo_pago)
+      qb.andWhere('venta.metodo_pago = :metodo_pago', {
+        metodo_pago: filtro.metodo_pago,
+      });
+
+    const totalRegistros = await qb.getCount();
+    const totalPaginas = Math.max(1, Math.ceil(totalRegistros / limit));
+
+    qb.skip((page - 1) * limit).take(limit);
+    const ventas = await qb.getMany();
+
+    return { ventas, totalRegistros, totalPaginas };
+  }
+
+  private async resolverCatalogo(
+    ventas: Venta[],
+  ): Promise<Map<string, DatosVariante>> {
+    const idsJuego = new Set<number>();
+    const idsConsola = new Set<number>();
+
+    for (const v of ventas) {
+      for (const d of v.ventaDetalles ?? []) {
+        if (d.tipo === tipoProducto.juego) idsJuego.add(d.item_id);
+        else if (d.tipo === tipoProducto.consola) idsConsola.add(d.item_id);
+      }
+    }
+
+    const mapa = new Map<string, DatosVariante>();
+    if (!idsJuego.size && !idsConsola.size) return mapa;
+
+    const [juegos, consolas] = await Promise.all([
+      idsJuego.size
+        ? this.dataSource
+            .getRepository(Juego)
+            .createQueryBuilder('juego')
+            .leftJoinAndSelect('juego.producto', 'producto')
+            .whereInIds([...idsJuego])
+            .getMany()
+        : Promise.resolve([]),
+      idsConsola.size
+        ? this.dataSource
+            .getRepository(Consola)
+            .createQueryBuilder('consola')
+            .leftJoinAndSelect('consola.producto', 'producto')
+            .whereInIds([...idsConsola])
+            .getMany()
+        : Promise.resolve([]),
+    ]);
+
+    for (const j of juegos) {
+      mapa.set(this.keyVariante(tipoProducto.juego, j.id), {
+        nombre: j.producto?.nombre ?? 'Producto eliminado',
+        estado: j.estado,
+      });
+    }
+    for (const c of consolas) {
+      mapa.set(this.keyVariante(tipoProducto.consola, c.id), {
+        nombre: c.producto?.nombre ?? 'Producto eliminado',
+        estado: c.estado,
+      });
+    }
+
+    return mapa;
+  }
+
+  private keyVariante(tipo: tipoProducto, id: number): string {
+    return `${tipo}-${id}`;
+  }
+
+  private aplicarOrden(
+    qb: SelectQueryBuilder<Venta>,
+    orden?: OrdenVentas,
+  ): void {
+    const mapa = {
+      'fecha-asc': ['venta.fecha', 'ASC'],
+      'fecha-desc': ['venta.fecha', 'DESC'],
+      'total-asc': ['venta.total', 'ASC'],
+      'total-desc': ['venta.total', 'DESC'],
+    } as const;
+    const [campo, dir] = mapa[orden ?? 'fecha-desc'];
+    qb.orderBy(campo, dir).addOrderBy('venta.id', 'DESC');
+  }
+
+  private mapearListado(
+    venta: Venta,
+    mapa: Map<string, DatosVariante>,
+  ): VentaListado {
+    const items: DetalleListado[] = (venta.ventaDetalles ?? []).map((d) => {
+      const datos = mapa.get(this.keyVariante(d.tipo, d.item_id));
+      return {
+        nombre: datos?.nombre ?? 'Producto eliminado',
+        tipo: d.tipo,
+        estado: datos?.estado ?? '—',
+        cantidad: d.cantidad,
+        precio_unitario: d.precio_unitario,
+        subtotal: d.subtotal,
+      };
     });
-    return instanceToPlain(ventas) as Venta[];
+
+    return {
+      id: venta.id,
+      fecha: venta.fecha,
+      metodo_pago: venta.metodo_pago,
+      total: venta.total,
+      monto_pagado: venta.monto_pagado,
+      vuelto: venta.vuelto,
+      descuento_porcentaje: venta.descuento_porcentaje,
+      descuento_fijo: venta.descuento_fijo,
+      vendedor: {
+        id: venta.vendedor?.id ?? venta.vendedor_id,
+        nombre: venta.vendedor?.nombre ?? '—',
+      },
+      items,
+    };
   }
 
   async findOne(id: number): Promise<Venta | null> {

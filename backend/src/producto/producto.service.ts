@@ -238,6 +238,7 @@ export class ProductoService {
     orden?: Orden;
     page?: number;
     oferta?: boolean;
+    conStock?: boolean;
     activo?: 'true' | 'false' | 'todos';
   }) {
     const limit = 20;
@@ -266,6 +267,7 @@ export class ProductoService {
     const ofertaCond = filtro?.oferta
       ? `AND (descuento_porcentaje > 0 OR descuento_fijo > 0)`
       : '';
+    const stockCond = filtro?.conStock ? `AND stock > 0` : '';
 
     const activoJuegoCond =
       activo === 'true'
@@ -302,7 +304,7 @@ export class ProductoService {
                (j."isActive" AND p."isActive") AS "isActive"
         FROM juego j
         INNER JOIN producto p ON j."productoId" = p.id
-        WHERE 1=1 ${activoJuegoCond} ${nombreCond} ${skuCond} ${estadoCond} ${consolaJuegoCond} ${ofertaCond}
+        WHERE 1=1 ${activoJuegoCond} ${nombreCond} ${skuCond} ${estadoCond} ${consolaJuegoCond} ${ofertaCond} ${stockCond}
       `);
     }
 
@@ -314,7 +316,7 @@ export class ProductoService {
                (c."isActive" AND p."isActive") AS "isActive"
         FROM consolas c
         INNER JOIN producto p ON c."productoId" = p.id
-        WHERE 1=1 ${activoConsolaCond} ${nombreCond} ${skuCond} ${estadoCond} ${consolaConsolaCond} ${ofertaCond}
+        WHERE 1=1 ${activoConsolaCond} ${nombreCond} ${skuCond} ${estadoCond} ${consolaConsolaCond} ${ofertaCond} ${stockCond}
       `);
     }
 

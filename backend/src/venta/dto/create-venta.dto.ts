@@ -4,6 +4,7 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -31,6 +32,7 @@ export class CreateVentaDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(100)
   descuento_porcentaje?: number;
 
   @IsOptional()
