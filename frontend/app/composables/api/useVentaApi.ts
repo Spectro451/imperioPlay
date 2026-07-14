@@ -12,6 +12,7 @@ export interface CreateVentaPayload {
   descuento_fijo?: number
   metodo_pago: MetodoPago
   monto_pagado: number
+  vendedor_id?: number
   items: VentaItemPayload[]
 }
 
@@ -19,6 +20,7 @@ export interface VentaDetalleListado {
   nombre: string
   tipo: TipoItemVenta
   estado: string
+  sku?: string
   cantidad: number
   precio_unitario: number
   subtotal: number

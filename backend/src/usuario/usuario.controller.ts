@@ -17,6 +17,7 @@ import { Roles } from 'src/auth/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RestoreUsuarioDto } from './dto/restore-usuario.dto';
 
@@ -36,11 +37,32 @@ export class UsuarioController {
     return this.usuarioService.create(data);
   }
 
+  @Post('empleado')
+  @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async createEmpleado(@Body() data: CreateEmpleadoDto): Promise<Usuario> {
+    return this.usuarioService.createEmpleado(data);
+  }
+
   @Get()
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async findAll(): Promise<Usuario[]> {
     return this.usuarioService.findAll();
+  }
+
+  @Get('empleados')
+  @Roles('admin', 'empleado')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async findEmpleados(): Promise<Usuario[]> {
+    return this.usuarioService.findEmpleados();
+  }
+
+  @Get('rut/:rut')
+  @Roles('admin', 'empleado')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async findByRut(@Param('rut') rut: string): Promise<Usuario> {
+    return this.usuarioService.findByRut(rut);
   }
 
   @Get(':id')
@@ -117,5 +139,12 @@ export class UsuarioController {
   @Patch('restore')
   async restore(@Body() body: RestoreUsuarioDto): Promise<Usuario> {
     return this.usuarioService.restore(body.correo, body.password);
+  }
+
+  @Patch(':id/reactivar')
+  @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async reactivar(@Param('id') id: string): Promise<Usuario> {
+    return this.usuarioService.reactivar(Number(id));
   }
 }

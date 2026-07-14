@@ -18,6 +18,9 @@ export class Usuario {
   @Column({ unique: true })
   correo: string;
 
+  @Column({ unique: true, nullable: true })
+  rut?: string;
+
   @Column()
   @Exclude()
   password: string;

@@ -44,6 +44,7 @@ const nombre = computed(() => props.variantes[0]?.nombre ?? '')
             <p class="text-sm font-bold capitalize">
               {{ v.tipo }} · {{ v.plataforma }} · {{ v.estado }}
             </p>
+            <p v-if="v.sku" class="text-xs text-muted mt-0.5 font-mono">SKU: {{ v.sku }}</p>
             <p class="text-xs text-muted mt-0.5">Stock: {{ v.stock }}</p>
           </div>
           <div class="text-right shrink-0">

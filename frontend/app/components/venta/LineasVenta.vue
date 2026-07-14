@@ -38,6 +38,7 @@ function subtotal(linea: LineaVenta) {
             <p class="text-xs text-muted capitalize mt-0.5">
               {{ linea.variante.tipo }} · {{ linea.variante.plataforma }} · {{ linea.variante.estado }}
             </p>
+            <p v-if="linea.variante.sku" class="text-xs text-muted mt-0.5 font-mono">SKU: {{ linea.variante.sku }}</p>
             <p class="text-[10px] text-muted mt-0.5">
               ${{ linea.variante.precio_final.toLocaleString('es-AR') }} c/u · Stock: {{ linea.variante.stock }}
             </p>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ItemFlat } from '~/composables/useProductoTypes'
-import type { SortCol, SortDir } from '~/components/panel/TablaProductos.vue'
+import type { SortCol } from '~/components/panel/TablaProductos.vue'
 
 definePageMeta({ middleware: 'panel', layout: 'panel' })
 
@@ -15,8 +15,10 @@ const plataformaFiltro = ref('')
 const activoFiltro = ref<'todos' | 'true' | 'false'>('todos')
 const page = ref(1)
 
-const sortCol = ref<SortCol>('id')
-const sortDir = ref<SortDir>('desc')
+const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({
+  defaultCol: 'id',
+  ascCols: ['nombre'],
+})
 
 const ordenBackend = computed(() => {
   const dir = sortDir.value === 'asc' ? 'asc' : 'desc'
@@ -28,24 +30,6 @@ const ordenBackend = computed(() => {
   }
   return map[sortCol.value]
 })
-
-function dirInicial(col: SortCol): SortDir {
-  return col === 'nombre' ? 'asc' : 'desc'
-}
-
-function toggleSort(col: SortCol) {
-  if (sortCol.value !== col) {
-    sortCol.value = col
-    sortDir.value = dirInicial(col)
-    return
-  }
-  if (sortDir.value === dirInicial(col)) {
-    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortCol.value = 'id'
-    sortDir.value = 'desc'
-  }
-}
 
 const busquedaDebounced = ref('')
 const busquedaSkuDebounced = ref('')

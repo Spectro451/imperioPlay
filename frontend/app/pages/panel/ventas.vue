@@ -9,6 +9,7 @@ const {
   descuentoValor,
   metodoPago,
   montoPagado,
+  vendedor,
   totalBase,
   totalFinal,
   vuelto,
@@ -59,6 +60,7 @@ async function confirmar() {
       monto_pagado: montoPagado.value,
       descuento_porcentaje: tipoDescuento.value === 'porcentaje' ? descuentoValor.value : undefined,
       descuento_fijo: tipoDescuento.value === 'fijo' ? descuentoValor.value : undefined,
+      vendedor_id: vendedor.value?.id,
       items: payloadItems.value,
     })
     notificar('ok', 'Venta registrada')
@@ -84,12 +86,20 @@ function cancelar() {
       <p class="text-muted text-sm">Escaneá un SKU o buscá por nombre para armar la venta.</p>
     </div>
 
-    <div class="mb-6">
-      <BuscadorVenta
-        @seleccionar="onSeleccionarBuscador"
-        @multiples="onMultiplesVariantes"
-        @error="(m) => notificar('error', m)"
-      />
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="md:col-span-1">
+        <SelectorVendedor
+          v-model:vendedor="vendedor"
+          @error="(m) => notificar('error', m)"
+        />
+      </div>
+      <div class="md:col-span-2">
+        <BuscadorVenta
+          @seleccionar="onSeleccionarBuscador"
+          @multiples="onMultiplesVariantes"
+          @error="(m) => notificar('error', m)"
+        />
+      </div>
     </div>
 
     <div

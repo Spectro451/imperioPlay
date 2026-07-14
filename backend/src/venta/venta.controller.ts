@@ -26,7 +26,8 @@ export class VentaController {
   @Post()
   @Roles('admin', 'empleado')
   async create(@Body() data: CreateVentaDto, @Req() req: any): Promise<Venta> {
-    return this.ventaService.create(req.user.id, data);
+    const vendedorId = data.vendedor_id ?? req.user.id;
+    return this.ventaService.create(vendedorId, data);
   }
 
   @Get()

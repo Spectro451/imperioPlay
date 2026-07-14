@@ -1,5 +1,6 @@
 import type { ItemFlat } from './useProductoTypes'
 import type { MetodoPago, VentaItemPayload } from './api/useVentaApi'
+import type { Usuario } from './api/useUsuarioApi'
 
 export interface LineaVenta {
   variante: ItemFlat
@@ -19,6 +20,7 @@ export function useVentaEnCurso() {
   const _descuentoValor = ref(0)
   const metodoPago = ref<MetodoPago>('efectivo')
   const montoPagado = ref(0)
+  const vendedor = ref<Usuario | null>(null)
 
   const totalBase = computed(() =>
     lineas.value.reduce((sum, l) => sum + l.variante.precio_final * l.cantidad, 0),
@@ -85,6 +87,7 @@ export function useVentaEnCurso() {
     descuentoValor.value = 0
     metodoPago.value = 'efectivo'
     montoPagado.value = 0
+    vendedor.value = null
   }
 
   const totalFinal = computed(() => {
@@ -101,7 +104,10 @@ export function useVentaEnCurso() {
   const vuelto = computed(() => Math.max(0, montoPagado.value - totalFinal.value))
 
   const puedeConfirmar = computed(() =>
-    lineas.value.length > 0 && montoPagado.value >= totalFinal.value && totalFinal.value > 0,
+    lineas.value.length > 0 &&
+    montoPagado.value >= totalFinal.value &&
+    totalFinal.value > 0 &&
+    vendedor.value !== null,
   )
 
   const payloadItems = computed<VentaItemPayload[]>(() =>
@@ -118,6 +124,7 @@ export function useVentaEnCurso() {
     descuentoValor,
     metodoPago,
     montoPagado,
+    vendedor,
     totalBase,
     totalFinal,
     vuelto,

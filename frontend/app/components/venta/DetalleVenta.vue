@@ -20,6 +20,7 @@ defineProps<{
           <p class="text-xs text-muted capitalize">
             {{ item.tipo }} · {{ item.estado }} · ${{ item.precio_unitario.toLocaleString('es-AR') }} c/u
           </p>
+          <p v-if="item.sku" class="text-xs text-muted mt-0.5 font-mono">SKU: {{ item.sku }}</p>
         </div>
         <div class="text-right shrink-0 ml-4">
           <p class="text-xs text-muted">×{{ item.cantidad }}</p>

@@ -7,7 +7,7 @@ const emit = defineEmits<{
   (e: 'error', mensaje: string): void
 }>()
 
-const { buscarPorSku, getNombres, buscarPorNombreExacto } = useProductoApi()
+const { buscarPorSku, getNombres, buscarTodosPorNombreExacto } = useProductoApi()
 
 const sku = ref('')
 const nombre = ref('')
@@ -34,8 +34,8 @@ watch(nombre, (val) => {
   }, 300)
 })
 
-async function resolverProducto(producto: any) {
-  const variantes = variantesVendibles(aplanarVariantes(producto))
+async function resolverProductos(productos: any[]) {
+  const variantes = variantesVendibles(productos.flatMap(aplanarVariantes))
   if (!variantes.length) {
     emit('error', 'Sin variantes disponibles con stock')
     return
@@ -57,7 +57,7 @@ async function onBuscarSku() {
       emit('error', `SKU ${valor} no encontrado`)
       return
     }
-    await resolverProducto(res.producto)
+    await resolverProductos([res.producto])
     sku.value = ''
   } catch (e: any) {
     emit('error', e?.data?.message ?? 'Error al buscar por SKU')
@@ -71,12 +71,12 @@ async function onSeleccionarNombre(sugerido: string) {
   mostrarSugerencias.value = false
   cargandoNombre.value = true
   try {
-    const producto = await buscarPorNombreExacto(sugerido)
-    if (!producto) {
+    const productos = await buscarTodosPorNombreExacto(sugerido)
+    if (!productos.length) {
       emit('error', `Producto "${sugerido}" no encontrado`)
       return
     }
-    await resolverProducto(producto)
+    await resolverProductos(productos)
     nombre.value = ''
     sugerencias.value = []
   } catch (e: any) {

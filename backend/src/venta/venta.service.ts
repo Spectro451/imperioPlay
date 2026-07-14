@@ -13,16 +13,19 @@ import { Juego } from 'src/entities/juego.entity';
 import { Consola } from 'src/entities/consola';
 import { calcularPrecioFinal } from 'src/utils/pricing';
 import { FiltroVentasDto, OrdenVentas } from './dto/filtro-ventas.dto';
+import { UsuarioService } from 'src/usuario/usuario.service';
 
 interface DatosVariante {
   nombre: string;
   estado: string;
+  sku?: string;
 }
 
 export interface DetalleListado {
   nombre: string;
   tipo: tipoProducto;
   estado: string;
+  sku?: string;
   cantidad: number;
   precio_unitario: number;
   subtotal: number;
@@ -55,6 +58,7 @@ export class VentaService {
     @InjectRepository(Venta)
     private readonly ventaRepo: Repository<Venta>,
     private readonly dataSource: DataSource,
+    private readonly usuarioService: UsuarioService,
   ) {}
 
   async create(
@@ -68,6 +72,8 @@ export class VentaService {
       items: { id: number; tipo: tipoProducto; cantidad: number }[];
     },
   ): Promise<Venta> {
+    await this.usuarioService.validarVendedor(vendedor_id);
+
     return this.dataSource.transaction(async (manager) => {
       let total_base = 0;
       const ventaDetalles: VentaDetalle[] = [];
@@ -250,12 +256,14 @@ export class VentaService {
       mapa.set(this.keyVariante(tipoProducto.juego, j.id), {
         nombre: j.producto?.nombre ?? 'Producto eliminado',
         estado: j.estado,
+        sku: j.producto?.sku,
       });
     }
     for (const c of consolas) {
       mapa.set(this.keyVariante(tipoProducto.consola, c.id), {
         nombre: c.producto?.nombre ?? 'Producto eliminado',
         estado: c.estado,
+        sku: c.producto?.sku,
       });
     }
 
@@ -290,6 +298,7 @@ export class VentaService {
         nombre: datos?.nombre ?? 'Producto eliminado',
         tipo: d.tipo,
         estado: datos?.estado ?? '—',
+        sku: datos?.sku,
         cantidad: d.cantidad,
         precio_unitario: d.precio_unitario,
         subtotal: d.subtotal,

@@ -44,5 +44,11 @@ export function useProductoApi() {
     return data.productos.find(p => p.nombre.toLowerCase() === nombre.toLowerCase()) ?? data.productos[0] ?? null
   }
 
-  return { getAll, getOfertas, buscarPorSku, getNombres, buscarPorNombreExacto }
+  async function buscarTodosPorNombreExacto(nombre: string) {
+    const data = await api<{ productos: any[] }>('/producto', { query: { nombre, activo: 'todos' } })
+    const objetivo = nombre.toLowerCase()
+    return data.productos.filter(p => p.nombre.toLowerCase() === objetivo)
+  }
+
+  return { getAll, getOfertas, buscarPorSku, getNombres, buscarPorNombreExacto, buscarTodosPorNombreExacto }
 }

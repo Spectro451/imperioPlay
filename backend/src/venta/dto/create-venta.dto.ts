@@ -30,6 +30,10 @@ export class CreateVentaDto {
   cliente_id?: number;
 
   @IsOptional()
+  @IsInt()
+  vendedor_id?: number;
+
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(100)

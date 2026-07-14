@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FiltroVentasParams, OrdenVentas } from '~/composables/api/useVentaApi'
-import type { SortCol, SortDir } from '~/components/venta/TablaVentas.vue'
+import type { SortCol } from '~/components/venta/TablaVentas.vue'
 
 definePageMeta({ middleware: 'admin', layout: 'panel' })
 
@@ -8,26 +8,9 @@ const { getAll } = useVentaApi()
 const { getAll: getUsuarios } = useUsuarioApi()
 
 const filtros = ref<FiltroVentasParams>({ page: 1, limit: 20 })
-const sortCol = ref<SortCol>('fecha')
-const sortDir = ref<SortDir>('desc')
+const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({ defaultCol: 'fecha' })
 
 const orden = computed<OrdenVentas>(() => `${sortCol.value}-${sortDir.value}` as OrdenVentas)
-
-const DIR_INICIAL: SortDir = 'desc'
-
-function toggleSort(col: SortCol) {
-  if (sortCol.value !== col) {
-    sortCol.value = col
-    sortDir.value = DIR_INICIAL
-    return
-  }
-  if (sortDir.value === DIR_INICIAL) {
-    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortCol.value = 'fecha'
-    sortDir.value = 'desc'
-  }
-}
 
 const params = computed<FiltroVentasParams>(() => ({
   ...filtros.value,
