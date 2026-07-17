@@ -6,6 +6,7 @@ const links = [
   { label: 'Productos', to: '/panel/productos' },
   { label: 'Registrar venta', to: '/panel/ventas' },
   { label: 'Registrar intercambio', to: '/panel/intercambios' },
+  { label: 'Yo', to: '/panel/yo' },
 ]
 
 const adminLinks = [
@@ -89,6 +90,7 @@ watch(() => route.path, () => { sidebarAbierto.value = false })
       </header>
 
       <main class="flex-1 p-6 md:p-10">
+        <Notificador />
         <slot />
       </main>
     </div>

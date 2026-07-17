@@ -14,11 +14,21 @@ export interface CreateEmpleadoPayload {
   rut: string
 }
 
+export interface UpdateEmpleadoPayload {
+  nombre?: string
+  correo?: string
+  rut?: string
+}
+
 export function useUsuarioApi() {
   const api = useApi()
 
   async function getAll() {
     return api<Usuario[]>('/usuario')
+  }
+
+  async function getYo() {
+    return api<Usuario>('/usuario/yo')
   }
 
   async function getEmpleados() {
@@ -33,6 +43,24 @@ export function useUsuarioApi() {
     return api<Usuario>('/usuario/empleado', { method: 'POST', body: payload })
   }
 
+  async function update(id: number, payload: UpdateEmpleadoPayload) {
+    return api<Usuario>(`/usuario/${id}`, { method: 'PUT', body: payload })
+  }
+
+  async function resetPassword(id: number, newPassword: string) {
+    return api<Usuario>(`/usuario/${id}/password-reset`, {
+      method: 'PATCH',
+      body: { newPassword },
+    })
+  }
+
+  async function changePassword(id: number, currentPassword: string, newPassword: string) {
+    return api<Usuario>(`/usuario/${id}/password`, {
+      method: 'PATCH',
+      body: { currentPassword, newPassword },
+    })
+  }
+
   async function remove(id: number) {
     return api<Usuario>(`/usuario/${id}`, { method: 'DELETE' })
   }
@@ -41,5 +69,5 @@ export function useUsuarioApi() {
     return api<Usuario>(`/usuario/${id}/reactivar`, { method: 'PATCH' })
   }
 
-  return { getAll, getEmpleados, getByRut, createEmpleado, remove, reactivar }
+  return { getAll, getYo, getEmpleados, getByRut, createEmpleado, update, resetPassword, changePassword, remove, reactivar }
 }

@@ -22,17 +22,10 @@ const {
 } = useVentaEnCurso()
 
 const { create } = useVentaApi()
+const { notificar } = useNotify()
 
 const variantesModal = ref<ItemFlat[] | null>(null)
 const procesando = ref(false)
-const mensaje = ref<{ tipo: 'error' | 'ok'; texto: string } | null>(null)
-let mensajeTimer: ReturnType<typeof setTimeout> | null = null
-
-function notificar(tipo: 'error' | 'ok', texto: string) {
-  if (mensajeTimer) clearTimeout(mensajeTimer)
-  mensaje.value = { tipo, texto }
-  mensajeTimer = setTimeout(() => { mensaje.value = null }, 3500)
-}
 
 function agregar(variante: ItemFlat) {
   const res = agregarItem(variante)
@@ -100,16 +93,6 @@ function cancelar() {
           @error="(m) => notificar('error', m)"
         />
       </div>
-    </div>
-
-    <div
-      v-if="mensaje"
-      class="mb-4 px-4 py-2 rounded border text-sm"
-      :class="mensaje.tipo === 'error'
-        ? 'border-danger text-danger bg-danger/10'
-        : 'border-acento-1 text-acento-1 bg-acento-1/10'"
-    >
-      {{ mensaje.texto }}
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -80,22 +80,10 @@ function cambiarPagina(nueva: number) {
       <CardsVentas :ventas="ventas" :pending="pending" />
     </div>
 
-    <div v-if="totalPaginas > 1" class="flex items-center justify-center gap-3 mt-6">
-      <button
-        :disabled="(filtros.page ?? 1) === 1"
-        class="px-3 py-1.5 text-sm border border-border rounded text-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed"
-        @click="cambiarPagina((filtros.page ?? 1) - 1)"
-      >
-        ← Anterior
-      </button>
-      <span class="text-sm text-muted">Página {{ filtros.page ?? 1 }} de {{ totalPaginas }}</span>
-      <button
-        :disabled="(filtros.page ?? 1) === totalPaginas"
-        class="px-3 py-1.5 text-sm border border-border rounded text-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed"
-        @click="cambiarPagina((filtros.page ?? 1) + 1)"
-      >
-        Siguiente →
-      </button>
-    </div>
+    <PanelPaginacion
+      :page="filtros.page ?? 1"
+      :total-paginas="totalPaginas"
+      @update:page="cambiarPagina"
+    />
   </div>
 </template>

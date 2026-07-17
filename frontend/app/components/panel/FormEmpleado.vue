@@ -1,17 +1,24 @@
 <script setup lang="ts">
+import type { Usuario } from '~/composables/api/useUsuarioApi'
 import { esRutValido, normalizarRut } from '~/utils/rut'
+
+const props = defineProps<{
+  empleado?: Usuario | null
+}>()
 
 const emit = defineEmits<{
   close: []
   saved: []
 }>()
 
-const { createEmpleado } = useUsuarioApi()
+const { createEmpleado, update } = useUsuarioApi()
 
-const nombre = ref('')
-const correo = ref('')
+const esEdicion = computed(() => !!props.empleado)
+
+const nombre = ref(props.empleado?.nombre ?? '')
+const correo = ref(props.empleado?.correo ?? '')
 const password = ref('')
-const rut = ref('')
+const rut = ref(props.empleado?.rut ?? '')
 
 const loading = ref(false)
 const error = ref('')
@@ -21,27 +28,43 @@ const rutError = computed(() => {
   return esRutValido(rut.value) ? '' : 'RUT inválido (formato 12345678-9)'
 })
 
-const puedeGuardar = computed(() =>
-  nombre.value.trim().length > 0
-  && /^\S+@\S+\.\S+$/.test(correo.value)
-  && password.value.length >= 6
-  && esRutValido(rut.value),
-)
+const hayCambios = computed(() => {
+  if (!esEdicion.value || !props.empleado) return true
+  return nombre.value.trim() !== props.empleado.nombre
+    || correo.value.trim().toLowerCase() !== props.empleado.correo
+    || normalizarRut(rut.value) !== (props.empleado.rut ?? '')
+})
+
+const puedeGuardar = computed(() => {
+  const base = nombre.value.trim().length > 0
+    && /^\S+@\S+\.\S+$/.test(correo.value)
+    && esRutValido(rut.value)
+  if (esEdicion.value) return base && hayCambios.value
+  return base && password.value.length >= 6
+})
 
 async function submit() {
   if (!puedeGuardar.value || loading.value) return
   loading.value = true
   error.value = ''
   try {
-    await createEmpleado({
-      nombre: nombre.value.trim(),
-      correo: correo.value.trim().toLowerCase(),
-      password: password.value,
-      rut: normalizarRut(rut.value),
-    })
+    if (esEdicion.value && props.empleado) {
+      await update(props.empleado.id, {
+        nombre: nombre.value.trim(),
+        correo: correo.value.trim().toLowerCase(),
+        rut: normalizarRut(rut.value),
+      })
+    } else {
+      await createEmpleado({
+        nombre: nombre.value.trim(),
+        correo: correo.value.trim().toLowerCase(),
+        password: password.value,
+        rut: normalizarRut(rut.value),
+      })
+    }
     emit('saved')
   } catch (e: any) {
-    error.value = e?.data?.message ?? 'No se pudo crear el empleado'
+    error.value = e?.data?.message ?? (esEdicion.value ? 'No se pudo actualizar el empleado' : 'No se pudo crear el empleado')
   } finally {
     loading.value = false
   }
@@ -55,7 +78,9 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
   <div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" @click.self="emit('close')">
     <div class="bg-bg-card border border-border rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
       <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-        <h2 class="text-lg font-black tracking-tight">Nuevo empleado</h2>
+        <h2 class="text-lg font-black tracking-tight">
+          {{ esEdicion ? 'Editar empleado' : 'Nuevo empleado' }}
+        </h2>
         <button class="text-muted hover:text-fg text-xl leading-none" @click="emit('close')">×</button>
       </div>
 
@@ -83,7 +108,7 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
           />
         </div>
 
-        <div class="flex flex-col gap-1">
+        <div v-if="!esEdicion" class="flex flex-col gap-1">
           <label :class="labelClass">Contraseña</label>
           <input
             v-model="password"
@@ -94,7 +119,7 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
             :disabled="loading"
             placeholder="Mínimo 6 caracteres"
           />
-          <p v-if="password.length > 0 && password.length < 6" class="text-xs text-red-500">
+          <p v-if="password.length > 0 && password.length < 6" class="text-xs text-danger">
             Debe tener al menos 6 caracteres
           </p>
         </div>
@@ -108,10 +133,10 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
             :disabled="loading"
             placeholder="12345678-9"
           />
-          <p v-if="rutError" class="text-xs text-red-500">{{ rutError }}</p>
+          <p v-if="rutError" class="text-xs text-danger">{{ rutError }}</p>
         </div>
 
-        <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
+        <p v-if="error" class="text-sm text-danger">{{ error }}</p>
 
         <div class="flex gap-3 pt-2">
           <button

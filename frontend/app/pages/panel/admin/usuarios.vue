@@ -6,6 +6,7 @@ definePageMeta({ middleware: 'admin', layout: 'panel' })
 
 const { getEmpleados, remove: removeUsuario, reactivar: reactivarUsuario } = useUsuarioApi()
 const { user } = useAuth()
+const { notificar } = useNotify()
 
 const busqueda = ref('')
 const rolFiltro = ref<'todos' | 'empleado' | 'admin'>('todos')
@@ -16,12 +17,7 @@ const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({
   ascCols: ['nombre'],
 })
 
-const busquedaDebounced = ref('')
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
-watch(busqueda, (val) => {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => { busquedaDebounced.value = val }, 350)
-})
+const busquedaDebounced = useDebouncedRef(busqueda)
 
 const { data, pending, refresh } = await useAsyncData('panel-empleados', () => getEmpleados())
 
@@ -50,27 +46,42 @@ const empleados = computed(() => {
 })
 
 const modalAbierto = ref(false)
-const mensaje = ref<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
-let mensajeTimer: ReturnType<typeof setTimeout> | null = null
-
-function notificar(tipo: 'ok' | 'error', texto: string) {
-  if (mensajeTimer) clearTimeout(mensajeTimer)
-  mensaje.value = { tipo, texto }
-  mensajeTimer = setTimeout(() => { mensaje.value = null }, 3500)
-}
+const empleadoEditando = ref<Usuario | null>(null)
+const empleadoReset = ref<Usuario | null>(null)
 
 function abrirNuevo() {
+  empleadoEditando.value = null
+  modalAbierto.value = true
+}
+
+function editar(empleado: Usuario) {
+  empleadoEditando.value = empleado
   modalAbierto.value = true
 }
 
 function cerrarModal() {
   modalAbierto.value = false
+  empleadoEditando.value = null
 }
 
 async function onSaved() {
+  const editando = !!empleadoEditando.value
   cerrarModal()
-  notificar('ok', 'Empleado creado')
+  notificar('ok', editando ? 'Empleado actualizado' : 'Empleado creado')
   await refresh()
+}
+
+function abrirReset(empleado: Usuario) {
+  empleadoReset.value = empleado
+}
+
+function cerrarReset() {
+  empleadoReset.value = null
+}
+
+async function onResetSaved() {
+  cerrarReset()
+  notificar('ok', 'Contraseña actualizada')
 }
 
 async function eliminar(empleado: Usuario) {
@@ -95,8 +106,6 @@ async function reactivar(empleado: Usuario) {
     notificar('error', e?.data?.message ?? 'Error al reactivar')
   }
 }
-
-const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3 py-2 focus:outline-none focus:border-acento-1 transition-colors'
 </script>
 
 <template>
@@ -114,28 +123,18 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
       </button>
     </div>
 
-    <div
-      v-if="mensaje"
-      class="mb-4 px-4 py-2 rounded border text-sm"
-      :class="mensaje.tipo === 'error'
-        ? 'border-red-500 text-red-500 bg-red-500/10'
-        : 'border-acento-1 text-acento-1 bg-acento-1/10'"
-    >
-      {{ mensaje.texto }}
-    </div>
-
     <div class="flex flex-wrap gap-3 mb-6">
-      <input v-model="busqueda" placeholder="Buscar por nombre, correo o RUT..." :class="[inputClass, 'w-72']" />
-      <select v-model="rolFiltro" :class="inputClass">
+      <PanelInput v-model="busqueda" placeholder="Buscar por nombre, correo o RUT..." class="w-72" />
+      <PanelSelect v-model="rolFiltro">
         <option value="todos">Todos los roles</option>
         <option value="empleado">Empleado</option>
         <option value="admin">Admin</option>
-      </select>
-      <select v-model="activoFiltro" :class="inputClass">
+      </PanelSelect>
+      <PanelSelect v-model="activoFiltro">
         <option value="todos">Todos</option>
         <option value="true">Activos</option>
         <option value="false">Inactivos</option>
-      </select>
+      </PanelSelect>
     </div>
 
     <div class="hidden md:block">
@@ -146,6 +145,8 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
         :sort-dir="sortDir"
         :current-user-id="user?.id ?? null"
         @toggle-sort="toggleSort"
+        @editar="editar"
+        @reset-password="abrirReset"
         @eliminar="eliminar"
         @reactivar="reactivar"
       />
@@ -155,6 +156,8 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
         :empleados="empleados"
         :pending="pending"
         :current-user-id="user?.id ?? null"
+        @editar="editar"
+        @reset-password="abrirReset"
         @eliminar="eliminar"
         @reactivar="reactivar"
       />
@@ -162,8 +165,16 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
 
     <FormEmpleado
       v-if="modalAbierto"
+      :empleado="empleadoEditando"
       @close="cerrarModal"
       @saved="onSaved"
+    />
+
+    <ModalResetPassword
+      v-if="empleadoReset"
+      :empleado="empleadoReset"
+      @close="cerrarReset"
+      @saved="onResetSaved"
     />
   </div>
 </template>

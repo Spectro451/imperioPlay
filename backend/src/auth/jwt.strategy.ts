@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import type { Request } from 'express';
+import { UsuarioService } from '../usuario/usuario.service';
 
 function extractTokenFromCookie(req: Request): string | null {
   const raw = req.headers.cookie;
@@ -12,7 +13,7 @@ function extractTokenFromCookie(req: Request): string | null {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly usuarioService: UsuarioService) {
     super({
       jwtFromRequest: extractTokenFromCookie,
       secretOrKey: process.env.SECRET as string,
@@ -21,11 +22,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return {
-      id: payload.sub,
-      correo: payload.correo,
-      rol: payload.rol,
-      nombre: payload.nombre,
-    };
+    const usuario = await this.usuarioService.findActivo(payload.sub);
+    if (!usuario) throw new UnauthorizedException('Sesión inválida');
+    return usuario;
   }
 }

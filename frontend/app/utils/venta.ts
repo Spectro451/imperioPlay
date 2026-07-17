@@ -2,12 +2,14 @@ import type { VentaListado } from '~/composables/api/useVentaApi'
 
 export function formatearFecha(fecha: string): string {
   const d = new Date(fecha)
-  return d.toLocaleString('es-AR', {
+  return d.toLocaleString('es-CL', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/Santiago',
   })
 }
 

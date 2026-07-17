@@ -19,6 +19,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RestoreUsuarioDto } from './dto/restore-usuario.dto';
 
 @Controller('usuario')
@@ -134,6 +135,16 @@ export class UsuarioController {
       body.currentPassword,
       body.newPassword,
     );
+  }
+
+  @Patch(':id/password-reset')
+  @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async resetPassword(
+    @Param('id') id: string,
+    @Body() body: ResetPasswordDto,
+  ): Promise<Usuario> {
+    return this.usuarioService.resetPassword(Number(id), body.newPassword);
   }
 
   @Patch('restore')

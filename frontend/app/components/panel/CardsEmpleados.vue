@@ -8,25 +8,20 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (e: 'editar', empleado: Usuario): void
+  (e: 'reset-password', empleado: Usuario): void
   (e: 'eliminar', empleado: Usuario): void
   (e: 'reactivar', empleado: Usuario): void
 }>()
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
-    <template v-if="pending">
+  <PanelCards :rows="empleados" :pending="pending">
+    <template #skeleton>
       <SkeletonEmpleadosCards />
     </template>
-    <template v-else-if="!empleados.length">
-      <p class="bg-bg-card border border-border rounded-lg p-6 text-center text-muted text-sm">
-        Sin resultados.
-      </p>
-    </template>
-    <template v-else>
+    <template #card="{ row: e }">
       <div
-        v-for="e in empleados"
-        :key="`card-empleado-${e.id}`"
         class="bg-bg-card border border-border rounded-lg p-4 flex flex-col gap-3"
         :class="!e.isActive && 'opacity-50'"
       >
@@ -54,7 +49,21 @@ const emit = defineEmits<{
           <div class="flex gap-4">
             <button
               v-if="e.isActive"
-              class="text-muted hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted"
+              class="text-muted hover:text-acento-1 transition-colors"
+              @click="emit('editar', e)"
+            >
+              Editar
+            </button>
+            <button
+              v-if="e.isActive"
+              class="text-muted hover:text-acento-1 transition-colors"
+              @click="emit('reset-password', e)"
+            >
+              Reset pw
+            </button>
+            <button
+              v-if="e.isActive"
+              class="text-muted hover:text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted"
               :disabled="e.id === currentUserId"
               @click="emit('eliminar', e)"
             >
@@ -71,5 +80,5 @@ const emit = defineEmits<{
         </div>
       </div>
     </template>
-  </div>
+  </PanelCards>
 </template>

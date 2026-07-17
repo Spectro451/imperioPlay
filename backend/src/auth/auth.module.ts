@@ -6,11 +6,13 @@ import { JwtStrategy } from './jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from '../entities/usuario.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsuarioModule } from '../usuario/usuario.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forFeature([Usuario]),
+    UsuarioModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

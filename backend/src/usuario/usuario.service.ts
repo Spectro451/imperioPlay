@@ -79,6 +79,15 @@ export class UsuarioService {
     });
   }
 
+  findActivo(
+    id: number,
+  ): Promise<Pick<Usuario, 'id' | 'correo' | 'rol' | 'nombre'> | null> {
+    return this.usuarioRepo.findOne({
+      where: { id, isActive: true },
+      select: ['id', 'correo', 'rol', 'nombre'],
+    });
+  }
+
   async validarVendedor(id: number): Promise<Usuario> {
     const usuario = await this.usuarioRepo.findOne({
       where: { id, isActive: true },
@@ -162,6 +171,14 @@ export class UsuarioService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    return this.update(userId, { password: hashedPassword });
+  }
+
+  async resetPassword(userId: number, newPassword: string): Promise<Usuario> {
+    const user = await this.findOne(userId);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
     return this.update(userId, { password: hashedPassword });
   }
 

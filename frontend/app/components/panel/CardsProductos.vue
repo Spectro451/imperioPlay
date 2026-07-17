@@ -14,19 +14,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
-    <template v-if="pending">
+  <PanelCards :rows="items" :pending="pending">
+    <template #skeleton>
       <SkeletonProductosCards />
     </template>
-    <template v-else-if="!items.length">
-      <p class="bg-bg-card border border-border rounded-lg p-6 text-center text-muted text-sm">
-        Sin resultados.
-      </p>
-    </template>
-    <template v-else>
+    <template #card="{ row: item }">
       <div
-        v-for="item in items"
-        :key="`card-${item.tipo}-${item.id}`"
         class="bg-bg-card border border-border rounded-lg p-4 flex flex-col gap-3"
         :class="!item.isActive && 'opacity-50'"
       >
@@ -86,5 +79,5 @@ const emit = defineEmits<{
         </div>
       </div>
     </template>
-  </div>
+  </PanelCards>
 </template>

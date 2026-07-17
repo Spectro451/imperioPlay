@@ -14,29 +14,12 @@ function toggle(id: number) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
-    <template v-if="pending">
-      <div
-        v-for="n in 6"
-        :key="n"
-        class="bg-bg-card border border-border rounded-lg p-4 animate-pulse flex flex-col gap-2"
-      >
-        <div class="h-3 w-32 bg-bg-soft rounded" />
-        <div class="h-3 w-24 bg-bg-soft rounded" />
-        <div class="h-4 w-20 bg-bg-soft rounded ml-auto" />
-      </div>
+  <PanelCards :rows="ventas" :pending="pending" empty-text="Sin ventas para estos filtros.">
+    <template #skeleton>
+      <SkeletonVentasCards />
     </template>
-    <template v-else-if="!ventas.length">
-      <p class="bg-bg-card border border-border rounded-lg p-6 text-center text-muted text-sm">
-        Sin ventas para estos filtros.
-      </p>
-    </template>
-    <template v-else>
-      <div
-        v-for="v in ventas"
-        :key="`card-${v.id}`"
-        class="bg-bg-card border border-border rounded-lg overflow-hidden"
-      >
+    <template #card="{ row: v }">
+      <div class="bg-bg-card border border-border rounded-lg overflow-hidden">
         <div
           class="p-4 flex items-start justify-between gap-3 cursor-pointer"
           @click="toggle(v.id)"
@@ -60,5 +43,5 @@ function toggle(id: number) {
         </div>
       </div>
     </template>
-  </div>
+  </PanelCards>
 </template>

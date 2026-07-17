@@ -7,6 +7,7 @@ definePageMeta({ middleware: 'panel', layout: 'panel' })
 const { getAll } = useProductoApi()
 const { remove: removeJuego, restore: restoreJuego } = useJuegoApi()
 const { remove: removeConsola, restore: restoreConsola } = useConsolaApi()
+const { notificar } = useNotify()
 
 const busqueda = ref('')
 const busquedaSku = ref('')
@@ -31,18 +32,8 @@ const ordenBackend = computed(() => {
   return map[sortCol.value]
 })
 
-const busquedaDebounced = ref('')
-const busquedaSkuDebounced = ref('')
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
-let debounceSkuTimer: ReturnType<typeof setTimeout> | null = null
-watch(busqueda, (val) => {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => { busquedaDebounced.value = val }, 350)
-})
-watch(busquedaSku, (val) => {
-  if (debounceSkuTimer) clearTimeout(debounceSkuTimer)
-  debounceSkuTimer = setTimeout(() => { busquedaSkuDebounced.value = val }, 350)
-})
+const busquedaDebounced = useDebouncedRef(busqueda)
+const busquedaSkuDebounced = useDebouncedRef(busquedaSku)
 
 const params = computed(() => ({
   nombre: busquedaDebounced.value || undefined,
@@ -99,7 +90,7 @@ async function eliminar(item: ItemFlat) {
     else await removeConsola(item.id)
     await refresh()
   } catch (e: any) {
-    alert(e?.data?.message ?? 'Error al eliminar')
+    notificar('error', e?.data?.message ?? 'Error al eliminar')
   }
 }
 
@@ -109,11 +100,9 @@ async function reactivar(item: ItemFlat) {
     else await restoreConsola(item.id)
     await refresh()
   } catch (e: any) {
-    alert(e?.data?.message ?? 'Error al reactivar')
+    notificar('error', e?.data?.message ?? 'Error al reactivar')
   }
 }
-
-const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3 py-2 focus:outline-none focus:border-acento-1 transition-colors'
 </script>
 
 <template>
@@ -132,22 +121,22 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
     </div>
 
     <div class="flex flex-wrap gap-3 mb-6">
-      <input v-model="busqueda" placeholder="Buscar por nombre..." :class="[inputClass, 'w-64']" />
-      <input v-model="busquedaSku" placeholder="Buscar por SKU..." :class="[inputClass, 'w-40']" />
-      <select v-model="tipoFiltro" :class="inputClass">
+      <PanelInput v-model="busqueda" placeholder="Buscar por nombre..." class="w-64" />
+      <PanelInput v-model="busquedaSku" placeholder="Buscar por SKU..." class="w-40" />
+      <PanelSelect v-model="tipoFiltro">
         <option value="">Todos los tipos</option>
         <option value="juego">Juegos</option>
         <option value="consola">Consolas</option>
-      </select>
-      <select v-model="plataformaFiltro" :class="inputClass">
+      </PanelSelect>
+      <PanelSelect v-model="plataformaFiltro">
         <option value="">Todas las plataformas</option>
         <option v-for="p in plataformas" :key="p" :value="p">{{ p }}</option>
-      </select>
-      <select v-model="activoFiltro" :class="inputClass">
+      </PanelSelect>
+      <PanelSelect v-model="activoFiltro">
         <option value="todos">Todos</option>
         <option value="true">Activos</option>
         <option value="false">Inactivos</option>
-      </select>
+      </PanelSelect>
     </div>
 
     <div class="hidden md:block">
@@ -172,23 +161,7 @@ const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3
       />
     </div>
 
-    <div v-if="totalPaginas > 1" class="flex items-center justify-center gap-3 mt-6">
-      <button
-        :disabled="page === 1"
-        class="px-3 py-1.5 text-sm border border-border rounded text-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed"
-        @click="page--"
-      >
-        ← Anterior
-      </button>
-      <span class="text-sm text-muted">Página {{ page }} de {{ totalPaginas }}</span>
-      <button
-        :disabled="page === totalPaginas"
-        class="px-3 py-1.5 text-sm border border-border rounded text-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed"
-        @click="page++"
-      >
-        Siguiente →
-      </button>
-    </div>
+    <PanelPaginacion v-model:page="page" :total-paginas="totalPaginas" />
 
     <FormProducto
       v-if="modalAbierto"

@@ -11,6 +11,7 @@ const emit = defineEmits<{
 }>()
 
 const { getEmpleados } = useUsuarioApi()
+const { user } = useAuth()
 
 const empleados = ref<Usuario[]>([])
 const cargando = ref(false)
@@ -32,8 +33,10 @@ onMounted(async () => {
   try {
     empleados.value = (await getEmpleados()).filter(e => e.isActive && e.rut)
     if (!props.vendedor) {
-      const admin = empleados.value.find(e => e.rol === 'admin')
-      if (admin) emit('update:vendedor', admin)
+      const yo = empleados.value.find(e => e.id === user.value?.id)
+      const fallback = empleados.value.find(e => e.rol === 'admin')
+      const inicial = yo ?? fallback
+      if (inicial) emit('update:vendedor', inicial)
     }
   } catch (e: any) {
     emit('error', e?.data?.message ?? 'No se pudo cargar la lista de vendedores')
