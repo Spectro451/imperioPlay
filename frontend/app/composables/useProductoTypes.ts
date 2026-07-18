@@ -12,6 +12,7 @@ export interface ItemFlat {
   fotos?: string[]
   stock: number
   isActive: boolean
+  tier: number
 }
 
 export interface FiltrosApi {

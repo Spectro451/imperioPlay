@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { And, ILike, IsNull, MoreThan, Not, Repository, DataSource } from 'typeorm';
+import { And, EntityManager, ILike, IsNull, MoreThan, Not, Repository, DataSource } from 'typeorm';
 import { Producto } from '../entities/producto.entity';
 import { Plataforma, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
 import { ORDER_MAP } from 'src/constants/orden';
@@ -189,8 +189,12 @@ export class ProductoService {
     return { productos, total, totalPaginas };
   }
 
-  async crearProductoSiNoExiste(data: Partial<Producto>): Promise<Producto> {
-    const existing = await this.productoRepo.findOne({
+  async crearProductoSiNoExiste(
+    data: Partial<Producto>,
+    manager?: EntityManager,
+  ): Promise<Producto> {
+    const repo = manager ? manager.getRepository(Producto) : this.productoRepo;
+    const existing = await repo.findOne({
       where: { sku: data.sku },
       relations: ['juegos', 'consolas'],
     });
@@ -202,13 +206,13 @@ export class ProductoService {
       }
       if (!existing.isActive) {
         existing.isActive = true;
-        await this.productoRepo.save(existing);
+        await repo.save(existing);
       }
       return existing;
     }
 
-    const producto = this.productoRepo.create(data);
-    return this.productoRepo.save(producto);
+    const producto = repo.create(data);
+    return repo.save(producto);
   }
 
   async getNombres(busqueda?: string): Promise<string[]> {

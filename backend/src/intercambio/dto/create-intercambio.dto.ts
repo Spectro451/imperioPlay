@@ -31,9 +31,9 @@ class ProductoIntercambioDto {
   @IsEnum(tipoProducto)
   tipo: tipoProducto;
 
-  @IsOptional()
   @IsString()
-  sku?: string;
+  @IsNotEmpty()
+  sku: string;
 }
 
 class JuegoClienteDto {
@@ -85,12 +85,16 @@ export class CreateIntercambioDto {
 
   @IsOptional()
   @IsInt()
+  vendedor_id?: number;
+
+  @IsOptional()
+  @IsInt()
   clienteId?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  dinero_extra?: number;
+  monto_pagado?: number;
 
   @IsOptional()
   @IsEnum(metodoPago)

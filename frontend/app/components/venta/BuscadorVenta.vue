@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { ItemFlat } from '~/composables/useProductoTypes'
 
+const props = withDefaults(defineProps<{
+  tiposHabilitados?: Array<ItemFlat['tipo']>
+}>(), {
+  tiposHabilitados: () => ['juego', 'consola'],
+})
+
 const emit = defineEmits<{
   (e: 'seleccionar', variante: ItemFlat): void
   (e: 'multiples', variantes: ItemFlat[]): void
@@ -36,6 +42,7 @@ watch(nombre, (val) => {
 
 async function resolverProductos(productos: any[]) {
   const variantes = variantesVendibles(productos.flatMap(aplanarVariantes))
+    .filter(v => props.tiposHabilitados.includes(v.tipo))
   if (!variantes.length) {
     emit('error', 'Sin variantes disponibles con stock')
     return

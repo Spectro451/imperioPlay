@@ -52,7 +52,7 @@ watch(() => [busquedaDebounced.value, busquedaSkuDebounced.value, tipoFiltro.val
 const { data, pending, refresh } = await useAsyncData(
   'panel-productos',
   () => getAll(params.value),
-  { watch: [params] },
+  { watch: [params], lazy: true },
 )
 
 const items = computed(() => data.value?.items ?? [])

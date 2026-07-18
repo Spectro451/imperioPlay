@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { CreateIntercambioDto } from './dto/create-intercambio.dto';
+import { FiltroIntercambiosDto } from './dto/filtro-intercambios.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('intercambio')
@@ -27,25 +29,25 @@ export class IntercambioController {
     @Req() req: any,
     @Body() body: CreateIntercambioDto,
   ) {
-    return this.intercambioService.intercambio(
-      req.user.id,
-      body.juegosSolicitadosData,
-      body.juegosClienteData,
-      body.clienteId,
-      body.dinero_extra ?? 0,
-      body.metodo_pago,
-    );
+    const vendedor_id = body.vendedor_id ?? req.user.id;
+    return this.intercambioService.intercambio(vendedor_id, {
+      juegosSolicitadosData: body.juegosSolicitadosData,
+      juegosClienteData: body.juegosClienteData,
+      clienteId: body.clienteId,
+      monto_pagado: body.monto_pagado,
+      metodo_pago: body.metodo_pago,
+    });
   }
 
   @Get()
   @Roles('admin', 'empleado')
-  async findAll(): Promise<Intercambio[]> {
-    return this.intercambioService.findAll();
+  async findAll(@Query() filtro: FiltroIntercambiosDto) {
+    return this.intercambioService.findAll(filtro);
   }
 
   @Get(':id')
   @Roles('admin', 'empleado')
-  async findOne(@Param('id') id: string): Promise<Intercambio | null> {
+  async findOne(@Param('id') id: string) {
     return this.intercambioService.findOne(Number(id));
   }
 
@@ -60,7 +62,7 @@ export class IntercambioController {
 
   @Delete(':id')
   @Roles('admin')
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<{ mensaje: string }> {
     return this.intercambioService.remove(Number(id));
   }
 }

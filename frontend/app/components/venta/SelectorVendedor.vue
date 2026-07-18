@@ -10,11 +10,10 @@ const emit = defineEmits<{
   (e: 'error', mensaje: string): void
 }>()
 
-const { getEmpleados } = useUsuarioApi()
 const { user } = useAuth()
+const { vendedores: todos, pending: cargando } = useVendedoresCache()
 
-const empleados = ref<Usuario[]>([])
-const cargando = ref(false)
+const empleados = computed(() => (todos.value ?? []).filter(e => e.isActive && e.rut))
 
 const vendedorId = computed<number | ''>({
   get: () => props.vendedor?.id ?? '',
@@ -28,21 +27,12 @@ const vendedorId = computed<number | ''>({
   },
 })
 
-onMounted(async () => {
-  cargando.value = true
-  try {
-    empleados.value = (await getEmpleados()).filter(e => e.isActive && e.rut)
-    if (!props.vendedor) {
-      const yo = empleados.value.find(e => e.id === user.value?.id)
-      const fallback = empleados.value.find(e => e.rol === 'admin')
-      const inicial = yo ?? fallback
-      if (inicial) emit('update:vendedor', inicial)
-    }
-  } catch (e: any) {
-    emit('error', e?.data?.message ?? 'No se pudo cargar la lista de vendedores')
-  } finally {
-    cargando.value = false
-  }
+watchEffect(() => {
+  if (props.vendedor || !empleados.value.length) return
+  const yo = empleados.value.find(e => e.id === user.value?.id)
+  const fallback = empleados.value.find(e => e.rol === 'admin')
+  const inicial = yo ?? fallback
+  if (inicial) emit('update:vendedor', inicial)
 })
 
 const inputClass = 'bg-bg-card border border-border text-sm text-fg rounded px-3 py-2 focus:outline-none focus:border-acento-1 transition-colors w-full appearance-none pr-8'

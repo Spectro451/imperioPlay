@@ -1,55 +1,25 @@
 <script setup lang="ts">
-import type { FiltroVentasParams, OrdenVentas } from '~/composables/api/useVentaApi'
+import type { FiltroVentasParams, OrdenVentas, RespuestaListadoVentas } from '~/composables/api/useVentaApi'
 import type { SortCol } from '~/components/venta/TablaVentas.vue'
 
 definePageMeta({ middleware: 'admin', layout: 'panel' })
 
 const { getAll } = useVentaApi()
-const { getAll: getUsuarios } = useUsuarioApi()
 
-const filtros = ref<FiltroVentasParams>({ page: 1, limit: 20 })
-const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({ defaultCol: 'fecha' })
+const { filtros, sortCol, sortDir, toggleSort, data, pending, limpiarFiltros, cambiarPagina } =
+  useHistorialListado<FiltroVentasParams, OrdenVentas, SortCol, RespuestaListadoVentas>({
+    key: 'admin-ventas-listado',
+    fetcher: params => getAll(params),
+    defaultFiltros: { page: 1, limit: 20 },
+    defaultSortCol: 'fecha',
+    buildOrden: (col, dir) => `${col}-${dir}` as OrdenVentas,
+  })
 
-const orden = computed<OrdenVentas>(() => `${sortCol.value}-${sortDir.value}` as OrdenVentas)
-
-const params = computed<FiltroVentasParams>(() => ({
-  ...filtros.value,
-  orden: orden.value,
-}))
-
-watch(
-  () => [filtros.value.desde, filtros.value.hasta, filtros.value.vendedor_id, filtros.value.metodo_pago, orden.value],
-  () => { filtros.value.page = 1 },
-  { flush: 'sync' },
-)
-
-const { data: usuariosData } = await useAsyncData(
-  'admin-ventas-vendedores',
-  () => getUsuarios(),
-)
-const vendedores = computed(
-  () => (usuariosData.value ?? []).filter(u => u.rol === 'empleado' || u.rol === 'admin'),
-)
-
-const { data, pending } = await useAsyncData(
-  'admin-ventas-listado',
-  () => getAll(params.value),
-  { watch: [params] },
-)
+const { vendedores } = useVendedoresCache()
 
 const ventas = computed(() => data.value?.ventas ?? [])
 const totalPaginas = computed(() => data.value?.totalPaginas ?? 1)
 const totalRegistros = computed(() => data.value?.totalRegistros ?? 0)
-
-function limpiarFiltros() {
-  filtros.value = { page: 1, limit: 20 }
-  sortCol.value = 'fecha'
-  sortDir.value = 'desc'
-}
-
-function cambiarPagina(nueva: number) {
-  filtros.value = { ...filtros.value, page: nueva }
-}
 </script>
 
 <template>
@@ -61,7 +31,7 @@ function cambiarPagina(nueva: number) {
       </p>
     </div>
 
-    <FiltrosVentas
+    <FiltrosHistorial
       v-model="filtros"
       :vendedores="vendedores"
       @limpiar="limpiarFiltros"

@@ -23,6 +23,12 @@ export class Intercambio {
   @Column({ nullable: true })
   dinero_extra?: number;
 
+  @Column({ type: 'numeric', nullable: true })
+  monto_pagado?: number;
+
+  @Column({ type: 'int', nullable: true })
+  vuelto?: number;
+
   @Column()
   vendedor_id: number;
 

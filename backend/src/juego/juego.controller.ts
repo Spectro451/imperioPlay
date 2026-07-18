@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { JuegoService } from './juego.service';
 import { Juego } from '../entities/juego.entity';
-import { ProductoService } from 'src/producto/producto.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
@@ -24,20 +23,14 @@ import { OfertaDto } from './dto/oferta.dto';
 
 @Controller('juego')
 export class JuegoController {
-  constructor(
-    private readonly juegoService: JuegoService,
-    private readonly productoService: ProductoService,
-  ) {}
+  constructor(private readonly juegoService: JuegoService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
   async create(@Body() data: CreateJuegoDto) {
-    const producto = await this.productoService.crearProductoSiNoExiste(
+    const { producto, juego } = await this.juegoService.upsertConProducto(
       data.producto,
-    );
-    const juego = await this.juegoService.crearJuegoSiNoExiste(
-      producto,
       data.juego,
     );
 

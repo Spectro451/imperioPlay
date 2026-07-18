@@ -48,7 +48,7 @@ export async function useCatalogo(tipo?: string, esOfertas = false) {
   const { data, pending } = await useAsyncData(
     `catalogo-${tipo ?? 'todos'}${esOfertas ? '-ofertas' : ''}`,
     () => fetchFn(params.value),
-    { watch: [params] },
+    { watch: [params], lazy: true },
   )
 
   return {

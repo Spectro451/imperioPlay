@@ -4,7 +4,7 @@ import type { SortCol } from '~/components/panel/TablaEmpleados.vue'
 
 definePageMeta({ middleware: 'admin', layout: 'panel' })
 
-const { getEmpleados, remove: removeUsuario, reactivar: reactivarUsuario } = useUsuarioApi()
+const { remove: removeUsuario, reactivar: reactivarUsuario } = useUsuarioApi()
 const { user } = useAuth()
 const { notificar } = useNotify()
 
@@ -19,7 +19,7 @@ const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({
 
 const busquedaDebounced = useDebouncedRef(busqueda)
 
-const { data, pending, refresh } = await useAsyncData('panel-empleados', () => getEmpleados())
+const { vendedores: data, pending, refresh } = useVendedoresCache()
 
 const empleados = computed(() => {
   const lista = data.value ?? []

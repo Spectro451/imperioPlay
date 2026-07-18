@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Juego } from '../entities/juego.entity';
 import { Producto } from 'src/entities/producto.entity';
 import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
@@ -62,7 +62,9 @@ export class JuegoService {
       descuento_porcentaje?: number;
       descuento_fijo?: number;
     },
+    manager?: EntityManager,
   ): Promise<Juego> {
+    const repo = manager ? manager.getRepository(Juego) : this.juegoRepo;
     const estado = dataJuegoCliente.estado ?? estadoJuego.usado;
     const stock = dataJuegoCliente.stock ?? 1;
     const juegos = producto.juegos ?? [];
@@ -74,7 +76,7 @@ export class JuegoService {
     if (juegoExistente) {
       juegoExistente.stock += stock;
       if (!juegoExistente.isActive) juegoExistente.isActive = true;
-      return this.juegoRepo.save(juegoExistente);
+      return repo.save(juegoExistente);
     }
 
     if (dataJuegoCliente.descuento_porcentaje)
@@ -88,7 +90,7 @@ export class JuegoService {
       dataJuegoCliente.descuento_fijo,
     );
 
-    const nuevoJuego = this.juegoRepo.create({
+    const nuevoJuego = repo.create({
       producto,
       consola: dataJuegoCliente.consola,
       precio_base: dataJuegoCliente.precio_base,
@@ -101,7 +103,25 @@ export class JuegoService {
       descuento_fijo: dataJuegoCliente.descuento_fijo,
     });
 
-    return this.juegoRepo.save(nuevoJuego);
+    return repo.save(nuevoJuego);
+  }
+
+  async upsertConProducto(
+    producto: Partial<Producto>,
+    juego: {
+      consola: Plataforma;
+      estado?: estadoJuego;
+      stock?: number;
+      fotos?: string[];
+      precio_base: number;
+      descuento_porcentaje?: number;
+      descuento_fijo?: number;
+    },
+    manager?: EntityManager,
+  ): Promise<{ producto: Producto; juego: Juego }> {
+    const p = await this.productoService.crearProductoSiNoExiste(producto, manager);
+    const j = await this.crearJuegoSiNoExiste(p, juego, manager);
+    return { producto: p, juego: j };
   }
 
   create(data: Partial<Juego>): Promise<Juego> {

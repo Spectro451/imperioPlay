@@ -5,8 +5,8 @@ const [
   { data: ultimosData, pending: ultimosPending },
   { data: ofertasData, pending: ofertasPending },
 ] = await Promise.all([
-  useAsyncData('home-ultimos', () => getAll({ orden: 'id-desc', conStock: true })),
-  useAsyncData('home-ofertas', () => getOfertas({ conStock: true })),
+  useAsyncData('home-ultimos', () => getAll({ orden: 'id-desc', conStock: true }), { lazy: true }),
+  useAsyncData('home-ofertas', () => getOfertas({ conStock: true }), { lazy: true }),
 ])
 
 const ultimosAgregados = computed(() => ultimosData.value?.items?.slice(0, 10) ?? [])

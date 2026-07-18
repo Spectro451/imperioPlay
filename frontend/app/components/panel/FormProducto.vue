@@ -140,10 +140,15 @@ const buscandoSugerencias = ref(false)
 let debounceNombreTimer: any = null
 
 async function onSkuBlur() {
+  if (isEdit.value) return
   const val = sku.value.trim()
-  if (!val || isEdit.value) return
   if (val === lastSku.value) return
   lastSku.value = val
+  if (!val) {
+    productoBloqueado.value = false
+    productoEncontrado.value = null
+    return
+  }
   skuBuscando.value = true
   productoEncontrado.value = null
   try {
@@ -192,24 +197,34 @@ function onNombreInput() {
   }, 300)
 }
 
-async function elegirSugerencia(n: string) {
-  nombre.value = n
-  mostrarSugerencias.value = false
-  const prod = await buscarPorNombreExacto(n)
-  if (!prod) return
+function aplicarProducto(prod: any, plataformaPreferida?: string) {
   tipo.value = prod.tipo
   sku.value = prod.sku ?? sku.value
   lastSku.value = sku.value.trim()
   productoEncontrado.value = prod
   productoBloqueado.value = true
-  const primeraVariante = prod.tipo === 'juego' ? prod.juegos?.[0] : prod.consolas?.[0]
-  if (primeraVariante) {
-    plataforma.value = primeraVariante.consola ?? primeraVariante.generacion ?? plataforma.value
-    estado.value = primeraVariante.estado ?? estado.value
-    precio_base.value = primeraVariante.precio_base ?? 0
-    descuento_porcentaje.value = primeraVariante.descuento_porcentaje ?? 0
-    descuento_fijo.value = primeraVariante.descuento_fijo ?? 0
+  const variantes = prod.tipo === 'juego' ? prod.juegos ?? [] : prod.consolas ?? []
+  const preferida = plataformaPreferida
+    ? variantes.find((v: any) => (v.consola ?? v.generacion) === plataformaPreferida)
+    : null
+  const variante = preferida ?? variantes[0]
+  if (variante) {
+    plataforma.value = variante.consola ?? variante.generacion ?? plataforma.value
+    estado.value = variante.estado ?? estado.value
+    precio_base.value = variante.precio_base ?? 0
+    descuento_porcentaje.value = variante.descuento_porcentaje ?? 0
+    descuento_fijo.value = variante.descuento_fijo ?? 0
   }
+}
+
+const { variantesModal, buscarPorNombre, onVarianteElegida } = useElegirProducto({
+  onSeleccionar: aplicarProducto,
+})
+
+async function elegirSugerencia(n: string) {
+  nombre.value = n
+  mostrarSugerencias.value = false
+  await buscarPorNombre(n)
 }
 
 const descuentoError = computed(() => {
@@ -535,5 +550,12 @@ async function submit() {
         </div>
       </form>
     </div>
+
+    <ModalVariantes
+      v-if="variantesModal"
+      :variantes="variantesModal"
+      @seleccionar="onVarianteElegida"
+      @cerrar="variantesModal = null"
+    />
   </div>
 </template>
