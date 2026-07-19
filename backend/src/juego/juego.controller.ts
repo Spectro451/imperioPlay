@@ -136,4 +136,11 @@ export class JuegoController {
   async restore(@Param('id') id: string): Promise<Juego> {
     return this.juegoService.restore(Number(id));
   }
+
+  @Post('recalcular-tiers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async recalcularTiers() {
+    return this.juegoService.recalcularTiers();
+  }
 }

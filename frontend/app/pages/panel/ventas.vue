@@ -65,10 +65,11 @@ async function confirmar() {
   }
 }
 
+const cancelacion = useConfirmar()
+
 function cancelar() {
   if (!lineas.value.length) return
-  if (!confirm('Cancelar la venta en curso y limpiar los items?')) return
-  limpiar()
+  cancelacion.abrir()
 }
 </script>
 
@@ -126,6 +127,16 @@ function cancelar() {
       :variantes="variantesModal"
       @seleccionar="onSeleccionarModal"
       @cerrar="variantesModal = null"
+    />
+
+    <ModalConfirmar
+      v-if="cancelacion.payload"
+      titulo="Cancelar venta"
+      mensaje="Se descartarán todos los items de la venta en curso y no se registrará nada. Esta acción no se puede deshacer."
+      label-confirmar="Cancelar venta"
+      variante="warning"
+      @close="cancelacion.cerrar()"
+      @confirmar="cancelacion.confirmar(limpiar)"
     />
   </div>
 </template>

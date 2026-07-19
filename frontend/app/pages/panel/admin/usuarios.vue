@@ -84,17 +84,23 @@ async function onResetSaved() {
   notificar('ok', 'Contraseña actualizada')
 }
 
-async function eliminar(empleado: Usuario) {
+const desactivacion = useConfirmar<Usuario>()
+
+function eliminar(empleado: Usuario) {
   if (empleado.id === user.value?.id) {
     notificar('error', 'No podés desactivar tu propia cuenta')
     return
   }
-  if (!confirm('Esto desactivará la cuenta impidiendo su acceso, ¿estás seguro?')) return
+  desactivacion.abrir(empleado)
+}
+
+async function ejecutarDesactivar(empleado: Usuario) {
   try {
     await removeUsuario(empleado.id)
     await refresh()
   } catch (e: any) {
     notificar('error', e?.data?.message ?? 'Error al desactivar')
+    throw e
   }
 }
 
@@ -175,6 +181,17 @@ async function reactivar(empleado: Usuario) {
       :empleado="empleadoReset"
       @close="cerrarReset"
       @saved="onResetSaved"
+    />
+
+    <ModalConfirmar
+      v-if="desactivacion.payload"
+      titulo="Desactivar cuenta"
+      :mensaje="`Se desactivará la cuenta de ${desactivacion.payload.nombre} y perderá el acceso al panel de forma inmediata. Podés reactivarla luego desde este mismo listado.`"
+      label-confirmar="Desactivar"
+      variante="danger"
+      :loading="desactivacion.loading"
+      @close="desactivacion.cerrar()"
+      @confirmar="desactivacion.confirmar(ejecutarDesactivar)"
     />
   </div>
 </template>

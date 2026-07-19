@@ -22,6 +22,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConsolaModule } from './consola/consola.module';
 import { Consola } from './entities/consola';
+import { TierConfigModule } from './tier-config/tier-config.module';
+import { IntercambioConfigModule } from './intercambio-config/intercambio-config.module';
+import { TierConfig } from './entities/tier-config.entity';
+import { IntercambioConfig } from './entities/intercambio-config.entity';
 
 @Module({
   imports: [
@@ -38,6 +42,8 @@ import { Consola } from './entities/consola';
         Consola,
         Intercambio,
         IntercambioJuego,
+        TierConfig,
+        IntercambioConfig,
       ],
       synchronize: true,
     }),
@@ -50,6 +56,8 @@ import { Consola } from './entities/consola';
     IntercambioJuegoModule,
     AuthModule,
     ConsolaModule,
+    TierConfigModule,
+    IntercambioConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

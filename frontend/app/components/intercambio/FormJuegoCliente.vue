@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { JuegoClienteInput } from '~/composables/useIntercambioEnCurso'
 import type { Plataforma, EstadoJuego } from '~/composables/api/useIntercambioApi'
-import { calcularTier } from '~/utils/tiers'
 
 const props = defineProps<{
   juego: JuegoClienteInput
@@ -14,6 +13,7 @@ const emit = defineEmits<{
 
 const { buscarPorSku, getNombres } = useProductoApi()
 const { uploadFile, hashFile } = useCloudinary()
+const { tierDe } = useTierConfigCache()
 
 const plataformas: Plataforma[] = ['Xbox360', 'XboxOne', 'XboxSeries', 'Ps3', 'Ps4', 'Ps5', 'Switch', 'Switch2']
 
@@ -117,6 +117,10 @@ async function elegirSugerencia(n: string) {
   await buscarPorNombre(n)
 }
 
+function cerrarSugerenciasDelayed() {
+  setTimeout(() => { mostrarSugerencias.value = false }, 150)
+}
+
 const variantesReferencia = computed(() => {
   const prod = productoEncontrado.value
   if (!prod || !prod.juegos?.length) return []
@@ -124,8 +128,18 @@ const variantesReferencia = computed(() => {
     consola: j.consola,
     estado: j.estado,
     precio: j.precio_final,
-    tier: j.tier ?? calcularTier(j.precio_final),
+    tier: j.tier ?? tierDe(j.precio_final),
   }))
+})
+
+const varianteMerge = computed<any | null>(() => {
+  const prod = productoEncontrado.value
+  if (!prod || !prod.juegos?.length) return null
+  return prod.juegos.find((j: any) => j.consola === consola.value && j.estado === estado.value) ?? null
+})
+
+watch(varianteMerge, (v) => {
+  if (v) precio_base.value = v.precio_base
 })
 
 const skuMensaje = computed(() => {
@@ -160,13 +174,20 @@ function removerFoto(i: number) {
   fotos.value.splice(i, 1)
 }
 
+onMounted(() => {
+  if (sku.value.trim()) onSkuBlur()
+})
+
 onBeforeUnmount(() => {
   for (const item of fotos.value) {
     if (item.file && item.url.startsWith('blob:')) URL.revokeObjectURL(item.url)
   }
 })
 
-const tierPreview = computed(() => calcularTier(Number(precio_base.value) || 0))
+const tierPreview = computed(() => {
+  if (varianteMerge.value) return varianteMerge.value.tier ?? tierDe(varianteMerge.value.precio_final)
+  return tierDe(Number(precio_base.value) || 0)
+})
 
 const puedeGuardar = computed(() =>
   sku.value.trim().length > 0
@@ -207,6 +228,7 @@ async function submit() {
       precio_base: Number(precio_base.value) || 0,
       cantidad: Number(cantidad.value) || 1,
       fotos: fotosFinales,
+      tierMerge: varianteMerge.value?.tier ?? null,
     })
   } catch (e: any) {
     error.value = e?.data?.message ?? 'Error al guardar'
@@ -253,7 +275,7 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
             autocomplete="off"
             @input="onNombreInput"
             @focus="mostrarSugerencias = sugerencias.length > 0"
-            @blur="setTimeout(() => mostrarSugerencias = false, 150)"
+            @blur="cerrarSugerenciasDelayed"
           />
           <div
             v-if="mostrarSugerencias && sugerencias.length"
@@ -291,7 +313,15 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1">
             <label :class="labelClass">Precio base</label>
-            <input v-model.number="precio_base" type="number" min="1" required :class="inputClass" />
+            <input
+              v-model.number="precio_base"
+              type="number"
+              min="1"
+              required
+              :disabled="!!varianteMerge"
+              :class="inputClass"
+            />
+            <p class="text-[10px] text-muted">&nbsp;</p>
           </div>
           <div class="flex flex-col gap-1">
             <label :class="labelClass">Cantidad</label>

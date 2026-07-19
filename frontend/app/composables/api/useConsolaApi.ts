@@ -14,6 +14,7 @@ function mapConsola(c: any): ItemFlat {
     fotos: c.fotos,
     stock: c.stock,
     isActive: c.isActive && c.producto.isActive,
+    tier: 0,
   }
 }
 

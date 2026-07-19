@@ -14,6 +14,7 @@ function mapJuego(j: any): ItemFlat {
     fotos: j.fotos,
     stock: j.stock,
     isActive: j.isActive && j.producto.isActive,
+    tier: j.tier ?? 0,
   }
 }
 
@@ -58,5 +59,9 @@ export function useJuegoApi() {
     return api<any>(`/juego/${id}/restore`, { method: 'PATCH' })
   }
 
-  return { getAll, getOne, create, update, remove, restore }
+  async function recalcularTiers() {
+    return api<{ actualizados: number }>('/juego/recalcular-tiers', { method: 'POST' })
+  }
+
+  return { getAll, getOne, create, update, remove, restore, recalcularTiers }
 }

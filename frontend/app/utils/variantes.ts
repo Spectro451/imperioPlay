@@ -1,5 +1,4 @@
 import type { ItemFlat } from '~/composables/useProductoTypes'
-import { calcularTier } from '~/utils/tiers'
 
 interface VarianteRaw {
   id: number
@@ -13,6 +12,7 @@ interface VarianteRaw {
   isActive: boolean
   consola?: string
   generacion?: string
+  tier?: number
 }
 
 interface ProductoConRelaciones {
@@ -40,7 +40,7 @@ export function aplanarVariantes(producto: ProductoConRelaciones): ItemFlat[] {
     fotos: j.fotos,
     stock: j.stock,
     isActive: j.isActive,
-    tier: calcularTier(j.precio_final),
+    tier: j.tier ?? 0,
   }))
 
   const consolas = (producto.consolas ?? []).map<ItemFlat>(c => ({
@@ -57,7 +57,7 @@ export function aplanarVariantes(producto: ProductoConRelaciones): ItemFlat[] {
     fotos: c.fotos,
     stock: c.stock,
     isActive: c.isActive,
-    tier: calcularTier(c.precio_final),
+    tier: 0,
   }))
 
   return [...juegos, ...consolas]

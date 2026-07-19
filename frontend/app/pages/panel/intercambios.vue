@@ -18,6 +18,7 @@ const {
   vuelto,
   puedeConfirmar,
   payload,
+  cargarConfig,
   agregarSolicitado,
   quitarSolicitado,
   cambiarCantidadSolicitado,
@@ -25,6 +26,8 @@ const {
   cambiarCantidadCliente,
   limpiar,
 } = useIntercambioEnCurso()
+
+await cargarConfig()
 
 const { create } = useIntercambioApi()
 const { notificar } = useNotify()
@@ -80,10 +83,11 @@ async function confirmar() {
   }
 }
 
+const cancelacion = useConfirmar()
+
 function cancelar() {
   if (!lineasSolicitadas.value.length && !juegosCliente.value.length) return
-  if (!confirm('Cancelar el intercambio en curso y limpiar todo?')) return
-  limpiar()
+  cancelacion.abrir()
 }
 </script>
 
@@ -157,6 +161,16 @@ function cancelar() {
       :juego="juegoEditando"
       @guardar="guardarJuegoCliente"
       @close="juegoEditando = null"
+    />
+
+    <ModalConfirmar
+      v-if="cancelacion.payload"
+      titulo="Cancelar intercambio"
+      mensaje="Se descartarán los juegos solicitados y los que trae el cliente. Esta acción no se puede deshacer."
+      label-confirmar="Cancelar intercambio"
+      variante="warning"
+      @close="cancelacion.cerrar()"
+      @confirmar="cancelacion.confirmar(limpiar)"
     />
   </div>
 </template>

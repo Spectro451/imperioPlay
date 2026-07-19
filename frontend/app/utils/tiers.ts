@@ -1,23 +1,9 @@
-export const VALOR_TIER = {
-  1: 10000,
-  2: 20000,
-  3: 35000,
-} as const
+export type ValoresTier = Record<number, number>
 
-const UMBRALES_TIER: Array<[number, number]> = [
-  [10000, 1],
-  [20000, 2],
-  [35000, 3],
-]
-
-export function calcularTier(precioFinal: number): number {
-  for (const [tope, tier] of UMBRALES_TIER) {
-    if (precioFinal <= tope) return tier
-  }
-  return UMBRALES_TIER[UMBRALES_TIER.length - 1]![1]
+export interface RecargosIntercambio {
+  recargo_base: number
+  recargo_por_tier: number
 }
-
-const TIER_MAX = Math.max(...Object.keys(VALOR_TIER).map(Number))
 
 export interface ResultadoFaltante {
   cumple: boolean
@@ -25,11 +11,30 @@ export interface ResultadoFaltante {
   dineroExtra: number
 }
 
-export function calcularFaltante(totalSolicitado: number, totalCliente: number): ResultadoFaltante {
+export function calcularTier(precioFinal: number, valoresTier: ValoresTier): number {
+  const tiers = Object.entries(valoresTier)
+    .map(([tier, valor]) => ({ tier: Number(tier), valor }))
+    .sort((a, b) => a.valor - b.valor)
+
+  if (tiers.length === 0) return 0
+  for (const t of tiers) {
+    if (precioFinal <= t.valor) return t.tier
+  }
+  return tiers[tiers.length - 1]!.tier
+}
+
+export function calcularFaltante(
+  totalSolicitado: number,
+  totalCliente: number,
+  valoresTier: ValoresTier,
+  recargos: RecargosIntercambio,
+): ResultadoFaltante {
   const faltanteTier = totalSolicitado - totalCliente
   if (faltanteTier <= 0) return { cumple: true, faltanteTier: 0, dineroExtra: 0 }
-  const dineroExtra = faltanteTier <= TIER_MAX
-    ? VALOR_TIER[faltanteTier as keyof typeof VALOR_TIER]
-    : VALOR_TIER[TIER_MAX as keyof typeof VALOR_TIER] + 15000 + (faltanteTier - TIER_MAX - 1) * 5000
+  const tiers = Object.keys(valoresTier).map(Number)
+  const maxTier = tiers.length ? Math.max(...tiers) : 0
+  const dineroExtra = faltanteTier <= maxTier
+    ? valoresTier[faltanteTier]!
+    : valoresTier[maxTier]! + recargos.recargo_base + (faltanteTier - maxTier - 1) * recargos.recargo_por_tier
   return { cumple: false, faltanteTier, dineroExtra }
 }

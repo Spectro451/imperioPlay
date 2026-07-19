@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { JuegoClienteInput } from '~/composables/useIntercambioEnCurso'
-import { calcularTier } from '~/utils/tiers'
 
 defineProps<{
   juegos: JuegoClienteInput[]
 }>()
+
+const { tierDe } = useTierConfigCache()
 
 const emit = defineEmits<{
   (e: 'agregar'): void
@@ -101,7 +102,7 @@ function estaCompleto(j: JuegoClienteInput): boolean {
           <div class="shrink-0 sm:w-24 sm:text-right">
             <p class="text-[10px] uppercase tracking-widest text-muted">Tier</p>
             <p class="text-sm font-bold text-acento-1">
-              {{ calcularTier(j.precio_base) }} × {{ j.cantidad }}
+              {{ j.tierMerge ?? tierDe(j.precio_base) }} × {{ j.cantidad }}
             </p>
           </div>
           <button

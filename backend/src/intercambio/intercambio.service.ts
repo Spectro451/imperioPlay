@@ -8,11 +8,12 @@ import { DataSource, EntityManager, Repository, SelectQueryBuilder } from 'typeo
 import { Intercambio } from '../entities/intercambio.entity';
 import { Juego } from 'src/entities/juego.entity';
 import { IntercambioJuego } from 'src/entities/intercambioJuego.entity';
-import { VALOR_TIER } from 'src/constants/tiers.constant';
 import { Plataforma, estadoJuego, metodoPago, rolIntercambio, tipoProducto } from 'src/entities/enums';
 import { instanceToPlain } from 'class-transformer';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { JuegoService } from 'src/juego/juego.service';
+import { TierConfigService } from 'src/tier-config/tier-config.service';
+import { IntercambioConfigService } from 'src/intercambio-config/intercambio-config.service';
 import {
   FiltroIntercambiosDto,
   OrdenIntercambios,
@@ -65,9 +66,16 @@ export class IntercambioService {
     private readonly dataSource: DataSource,
     private readonly usuarioService: UsuarioService,
     private readonly juegoService: JuegoService,
+    private readonly tierConfigService: TierConfigService,
+    private readonly intercambioConfigService: IntercambioConfigService,
   ) {}
 
-  calcularFaltante(totalSolicitado: number, totalCliente: number): {
+  calcularFaltante(
+    totalSolicitado: number,
+    totalCliente: number,
+    valoresTier: Record<number, number>,
+    recargos: { recargo_base: number; recargo_por_tier: number },
+  ): {
     cumple: boolean;
     faltanteTier: number;
     dinero_extra: number;
@@ -76,13 +84,14 @@ export class IntercambioService {
     if (faltanteTier <= 0) {
       return { cumple: true, faltanteTier: 0, dinero_extra: 0 };
     }
-    const maxTier = Math.max(...Object.keys(VALOR_TIER).map(Number));
+    const tiers = Object.keys(valoresTier).map(Number);
+    const maxTier = tiers.length ? Math.max(...tiers) : 0;
     const dinero_extra =
       faltanteTier <= maxTier
-        ? VALOR_TIER[faltanteTier as keyof typeof VALOR_TIER]
-        : VALOR_TIER[maxTier as keyof typeof VALOR_TIER] +
-          15000 +
-          (faltanteTier - maxTier - 1) * 5000;
+        ? valoresTier[faltanteTier]
+        : valoresTier[maxTier] +
+          recargos.recargo_base +
+          (faltanteTier - maxTier - 1) * recargos.recargo_por_tier;
     return { cumple: false, faltanteTier, dinero_extra };
   }
 
@@ -141,6 +150,7 @@ export class IntercambioService {
           juego: js.juego,
           rol: rolIntercambio.solicitado,
           cantidad: js.cantidad,
+          tier: js.juego.tier,
         }),
       ),
       ...juegosCliente.map((j) =>
@@ -149,6 +159,7 @@ export class IntercambioService {
           juego: j.juego,
           rol: rolIntercambio.entregado,
           cantidad: j.cantidad,
+          tier: j.juego.tier,
         }),
       ),
     ];
@@ -209,9 +220,13 @@ export class IntercambioService {
         0,
       );
 
+      const valoresTier = await this.tierConfigService.getMap();
+      const recargos = await this.intercambioConfigService.get();
       const { cumple, faltanteTier, dinero_extra } = this.calcularFaltante(
         totalSolicitado,
         totalCliente,
+        valoresTier,
+        recargos,
       );
 
       const monto_pagado = data.monto_pagado ?? 0;
@@ -379,7 +394,7 @@ export class IntercambioService {
         sku: datos?.sku,
         consola: datos?.consola ?? ij.juego?.consola,
         estado: datos?.estado ?? ij.juego?.estado ?? estadoJuego.usado,
-        tier: datos?.tier ?? 0,
+        tier: ij.tier ?? datos?.tier ?? 0,
       };
     });
 

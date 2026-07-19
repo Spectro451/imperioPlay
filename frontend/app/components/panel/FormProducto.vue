@@ -197,6 +197,10 @@ function onNombreInput() {
   }, 300)
 }
 
+function cerrarSugerenciasDelayed() {
+  setTimeout(() => { mostrarSugerencias.value = false }, 150)
+}
+
 function aplicarProducto(prod: any, plataformaPreferida?: string) {
   tipo.value = prod.tipo
   sku.value = prod.sku ?? sku.value
@@ -261,6 +265,8 @@ function bloquearPaste(e: ClipboardEvent) {
   if (!/^\d+$/.test(texto)) e.preventDefault()
 }
 
+const colision = useConfirmar<{ nombreProd: string; skuProd: string }>()
+
 async function chequearColision(): Promise<boolean> {
   if (isEdit.value || productoBloqueado.value) return true
   const prod = await buscarPorNombreExacto(nombre.value.trim())
@@ -272,11 +278,7 @@ async function chequearColision(): Promise<boolean> {
     return platMatch && v.estado === estado.value
   })
   if (!colisiona) return true
-  return confirm(
-    `Ya existe "${prod.nombre}" (${plataforma.value} · ${estado.value}) con SKU "${prod.sku}".\n\n` +
-    `Estás por crear otro producto con el mismo nombre y variante pero SKU distinto ("${sku.value}").\n\n` +
-    `¿Es una edición diferente (EU, LAS, etc.)?`
-  )
+  return colision.abrir({ nombreProd: prod.nombre, skuProd: prod.sku })
 }
 
 async function submit() {
@@ -424,7 +426,7 @@ async function submit() {
             autocomplete="off"
             @input="onNombreInput"
             @focus="mostrarSugerencias = sugerenciasNombre.length > 0"
-            @blur="setTimeout(() => mostrarSugerencias = false, 150)"
+            @blur="cerrarSugerenciasDelayed"
           />
           <div
             v-if="mostrarSugerencias && sugerenciasNombre.length"
@@ -556,6 +558,16 @@ async function submit() {
       :variantes="variantesModal"
       @seleccionar="onVarianteElegida"
       @cerrar="variantesModal = null"
+    />
+
+    <ModalConfirmar
+      v-if="colision.payload"
+      titulo="Producto similar existente"
+      :mensaje="`Ya existe &quot;${colision.payload.nombreProd}&quot; (${plataforma} · ${estado}) con SKU &quot;${colision.payload.skuProd}&quot;.\n\nEstás por crear otro producto con el mismo nombre y variante pero SKU distinto (&quot;${sku}&quot;).\n\n¿Es una edición diferente (EU, LAS, etc.)?`"
+      label-confirmar="Sí, crear igual"
+      variante="warning"
+      @close="colision.cerrar()"
+      @confirmar="colision.confirmar()"
     />
   </div>
 </template>

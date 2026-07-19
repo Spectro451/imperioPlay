@@ -8,7 +8,6 @@ import type {
 } from './api/useIntercambioApi'
 import type { MetodoPago } from './api/useVentaApi'
 import type { Usuario } from './api/useUsuarioApi'
-import { calcularFaltante, calcularTier } from '~/utils/tiers'
 
 export interface LineaSolicitada {
   variante: ItemFlat
@@ -24,6 +23,7 @@ export interface JuegoClienteInput {
   precio_base: number
   cantidad: number
   fotos: string[]
+  tierMerge?: number | null
 }
 
 export interface ResultadoAgregar {
@@ -49,6 +49,8 @@ export function crearJuegoClienteVacio(): JuegoClienteInput {
 }
 
 export function useIntercambioEnCurso() {
+  const { tierDe, faltanteDe, cargar } = useTierConfigCache()
+
   const lineasSolicitadas = ref<LineaSolicitada[]>([])
   const juegosCliente = ref<JuegoClienteInput[]>([])
   const vendedor = ref<Usuario | null>(null)
@@ -114,11 +116,14 @@ export function useIntercambioEnCurso() {
   )
 
   const totalTierCliente = computed(() =>
-    juegosCliente.value.reduce((sum, j) => sum + calcularTier(j.precio_base) * j.cantidad, 0),
+    juegosCliente.value.reduce((sum, j) => {
+      const tier = j.tierMerge ?? tierDe(j.precio_base)
+      return sum + tier * j.cantidad
+    }, 0),
   )
 
   const faltante = computed(() =>
-    calcularFaltante(totalTierSolicitado.value, totalTierCliente.value),
+    faltanteDe(totalTierSolicitado.value, totalTierCliente.value),
   )
 
   const dineroExtra = computed(() => faltante.value.dineroExtra)
@@ -181,6 +186,7 @@ export function useIntercambioEnCurso() {
     vuelto,
     puedeConfirmar,
     payload,
+    cargarConfig: () => cargar(true),
     agregarSolicitado,
     quitarSolicitado,
     cambiarCantidadSolicitado,

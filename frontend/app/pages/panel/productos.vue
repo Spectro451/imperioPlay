@@ -83,14 +83,20 @@ async function onSaved() {
   await refresh()
 }
 
-async function eliminar(item: ItemFlat) {
-  if (!confirm('Esto desactivará el producto evitando que clientes lo vean, ¿estás seguro?')) return
+const desactivacion = useConfirmar<ItemFlat>()
+
+function eliminar(item: ItemFlat) {
+  desactivacion.abrir(item)
+}
+
+async function ejecutarDesactivar(item: ItemFlat) {
   try {
     if (item.tipo === 'juego') await removeJuego(item.id)
     else await removeConsola(item.id)
     await refresh()
   } catch (e: any) {
     notificar('error', e?.data?.message ?? 'Error al eliminar')
+    throw e
   }
 }
 
@@ -168,6 +174,17 @@ async function reactivar(item: ItemFlat) {
       :item="itemEditando"
       @close="cerrarModal"
       @saved="onSaved"
+    />
+
+    <ModalConfirmar
+      v-if="desactivacion.payload"
+      titulo="Desactivar producto"
+      :mensaje="`Se desactivará ${desactivacion.payload.nombre} (${desactivacion.payload.plataforma} · ${desactivacion.payload.estado}) y dejará de aparecer en el catálogo público. Podés reactivarlo desde este mismo listado.`"
+      label-confirmar="Desactivar"
+      variante="danger"
+      :loading="desactivacion.loading"
+      @close="desactivacion.cerrar()"
+      @confirmar="desactivacion.confirmar(ejecutarDesactivar)"
     />
   </div>
 </template>

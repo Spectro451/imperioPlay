@@ -20,6 +20,9 @@ export class IntercambioJuego {
   @Column()
   cantidad: number;
 
+  @Column({ type: 'int', nullable: true })
+  tier?: number;
+
   @ManyToOne(
     () => Intercambio,
     (intercambio) => intercambio.intercambioJuegos,

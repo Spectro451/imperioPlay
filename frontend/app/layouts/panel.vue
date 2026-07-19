@@ -14,6 +14,7 @@ const adminLinks = [
   { label: 'Ventas', to: '/panel/admin/ventas' },
   { label: 'Intercambios', to: '/panel/admin/intercambios' },
   { label: 'Reportes', to: '/panel/admin/reportes' },
+  { label: 'Tiers', to: '/panel/admin/tiers' },
 ]
 
 const sidebarAbierto = ref(false)

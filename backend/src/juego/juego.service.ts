@@ -10,6 +10,7 @@ import { Producto } from 'src/entities/producto.entity';
 import { Plataforma, estadoJuego, Orden } from 'src/entities/enums';
 import { calcularPrecioFinal, calcularTier } from 'src/utils/pricing';
 import { ProductoService } from 'src/producto/producto.service';
+import { TierConfigService } from 'src/tier-config/tier-config.service';
 
 @Injectable()
 export class JuegoService {
@@ -17,7 +18,46 @@ export class JuegoService {
     @InjectRepository(Juego)
     private readonly juegoRepo: Repository<Juego>,
     private readonly productoService: ProductoService,
+    private readonly tierConfigService: TierConfigService,
   ) {}
+
+  private async calcularTierActual(precioFinal: number): Promise<number> {
+    return calcularTier(precioFinal, await this.tierConfigService.getMap());
+  }
+
+  async recalcularTiers(): Promise<{ actualizados: number }> {
+    const valoresTier = await this.tierConfigService.getMap();
+    const tiersOrdenados = Object.entries(valoresTier)
+      .map(([tier, valor]) => ({ tier: Number(tier), valor }))
+      .sort((a, b) => a.valor - b.valor);
+
+    if (tiersOrdenados.length === 0) return { actualizados: 0 };
+
+    const ultimo = tiersOrdenados[tiersOrdenados.length - 1];
+    const anteriores = tiersOrdenados.slice(0, -1);
+    const params: Record<string, number> = { tierFinal: ultimo.tier };
+    const whens = anteriores
+      .map((t, i) => {
+        params[`valor${i}`] = t.valor;
+        params[`tier${i}`] = t.tier;
+        return `WHEN precio_final <= CAST(:valor${i} AS int) THEN CAST(:tier${i} AS int)`;
+      })
+      .join(' ');
+    const caseExpr = anteriores.length
+      ? `CASE ${whens} ELSE CAST(:tierFinal AS int) END`
+      : 'CAST(:tierFinal AS int)';
+
+    const result = await this.juegoRepo
+      .createQueryBuilder()
+      .update(Juego)
+      .set({ tier: () => caseExpr })
+      .where('"isActive" = true')
+      .andWhere(`tier IS DISTINCT FROM (${caseExpr})`)
+      .setParameters(params)
+      .execute();
+
+    return { actualizados: result.affected ?? 0 };
+  }
 
   async restarStockJuego(juego: Juego, cantidad: number): Promise<Juego> {
     if (juego.stock < cantidad) {
@@ -46,7 +86,7 @@ export class JuegoService {
       juego.descuento_porcentaje,
       juego.descuento_fijo,
     );
-    juego.tier = calcularTier(juego.precio_final);
+    juego.tier = await this.calcularTierActual(juego.precio_final);
 
     return this.juegoRepo.save(juego);
   }
@@ -97,7 +137,7 @@ export class JuegoService {
       estado,
       stock,
       precio_final,
-      tier: calcularTier(precio_final),
+      tier: await this.calcularTierActual(precio_final),
       fotos: dataJuegoCliente.fotos || [],
       descuento_porcentaje: dataJuegoCliente.descuento_porcentaje,
       descuento_fijo: dataJuegoCliente.descuento_fijo,
@@ -207,7 +247,7 @@ export class JuegoService {
         juego.descuento_porcentaje,
         juego.descuento_fijo,
       );
-      juego.tier = calcularTier(juego.precio_final);
+      juego.tier = await this.calcularTierActual(juego.precio_final);
     }
 
     if (

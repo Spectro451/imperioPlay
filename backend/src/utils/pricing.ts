@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { VALOR_TIER } from 'src/constants/tiers.constant';
 
 export function calcularPrecioFinal(
   precio_base: number,
@@ -35,10 +34,15 @@ export function calcularPrecioFinal(
   return precio_base;
 }
 
-export function calcularTier(precioFinal: number): number {
-  const tiers = Object.entries(VALOR_TIER)
+export function calcularTier(
+  precioFinal: number,
+  valoresTier: Record<number, number>,
+): number {
+  const tiers = Object.entries(valoresTier)
     .map(([tier, valor]) => ({ tier: Number(tier), valor }))
     .sort((a, b) => a.valor - b.valor);
+
+  if (tiers.length === 0) return 0;
 
   for (const t of tiers) {
     if (precioFinal <= t.valor) return t.tier;
