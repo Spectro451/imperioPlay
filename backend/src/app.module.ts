@@ -26,6 +26,8 @@ import { TierConfigModule } from './tier-config/tier-config.module';
 import { IntercambioConfigModule } from './intercambio-config/intercambio-config.module';
 import { TierConfig } from './entities/tier-config.entity';
 import { IntercambioConfig } from './entities/intercambio-config.entity';
+import { WishlistModule } from './wishlist/wishlist.module';
+import { WishlistItem } from './entities/wishlist-item.entity';
 
 @Module({
   imports: [
@@ -44,6 +46,7 @@ import { IntercambioConfig } from './entities/intercambio-config.entity';
         IntercambioJuego,
         TierConfig,
         IntercambioConfig,
+        WishlistItem,
       ],
       synchronize: true,
     }),
@@ -58,6 +61,7 @@ import { IntercambioConfig } from './entities/intercambio-config.entity';
     ConsolaModule,
     TierConfigModule,
     IntercambioConfigModule,
+    WishlistModule,
   ],
   controllers: [AppController],
   providers: [AppService],

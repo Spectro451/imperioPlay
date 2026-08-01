@@ -24,6 +24,7 @@ export const useAuth = () => {
       await api('/auth/logout', { method: 'POST' })
     } finally {
       user.value = null
+      useWishlist().limpiar()
       await navigateTo('/')
     }
   }

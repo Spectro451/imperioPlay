@@ -7,5 +7,10 @@ export function useAuthApi() {
         method: 'POST',
         body: { correo, password },
       }),
+    registro: (nombre: string, correo: string, password: string) =>
+      api<{ id: number; correo: string; rol: string }>('/usuario', {
+        method: 'POST',
+        body: { nombre, correo, password },
+      }),
   }
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-const { isLoggedIn, isStaff } = useAuth()
+const { isLoggedIn, isStaff, user } = useAuth()
 const menuAbierto = ref(false)
+
+const esCliente = computed(() => user.value?.rol === 'cliente')
 
 const links = [
   { label: 'Catálogo', to: '/catalogo' },
@@ -40,6 +42,13 @@ watch(() => route.path, () => { menuAbierto.value = false })
             class="text-sm text-muted hover:text-acento-1 transition-colors"
           >
             Panel
+          </NuxtLink>
+          <NuxtLink
+            v-if="esCliente"
+            to="/cuenta/wishlist"
+            class="text-sm text-muted hover:text-acento-1 transition-colors"
+          >
+            Wishlist
           </NuxtLink>
           <NuxtLink
             :to="isLoggedIn ? '/cuenta' : '/login'"
@@ -82,6 +91,9 @@ watch(() => route.path, () => { menuAbierto.value = false })
           <NuxtLink v-if="isStaff" to="/panel" class="text-muted hover:text-acento-1">
             Panel
           </NuxtLink>
+          <NuxtLink v-if="esCliente" to="/cuenta/wishlist" class="text-muted hover:text-acento-1">
+            Wishlist
+          </NuxtLink>
           <NuxtLink
             :to="isLoggedIn ? '/cuenta' : '/login'"
             class="text-muted hover:text-acento-1 transition-colors"
@@ -96,6 +108,8 @@ watch(() => route.path, () => { menuAbierto.value = false })
     <main class="pt-16">
       <slot />
     </main>
+
+    <Notificador />
   </div>
 </template>
 

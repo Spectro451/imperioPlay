@@ -9,7 +9,7 @@ const { user } = useAuth()
 const { notificar } = useNotify()
 
 const busqueda = ref('')
-const rolFiltro = ref<'todos' | 'empleado' | 'admin'>('todos')
+const rolFiltro = ref<'todos' | 'cliente' | 'empleado' | 'admin'>('todos')
 const activoFiltro = ref<'todos' | 'true' | 'false'>('todos')
 
 const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({
@@ -19,7 +19,8 @@ const { sortCol, sortDir, toggleSort } = useTriStateSort<SortCol>({
 
 const busquedaDebounced = useDebouncedRef(busqueda)
 
-const { vendedores: data, pending, refresh } = useVendedoresCache()
+const { getAll } = useUsuarioApi()
+const { data, pending, refresh } = await useAsyncData('panel-usuarios', () => getAll())
 
 const empleados = computed(() => {
   const lista = data.value ?? []
@@ -133,6 +134,7 @@ async function reactivar(empleado: Usuario) {
       <PanelInput v-model="busqueda" placeholder="Buscar por nombre, correo o RUT..." class="w-72" />
       <PanelSelect v-model="rolFiltro">
         <option value="todos">Todos los roles</option>
+        <option value="cliente">Cliente</option>
         <option value="empleado">Empleado</option>
         <option value="admin">Admin</option>
       </PanelSelect>

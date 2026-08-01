@@ -27,15 +27,18 @@ const backLabel = computed(() =>
     </NuxtLink>
 
     <div class="grid md:grid-cols-2 gap-8 mt-4">
-      <GaleriaFotos :fotos="item.fotos" :alt="item.producto.nombre" />
+      <GaleriaFotos :fotos="item.fotos" :alt="item.producto.nombre" :agotado="item.stock === 0" />
 
       <div class="flex flex-col gap-4">
-        <DetalleHeader
-          :plataforma="plataforma"
-          :estado="item.estado"
-          :nombre="item.producto.nombre"
-          :tier="tipo === 'juego' ? item.tier : undefined"
-        />
+        <div class="flex items-start justify-between gap-3">
+          <DetalleHeader
+            :plataforma="plataforma"
+            :estado="item.estado"
+            :nombre="item.producto.nombre"
+            :tier="tipo === 'juego' ? item.tier : undefined"
+          />
+          <BotonWishlist :tipo="tipo" :variant-id="item.id" size="lg" />
+        </div>
         <PrecioDisplay
           :precio_base="item.precio_base"
           :precio_final="item.precio_final"

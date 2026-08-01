@@ -5,7 +5,7 @@ const error = ref('')
 const loading = ref(false)
 
 const { login } = useAuthApi()
-const { refresh, isStaff } = useAuth()
+const { refresh, isStaff, user } = useAuth()
 
 async function submit() {
   error.value = ''
@@ -13,6 +13,9 @@ async function submit() {
   try {
     await login(correo.value, password.value)
     await refresh()
+    if (user.value?.rol === 'cliente') {
+      await useWishlist().cargar(true)
+    }
     await navigateTo(isStaff.value ? '/panel' : '/cuenta')
   } catch (e: any) {
     const msg = e?.data?.message
@@ -63,6 +66,12 @@ async function submit() {
         >
           {{ loading ? 'Entrando...' : 'Entrar' }}
         </button>
+
+        <p class="text-sm text-muted text-center mt-4">
+          ¿No tienes cuenta?
+          <NuxtLink to="/registro" class="text-acento-1 hover:underline">Regístrate</NuxtLink>
+          y accede a una wishlist.
+        </p>
       </form>
     </div>
   </div>

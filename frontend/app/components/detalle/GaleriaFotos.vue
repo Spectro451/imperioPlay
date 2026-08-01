@@ -3,6 +3,7 @@ const props = defineProps<{
   fotos?: string[]
   alt: string
   visibles?: number
+  agotado?: boolean
 }>()
 
 const visibles = computed(() => props.visibles ?? 5)
@@ -23,9 +24,22 @@ function scroll(dir: 'left' | 'right') {
 
 <template>
   <div class="flex flex-col gap-3">
-    <div class="bg-bg-card rounded-lg overflow-hidden aspect-square flex items-center justify-center text-muted text-sm">
-      <img v-if="selected" :src="selected" :alt="alt" class="w-full h-full object-cover" />
+    <div class="bg-bg-card rounded-lg overflow-hidden aspect-square flex items-center justify-center text-muted text-sm relative">
+      <img
+        v-if="selected"
+        :src="selected"
+        :alt="alt"
+        :class="['w-full h-full object-cover', agotado && 'grayscale opacity-60']"
+      />
       <span v-else>Sin foto</span>
+      <div
+        v-if="agotado"
+        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+      >
+        <div class="w-[200%] -rotate-45 bg-neutral-800 text-white text-center py-2 text-lg font-black tracking-[0.4em] shadow-xl">
+          AGOTADO
+        </div>
+      </div>
     </div>
 
     <div v-if="fotos && fotos.length > 1" class="relative group">

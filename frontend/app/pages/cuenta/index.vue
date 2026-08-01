@@ -2,6 +2,7 @@
 definePageMeta({ middleware: 'cuenta' })
 
 const { user, logout } = useAuth()
+const esCliente = computed(() => user.value?.rol === 'cliente')
 </script>
 
 <template>
@@ -24,11 +25,20 @@ const { user, logout } = useAuth()
       </div>
     </div>
 
-    <button
-      class="mt-6 text-sm text-muted hover:text-acento-1 transition-colors"
-      @click="logout"
-    >
-      Cerrar sesión →
-    </button>
+    <div class="mt-6 flex flex-col gap-3 items-start">
+      <NuxtLink
+        v-if="esCliente"
+        to="/cuenta/wishlist"
+        class="text-sm text-acento-1 hover:underline transition-colors"
+      >
+        Ver mi wishlist →
+      </NuxtLink>
+      <button
+        class="text-sm text-muted hover:text-acento-1 transition-colors"
+        @click="logout"
+      >
+        Cerrar sesión →
+      </button>
+    </div>
   </div>
 </template>

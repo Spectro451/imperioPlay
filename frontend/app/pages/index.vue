@@ -40,13 +40,6 @@ const ofertas = computed(() => ofertasData.value?.items?.slice(0, 10) ?? [])
     <CarruselProductos titulo="Últimas ofertas" :items="ofertas" :loading="ofertasPending" ver-todos-link="/ofertas" />
     <div class="border-t border-border" />
 
-    <section class="py-10">
-      <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <h2 class="text-2xl font-black tracking-tight mb-5 text-muted">Por definir</h2>
-        <div class="h-44 bg-bg-card rounded-lg flex items-center justify-center text-muted text-sm">
-          Sección pendiente
-        </div>
-      </div>
-    </section>
+    <ExplicacionIntercambio />
   </div>
 </template>

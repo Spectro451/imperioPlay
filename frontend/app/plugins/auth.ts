@@ -1,4 +1,7 @@
 export default defineNuxtPlugin(async () => {
-  const { refresh } = useAuth()
+  const { refresh, user } = useAuth()
   await refresh()
+  if (user.value?.rol === 'cliente') {
+    await useWishlist().cargar()
+  }
 })

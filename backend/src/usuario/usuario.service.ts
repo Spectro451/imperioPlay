@@ -22,6 +22,12 @@ export class UsuarioService {
     correo: string;
     password: string;
   }): Promise<Usuario> {
+    const existente = await this.usuarioRepo.findOne({
+      where: { correo: data.correo },
+    });
+    if (existente) {
+      throw new BadRequestException('Ya existe una cuenta con ese correo');
+    }
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const usuario = this.usuarioRepo.create({
       nombre: data.nombre,
