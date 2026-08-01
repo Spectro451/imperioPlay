@@ -11,8 +11,8 @@ const { refresh, user } = useAuth()
 
 async function submit() {
   error.value = ''
-  if (password.value.length < 6) {
-    error.value = 'La contraseña debe tener al menos 6 caracteres'
+  if (password.value.length < 8) {
+    error.value = 'La contraseña debe tener al menos 8 caracteres'
     return
   }
   if (password.value !== password2.value) {
@@ -75,10 +75,10 @@ async function submit() {
             v-model="password"
             type="password"
             required
-            minlength="6"
+            minlength="8"
             :disabled="loading"
             class="bg-bg-card border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-acento-1 transition-colors disabled:opacity-50"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
           />
         </div>
 
@@ -88,7 +88,7 @@ async function submit() {
             v-model="password2"
             type="password"
             required
-            minlength="6"
+            minlength="8"
             :disabled="loading"
             class="bg-bg-card border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-acento-1 transition-colors disabled:opacity-50"
             placeholder="••••••••"

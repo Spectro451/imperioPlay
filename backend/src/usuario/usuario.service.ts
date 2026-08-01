@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -9,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { Usuario } from '../entities/usuario.entity';
 import { Rol } from '../entities/enums';
 import { normalizarRut } from 'src/utils/rut';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 
 @Injectable()
 export class UsuarioService {
@@ -110,34 +112,25 @@ export class UsuarioService {
   }
 
   findAll(): Promise<Usuario[]> {
-    return this.usuarioRepo.find({
-      relations: [
-        'intercambios',
-        'intercambiosCliente',
-        'compras',
-        'ventasVendedor',
-      ],
-    });
+    return this.usuarioRepo.find({ order: { id: 'DESC' } });
   }
 
   findOne(id: number): Promise<Usuario | null> {
-    return this.usuarioRepo.findOne({
-      where: { id },
-      relations: [
-        'intercambios',
-        'intercambiosCliente',
-        'compras',
-        'ventasVendedor',
-      ],
-    });
+    return this.usuarioRepo.findOne({ where: { id } });
   }
 
-  async update(id: number, data: Partial<Usuario>): Promise<Usuario> {
-    const result = await this.usuarioRepo.update(id, data);
-    if (result.affected === 0) {
+  async update(id: number, data: UpdateUsuarioDto): Promise<Usuario> {
+    const usuario = await this.usuarioRepo.findOne({ where: { id } });
+    if (!usuario) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
-    return this.findOne(id) as Promise<Usuario>;
+
+    if (data.rut !== undefined) {
+      data.rut = normalizarRut(data.rut);
+    }
+
+    Object.assign(usuario, data);
+    return this.usuarioRepo.save(usuario);
   }
 
   async remove(id: number): Promise<Usuario> {
@@ -165,7 +158,7 @@ export class UsuarioService {
     currentPassword: string,
     newPassword: string,
   ): Promise<Usuario> {
-    const user = await this.findOne(userId);
+    const user = await this.usuarioRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     const passwordIguales = await bcrypt.compare(
@@ -173,36 +166,39 @@ export class UsuarioService {
       user.password,
     );
     if (!passwordIguales)
-      throw new BadRequestException('Las contraseñas no son iguales');
+      throw new BadRequestException('Contraseña actual incorrecta');
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'La nueva contraseña debe ser distinta a la actual',
+      );
+    }
 
-    return this.update(userId, { password: hashedPassword });
+    user.password = await bcrypt.hash(newPassword, 10);
+    return this.usuarioRepo.save(user);
   }
 
   async resetPassword(userId: number, newPassword: string): Promise<Usuario> {
-    const user = await this.findOne(userId);
+    const user = await this.usuarioRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    return this.update(userId, { password: hashedPassword });
+    user.password = await bcrypt.hash(newPassword, 10);
+    return this.usuarioRepo.save(user);
   }
 
   async restore(correo: string, password: string): Promise<Usuario> {
-    const user = await this.usuarioRepo.findOne({
-      where: { correo },
-    });
+    const user = await this.usuarioRepo.findOne({ where: { correo } });
 
-    if (!user) throw new NotFoundException('Usuario no encontrado');
-    if (user.isActive)
-      throw new BadRequestException('La cuenta ya está activa');
+    if (!user || user.isActive) {
+      throw new UnauthorizedException('Credenciales incorrectas');
+    }
 
     const passwordValida = await bcrypt.compare(password, user.password);
-    if (!passwordValida)
-      throw new BadRequestException('Credenciales incorrectas');
+    if (!passwordValida) {
+      throw new UnauthorizedException('Credenciales incorrectas');
+    }
 
     user.isActive = true;
-
     return this.usuarioRepo.save(user);
   }
 }

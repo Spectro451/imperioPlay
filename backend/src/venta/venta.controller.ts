@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
-  Put,
   Query,
   Req,
   UseGuards,
@@ -38,22 +38,15 @@ export class VentaController {
 
   @Get(':id')
   @Roles('admin', 'empleado')
-  async findOne(@Param('id') id: string): Promise<Venta | null> {
-    return this.ventaService.findOne(Number(id));
-  }
-
-  @Put(':id')
-  @Roles('admin')
-  async update(
-    @Param('id') id: string,
-    @Body() data: Partial<Venta>,
-  ): Promise<Venta> {
-    return this.ventaService.update(Number(id), data);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Venta | null> {
+    return this.ventaService.findOne(id);
   }
 
   @Delete(':id')
   @Roles('admin')
-  async remove(@Param('id') id: string): Promise<{ mensaje: string }> {
-    return this.ventaService.remove(Number(id));
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ mensaje: string }> {
+    return this.ventaService.remove(id);
   }
 }

@@ -330,14 +330,6 @@ export class VentaService {
     return venta ? (instanceToPlain(venta) as Venta) : null;
   }
 
-  async update(id: number, data: Partial<Venta>): Promise<Venta> {
-    const result = await this.ventaRepo.update(id, data);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Venta con id ${id} no encontrada`);
-    }
-    return this.findOne(id) as Promise<Venta>;
-  }
-
   async remove(id: number): Promise<{ mensaje: string }> {
     const result = await this.ventaRepo.delete(id);
     if (result.affected === 0) {

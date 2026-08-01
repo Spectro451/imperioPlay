@@ -15,15 +15,14 @@ export class AuthService {
 
   async validateUser(correo: string, password: string) {
     const user = await this.usuarioRepo.findOne({ where: { correo } });
-    if (!user)
+    if (!user || !user.isActive) {
       throw new UnauthorizedException('Usuario o contraseña incorrectos');
-
-    if (!user.isActive)
-      throw new UnauthorizedException('Usuario inactivo, recupere su cuenta');
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
       throw new UnauthorizedException('Usuario o contraseña incorrectos');
+    }
 
     return user;
   }

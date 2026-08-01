@@ -117,7 +117,7 @@ export class ConsolaController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  @Roles('admin', 'empleado')
   async remove(@Param('id') id: string): Promise<void> {
     return this.consolaService.remove(Number(id));
   }

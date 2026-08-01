@@ -17,7 +17,7 @@ import { UsuarioModule } from '../usuario/usuario.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('SECRET'),
+        secret: config.get<string>('JWT_SECRET') ?? config.get<string>('SECRET'),
         signOptions: {
           expiresIn: Math.floor(Number(config.get<string>('SESSION_MS')) / 1000),
         },

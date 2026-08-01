@@ -62,13 +62,13 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
             v-model="nueva"
             type="password"
             required
-            minlength="6"
+            minlength="8"
             :class="inputClass"
             :disabled="loading"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
           />
-          <p v-if="nueva.length > 0 && nueva.length < 6" class="text-xs text-danger">
-            Debe tener al menos 6 caracteres
+          <p v-if="nueva.length > 0 && nueva.length < 8" class="text-xs text-danger">
+            Debe tener al menos 8 caracteres
           </p>
         </div>
 

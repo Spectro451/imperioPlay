@@ -4,14 +4,13 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
-  Put,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { IntercambioService } from './intercambio.service';
-import { Intercambio } from '../entities/intercambio.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
@@ -47,22 +46,15 @@ export class IntercambioController {
 
   @Get(':id')
   @Roles('admin', 'empleado')
-  async findOne(@Param('id') id: string) {
-    return this.intercambioService.findOne(Number(id));
-  }
-
-  @Put(':id')
-  @Roles('admin')
-  async update(
-    @Param('id') id: string,
-    @Body() data: Partial<Intercambio>,
-  ): Promise<Intercambio> {
-    return this.intercambioService.update(Number(id), data);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.intercambioService.findOne(id);
   }
 
   @Delete(':id')
   @Roles('admin')
-  async remove(@Param('id') id: string): Promise<{ mensaje: string }> {
-    return this.intercambioService.remove(Number(id));
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ mensaje: string }> {
+    return this.intercambioService.remove(id);
   }
 }

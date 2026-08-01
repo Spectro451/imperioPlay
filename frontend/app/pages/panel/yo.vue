@@ -145,14 +145,14 @@ const labelClass = 'text-xs font-semibold uppercase tracking-widest text-muted m
         <form class="flex flex-col gap-3" @submit.prevent="guardarPw">
           <div class="flex flex-col gap-1">
             <label :class="labelClass">Contraseña actual</label>
-            <PanelInput v-model="pwActual" type="password" required minlength="6" class="w-full" :disabled="savingPw" />
+            <PanelInput v-model="pwActual" type="password" required minlength="8" class="w-full" :disabled="savingPw" />
           </div>
 
           <div class="flex flex-col gap-1">
             <label :class="labelClass">Nueva contraseña</label>
-            <PanelInput v-model="pwNueva" type="password" required minlength="6" class="w-full" :disabled="savingPw" placeholder="Mínimo 6 caracteres" />
-            <p v-if="pwNueva.length > 0 && pwNueva.length < 6" class="text-xs text-danger">
-              Debe tener al menos 6 caracteres
+            <PanelInput v-model="pwNueva" type="password" required minlength="8" class="w-full" :disabled="savingPw" placeholder="Mínimo 8 caracteres" />
+            <p v-if="pwNueva.length > 0 && pwNueva.length < 8" class="text-xs text-danger">
+              Debe tener al menos 8 caracteres
             </p>
           </div>
 

@@ -9,7 +9,6 @@ import { Intercambio } from '../entities/intercambio.entity';
 import { Juego } from 'src/entities/juego.entity';
 import { IntercambioJuego } from 'src/entities/intercambioJuego.entity';
 import { Plataforma, estadoJuego, metodoPago, rolIntercambio, tipoProducto } from 'src/entities/enums';
-import { instanceToPlain } from 'class-transformer';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { JuegoService } from 'src/juego/juego.service';
 import { TierConfigService } from 'src/tier-config/tier-config.service';
@@ -424,18 +423,6 @@ export class IntercambioService {
     if (!intercambio) return null;
     const mapa = await this.resolverCatalogo([intercambio]);
     return this.mapearListado(intercambio, mapa);
-  }
-
-  async update(id: number, data: Partial<Intercambio>): Promise<Intercambio> {
-    const result = await this.intercambioRepo.update(id, data);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Intercambio con id ${id} no encontrado`);
-    }
-    const updated = await this.intercambioRepo.findOne({
-      where: { id },
-      relations: ['cliente', 'vendedor', 'intercambioJuegos'],
-    });
-    return instanceToPlain(updated) as Intercambio;
   }
 
   async remove(id: number): Promise<{ mensaje: string }> {

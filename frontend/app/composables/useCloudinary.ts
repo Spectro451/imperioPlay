@@ -1,3 +1,6 @@
+const MAX_FILE_BYTES = 5 * 1024 * 1024
+const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+
 export function useCloudinary() {
   const config = useRuntimeConfig()
   const cloudName = config.public.cloudinaryCloudName as string
@@ -11,10 +14,21 @@ export function useCloudinary() {
       .join('')
   }
 
+  function validarArchivo(file: File): void {
+    if (!ALLOWED_MIME.has(file.type)) {
+      throw new Error('Formato no permitido. Usa JPG, PNG, WEBP o GIF.')
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      const mb = (MAX_FILE_BYTES / 1024 / 1024).toFixed(0)
+      throw new Error(`El archivo supera el tamaño máximo (${mb} MB).`)
+    }
+  }
+
   async function uploadFile(file: File): Promise<string> {
     if (!cloudName || !uploadPreset) {
       throw new Error('Cloudinary no configurado (falta cloud_name o upload_preset)')
     }
+    validarArchivo(file)
     const hash = await hashFile(file)
     const formData = new FormData()
     formData.append('file', file)
@@ -36,5 +50,5 @@ export function useCloudinary() {
     }
   }
 
-  return { uploadFile, hashFile }
+  return { uploadFile, hashFile, validarArchivo }
 }

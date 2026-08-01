@@ -1,12 +1,10 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
-  Patch,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -19,6 +17,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Plataforma, estadoJuego, Orden, tipoProducto } from 'src/entities/enums';
 import { CreateProductoDto } from './dto/create-producto.dto';
+import { UpdateProductoDto } from './dto/update-producto.dto';
 
 @Controller('producto')
 export class ProductoController {
@@ -136,29 +135,27 @@ export class ProductoController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Producto | null> {
-    return this.productoService.findOne(Number(id));
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Producto | null> {
+    return this.productoService.findOne(id);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
   async update(
-    @Param('id') id: string,
-    @Body() data: Partial<Producto>,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: UpdateProductoDto,
   ): Promise<Producto> {
-    try {
-      return await this.productoService.update(Number(id), data);
-    } catch (err) {
-      throw new NotFoundException(err.message);
-    }
+    return this.productoService.update(id, data);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'empleado')
-  async remove(@Param('id') id: string) {
-    await this.productoService.remove(Number(id));
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.productoService.remove(id);
     return { message: `Producto con id: ${id} desactivado correctamente` };
   }
 }

@@ -97,7 +97,8 @@ export class ProductoService {
 
   async update(id: number, data: Partial<Producto>): Promise<Producto> {
     const producto = await this.findOne(id);
-    if (!producto) throw new Error(`Producto con id ${id} no encontrado`);
+    if (!producto)
+      throw new NotFoundException(`Producto con id ${id} no encontrado`);
 
     Object.assign(producto, data);
 

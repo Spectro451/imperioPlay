@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { UsuarioModule } from './usuario/usuario.module';
 import { JuegoModule } from './juego/juego.module';
 import { ProductoModule } from './producto/producto.module';
 import { VentaModule } from './venta/venta.module';
-import { VentaDetalleModule } from './venta-detalle/venta-detalle.module';
 import { IntercambioModule } from './intercambio/intercambio.module';
-import { IntercambioJuegoModule } from './intercambio-juego/intercambio-juego.module';
 import { AuthModule } from './auth/auth.module';
 
 import { Usuario } from './entities/usuario.entity';
@@ -32,6 +32,9 @@ import { WishlistItem } from './entities/wishlist-item.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60_000, limit: 120 },
+    ]),
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
@@ -48,15 +51,13 @@ import { WishlistItem } from './entities/wishlist-item.entity';
         IntercambioConfig,
         WishlistItem,
       ],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     UsuarioModule,
     JuegoModule,
     ProductoModule,
     VentaModule,
-    VentaDetalleModule,
     IntercambioModule,
-    IntercambioJuegoModule,
     AuthModule,
     ConsolaModule,
     TierConfigModule,
@@ -64,6 +65,9 @@ import { WishlistItem } from './entities/wishlist-item.entity';
     WishlistModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
