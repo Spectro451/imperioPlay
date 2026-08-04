@@ -10,9 +10,9 @@ export default defineNuxtConfig({
     head: {
       script: [
         {
-          type: 'module',
           src: 'https://static.cloudflareinsights.com/beacon.min.js',
           'data-cf-beacon': '{"token": "0aeabeb0240740849d42292a60074fe3"}',
+          defer: true,
         },
       ],
     },
