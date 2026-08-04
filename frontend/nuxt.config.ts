@@ -6,6 +6,17 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
+  app: {
+    head: {
+      script: [
+        {
+          type: 'module',
+          src: 'https://static.cloudflareinsights.com/beacon.min.js',
+          'data-cf-beacon': '{"token": "0aeabeb0240740849d42292a60074fe3"}',
+        },
+      ],
+    },
+  },
   components: [
     { path: '~/components', pathPrefix: false },
   ],
