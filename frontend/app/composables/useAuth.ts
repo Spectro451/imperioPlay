@@ -10,11 +10,23 @@ export const useAuth = () => {
   const isAdmin = computed(() => user.value?.rol === 'admin')
 
   async function refresh() {
-    try {
-      const api = useApi()
-      user.value = await api<SessionUser>('/auth/me')
-    } catch {
-      user.value = null
+    const api = useApi()
+    const intentos = import.meta.server ? 3 : 1
+    for (let i = 0; i < intentos; i++) {
+      try {
+        user.value = await api<SessionUser>('/auth/me')
+        return
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number }; status?: number })?.response?.status
+          ?? (err as { status?: number })?.status
+        if (status === 401) {
+          user.value = null
+          return
+        }
+        if (i < intentos - 1) {
+          await new Promise((r) => setTimeout(r, 300 * (i + 1)))
+        }
+      }
     }
   }
 
